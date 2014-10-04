@@ -3,15 +3,23 @@ from pyjs import PyJs
 class _PyJsFunction(PyJs):
     def __init__(self, func, name=None, PyJsClosure={}):
         '''Note PyJsClosure can have only one key name: this'''
-        if PyJsClosure.keys() not in [[], ['this']]:
-            raise ValueError('Invalid PyJsClosure!')
-        self._PyJsFunc = _list_to_func(_func_to_list(func), {k:v for k,v in func.func_globals.iteritems()})
+        #if PyJsClosure.keys() not in [[], ['this']]:
+        #    raise ValueError('Invalid PyJsClosure!')
+        PyJsClosure['PyJSGlobals'] = func.func_globals
+        self._PyJsFunc = func
         self._PyJsFuncArgcount = func.func_code.co_argcount
         self._PyJsFuncName = func.func_code.co_name if not name else name
         self._PyJsFuncVarnames = func.func_code.co_varnames
         self._PyJsClosure = PyJsClosure
         
     def __call__(self, *args):
+        if 'this' in self._PyJsClosure:
+            cp = {k:v for k,v in self._PyJsClosure['PyJSGlobals'].iteritems()}
+            cp.update(self._PyJsClosure)
+            cp['globals'] = lambda : self._PyJsClosure['PyJSGlobals']
+            self._PyJsFunc = _list_to_func(_func_to_list(self._PyJsFunc), cp)
+            del cp
+        
         arguments = args # Here it should be argument object!
         method = 'self' in self._PyJsFuncVarnames
         _args = [] if not method else [self]
@@ -93,13 +101,17 @@ def _list_to_func(func_list, scope=False):
     return _func_to_list.__class__(_func_to_list.func_code.__class__(*func_list[0]), func_list[1] if not scope else scope)
 
 
-
+dupa = 200
 
 @PyJsFunction
 def f(a,b):
     print a, b
     return arguments
 
+@PyJsFunction
+def g(x):
+    pass
+    
 
 
 
