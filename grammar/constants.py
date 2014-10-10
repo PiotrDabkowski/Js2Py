@@ -1,6 +1,9 @@
 from definitions import *
 import random
 
+with open('jq.js') as f:
+    jq = f.read()
+    
 def remove_comments(source):
     '''Removes single line and multiline comments from JavaScript source code
        Pseudo comments (inside strings) will not be removed.
