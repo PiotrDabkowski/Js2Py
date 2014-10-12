@@ -9,7 +9,7 @@ STORE_FAST = opcode.opmap['STORE_FAST']
 
 
 def add_locals(func, locals_):
-    keys  = tuple(locals_.keys())
+    keys = tuple(locals_.keys())
     vals = tuple(locals_[k] for k in keys)
     return types.FunctionType(append_arguments(func.func_code, keys), func.func_globals, argdefs=vals)
 
@@ -27,7 +27,7 @@ def append_arguments(code_obj, new_locals):
         if inst[0] in not_removed:
             saved_names.add(co_names[inst[1]])
 
-    # Build co_names for the new code object. This should consist of 
+    # Build co_names for the new code object. This should consist of
     # globals that were only accessed via LOAD_GLOBAL
     names = tuple(name for name in co_names
                   if name not in set(new_locals) - saved_names)
