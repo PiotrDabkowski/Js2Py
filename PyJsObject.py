@@ -60,7 +60,8 @@ class PyJs(object):
                 ('arguments',) if 'arguments' in func.func_code.co_names else ())
             #print func.func_name, 'got', self.__dict__['_PyJsNamesUsed']
             self.__dict__['_PyJsFuncCall'] = append_arguments(_in['call'].func_code, self.__dict__['_PyJsNamesUsed'])
-        _in =  copy.deepcopy(_in) if deepcopy else ({e: v for e, v in _in.iteritems()} if deepcopy is not None else _in)
+        _in =  copy.deepcopy(_in) if deepcopy else ({e: v for e, v in _in.iteritems()} 
+                                                    if deepcopy is not None else _in)
         self.__dict__['_PyJsIn'] = _in
         self.__dict__['_PyJsMethodOf'] = method_of
 
@@ -91,7 +92,8 @@ class PyJs(object):
         func = types.FunctionType(func_code, this.__dict__['_PyJsFuncGlobals'],
                                   argdefs=vvv)  # here should be new Array(args)
         argnum = func.func_code.co_argcount - len(vvv)
-        _args = arguments[:min(argnum, len(arguments))] + max(argnum - len(arguments), 0) * (None,)  # here should be undefined
+        _args = arguments[:min(argnum, len(arguments))] + max(argnum - len(arguments), 0) * (None,) 
+        # here should be undefined
         #print func_code.co_name, len(vvv), _args, this.__dict__['_PyJsNamesUsed']
         return func(*_args)  # PyToPyJS should be here.
 
@@ -120,4 +122,7 @@ if __name__=='__main__':
     def kupak(a):
         print a, arguments
         return 6
+    a=10
+
+a = 200567866876
 

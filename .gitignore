@@ -100,3 +100,5 @@ $RECYCLE.BIN/
 *.msp
 
 *.xml
+
+.spyderproject
