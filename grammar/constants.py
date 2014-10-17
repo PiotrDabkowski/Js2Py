@@ -1,8 +1,7 @@
 from definitions import *
 
 
-with open('jq.js') as f:
-    jq = f.read()
+
 
 def _is_cancelled(source, n):
     cancelled = False
@@ -17,7 +16,7 @@ def _is_cancelled(source, n):
 def _ensure_regexp(source, n): #<- this function has to be improved
     '''returns True if regexp starts at n else returns False
       checks whether it is not a division '''
-    markers = '(+=[%!*^|&-,;/\\'
+    markers = '(+~"\'=[%!*^|&-,;/\\'
     k = 0
     while True:
         k+=1
@@ -26,7 +25,7 @@ def _ensure_regexp(source, n): #<- this function has to be improved
         char = source[n-k] 
         if char in markers:
             return True
-        if char!=' ':
+        if char!=' ' or char!='\n':
             break
     return False
     
@@ -113,7 +112,7 @@ def remove_comments(source):
                     inside_comment = [n-1, None, 1]
                 elif char=='*' and source[n-1]=='/':
                     inside_comment = [n-1, None, 1]
-                if char=='/' and source[n+1] not in ('/', '*'):
+                elif char=='/' and source[n+1] not in ('/', '*'):
                     if not _ensure_regexp(source, n): #<- improve this one
                         continue #Probably just a division 
                     quiting_regexp = False
@@ -144,7 +143,7 @@ def remove_comments(source):
     
     
     
-def recover_constants(py_source, replacements):
+def recover_constants(py_source, replacements): #now has n^2 complexity. improve to n
     '''Converts identifiers representing Js constants to the PyJs constants
     PyJsNumberConst_1_ which has the true value of 5 will be converted to PyJsNumber(5)'''
     for identifier, value in replacements.iteritems():
@@ -191,13 +190,37 @@ def recover_constants(py_source, replacements):
 #    return source, replacements
 
 
-    
-t, d = remove_comments(jq)
-for e in sorted({}):
-    if len(d[e])<200:
-        continue
-    print 
-    print e
-    print 
+
+if __name__=='__main__':
+    with open('jq.js') as f:
+        jq = f.read()
+
+    test = ('regexp_test = /fkf*dsj[/df[[d/*d]/]d*s/*ds]fdf\/fdf*/test;'
+            '//some comment"some pseudo string" as \'another pseudo string\' \n'
+            'string_test = "fd\'fds[]44343fdsf\\"fs\\"df" //fdfd\n'
+            'num_test = 404395493.323e9 //Num to const not supported yet \n'
+            '/* another comment 434 /pseudo regex/ ddf */'
+            'another_pseudo_regex = 49/4443/323/t[3/5/22+53/23]+f(5/3+r[4/3])+f(/fdd[/]fdf\[/)'
+            )
+            
+    t, d = remove_comments(test)
+
+    print t
     print
-    print d[e]
+    for i, v in d.iteritems():
+        print i
+        print
+        print v
+        print 30*'-'
+
+    t, d = remove_comments(jq)
+
+    print t
+    print
+    for i, v in d.iteritems():
+        print i
+        print
+        print v
+        print 30*'-'
+
+
