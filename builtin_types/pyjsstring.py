@@ -1,5 +1,2 @@
-from pyjsbase import PyJsBuiltin
-
-
-class PyJsString(PyJsBuiltin):
-    pass
+import  pyjsundefined 
+PyJsString = 40

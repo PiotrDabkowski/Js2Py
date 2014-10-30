@@ -1,7 +1,9 @@
 from definitions import *
 
-
-
+##################################
+StringName = 'PyJsStringCont%d_'
+RegExpName = 'PyJsRegExpConst%d_'
+##################################
 
 def _is_cancelled(source, n):
     cancelled = False
@@ -29,24 +31,15 @@ def _ensure_regexp(source, n): #<- this function has to be improved
             break
     return False
     
-def remove_comments(source):
-    '''Replaces Strings and Numbers in the source code with
-       identifier and *removes comments*. Identifier is of the format:
+    
+def remove_constants(source):
+    '''Replaces Strings and Regexp literals in the source code with
+       identifiers and *removes comments*. Identifier is of the format:
        
-       PyJsStringConst_(String const number)_ - for Strings
-       PyJsNumberConst_(Number const number)_ - for Numbers
+       PyJsStringConst(String const number)_ - for Strings
+       PyJsRegExpConst(RegExp const number)_ - for RegExps
 
        Returns dict which relates identifier and replaced constant.
-
-       One of the final steps of code translation should be replacing the const identifires with
-       their PyJs values.(this is done by recover_constants function) For example:
-       var x = 3 will be translated by this function to var x = PyJsNumberConst_1_
-       and later by JS to Py translator it will be translated to the python code:
-       x = PyJsNumberConst_1_
-       But PyJsNumberConst_1_ is simply 3(javascript type) which is represented 
-       by PyJsNumber(3) python type
-       so the final result is
-       x = PyJsNumber(3)
     
        Removes single line and multiline comments from JavaScript source code
        Pseudo comments (inside strings) will not be removed.
@@ -121,9 +114,6 @@ def remove_comments(source):
     res = ''
     start = 0
     count = 0
-    StringName = 'PyJsStringCont%d_'
-    count = 0
-    RegExpName = 'PyJsRegExpConst%d_'
     constants = {}
     for end, next_start, typ in comments:
           res += source[start:end]
@@ -142,54 +132,21 @@ def remove_comments(source):
     return res.strip(), constants
     
     
-    
 def recover_constants(py_source, replacements): #now has n^2 complexity. improve to n
     '''Converts identifiers representing Js constants to the PyJs constants
     PyJsNumberConst_1_ which has the true value of 5 will be converted to PyJsNumber(5)'''
     for identifier, value in replacements.iteritems():
         if 'String' in identifier:
             py_source = py_source.replace(identifier, value)
-        elif 'RefExp' in identifier:
+        elif 'RegExp' in identifier:
             py_source = py_source.replace(identifier, value)
     return py_source
     
-    
-    
-#def remove_constants(source):
-#    
-#    #Remove comments from the source
-#    source = remove_comments(source)
-#    
-#    #Prepare global variables
-#    global StringNr, NumberNr, replacements
-#    StringNr = 0
-#    NumberNr = 0
-#    replacements = {}
-#
-#    #STRING
-#    def string_replace(string): #Replacing function
-#        global StringNr, replacements
-#        StringNr+=1
-#        identifier = 'PyJsStringConst_%d_'%(StringNr)
-#        replacements[identifier] = string[0]
-#        return identifier
-#    
-#    str_rep = StringLiteral.copy().setParseAction(string_replace) 
-#    source = str_rep.transformString(source) #Done
-#
-#    #NUMBER
-#    def number_replace(number):  #Replacing function
-#        global NumberNr, replacements
-#        NumberNr+=1
-#        identifier = 'PyJsNumberConst_%d_'%(NumberNr)
-#        replacements[identifier] = number[0][0]
-#        return identifier
-#    num_rep = NumericLiteral.copy().setParseAction(number_replace) 
-#    source = num_rep.transformString(source) #Done
-#    
-#    return source, replacements
 
 
+
+
+#####TEST######
 
 if __name__=='__main__':
     with open('jq.js') as f:
@@ -203,7 +160,7 @@ if __name__=='__main__':
             'another_pseudo_regex = 49/4443/323/t[3/5/22+53/23]+f(5/3+r[4/3])+f(/fdd[/]fdf\[/)'
             )
             
-    t, d = remove_comments(test)
+    t, d = remove_constants(test)
 
     print t
     print
@@ -213,14 +170,18 @@ if __name__=='__main__':
         print v
         print 30*'-'
 
-    t, d = remove_comments(jq)
+    t, d = remove_constants(jq)
 
     print t
     print
+    import time
+ 
+    time.sleep(10)
     for i, v in d.iteritems():
         print i
         print
         print v
         print 30*'-'
+    
 
 
