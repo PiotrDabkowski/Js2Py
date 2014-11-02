@@ -109,8 +109,7 @@ def remove_constants(source):
                     if not _ensure_regexp(source, n): #<- improve this one
                         continue #Probably just a division 
                     quiting_regexp = False
-                    inside_regexp = [n, None, 2]
-                    
+                    inside_regexp = [n, None, 2]       
     res = ''
     start = 0
     count = 0

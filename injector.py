@@ -1,3 +1,4 @@
+__all__ = ['fix_js_args']
 
 import types
 import opcode
@@ -7,15 +8,19 @@ LOAD_FAST = opcode.opmap['LOAD_FAST']
 LOAD_GLOBAL = opcode.opmap['LOAD_GLOBAL']
 STORE_FAST = opcode.opmap['STORE_FAST']
 
+def fix_js_args(func):
+    '''Use this function when unsure whether func takes this and arguments as its last 2 args.
+       It will append 2 args if it does not.'''
+    if func.func_code.co_varnames[-2:]==('this', 'arguments'):
+        return func
+    code = append_arguments(func.func_code, ('this','arguments'))
+    return types.FunctionType(code, func.func_globals, func.func_name, closure=func.func_closure)
 
-def add_locals(func, locals_):
-    keys = tuple(locals_.keys())
-    vals = tuple(locals_[k] for k in keys)
-    return types.FunctionType(append_arguments(func.func_code, keys), func.func_globals, argdefs=vals)
-
+    
 def append_arguments(code_obj, new_locals):
     co_varnames = code_obj.co_varnames   # Old locals
-    co_names = code_obj.co_names      # Old globals
+    co_names = code_obj.co_names   # Old globals
+    co_names+=tuple(e for e in new_locals if e not in co_names)
     co_argcount = code_obj.co_argcount     # Argument count
     co_code = code_obj.co_code         # The actual bytecode as a string
 
@@ -90,7 +95,9 @@ def append_arguments(code_obj, new_locals):
                           code_obj.co_filename,
                           code_obj.co_name,
                           code_obj.co_firstlineno,
-                          code_obj.co_lnotab)
+                          code_obj.co_lnotab,
+                          code_obj.co_freevars,
+                          code_obj.co_cellvars)
 
 
 def instructions(code):
