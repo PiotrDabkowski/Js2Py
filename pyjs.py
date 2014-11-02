@@ -1,24 +1,26 @@
 '''Most important file in Js2Py implementation: PyJs class - father of all PyJs objects'''
+from math import sign
 
 def Js(val):
     '''Converts Py type to PyJs type'''
     return val
 
-def is_data_decriptor(desc):
+def is_data_descriptor(desc):
     return desc and ('value' in desc or 'writable' in desc)
     
 def is_accessor_descriptor(desc):
     return desc and ('get' in desc or 'set' in desc)
     
 def is_generic_descriptor(desc):
-    return desc and (is_data_decriptor(desc) or is_accessor_descriptor(desc))
+    return desc and (is_data_descriptor(desc) or is_accessor_descriptor(desc))
     
-NaN = 0
+NaN = float('nan')
 Undefined = 0
 Infinity = float('inf')
 true = 1
 false = 0
-    
+this = globals()
+
 class PyJs:
     PRIMITIVES =  set(('String', 'Number', 'Boolean', 'Undefined', 'Null'))
     Class = 'Base'
@@ -48,10 +50,10 @@ class PyJs:
             return typ
         return 'Object'
             
-    def typeof(self):
-        if self.Class=='Function':
-            return 'function'
-        return self.typ().lower()
+    def typeof(self): 
+        if self.is_callable():
+            return Js('function')
+        return Js(self.typ().lower())
     
     def get_own_property(self, prop):
         return self.own.get(prop)
@@ -69,7 +71,7 @@ class PyJs:
          cand = self.get_property(prop)
          if cand is None:
              return Js(None)
-         if is_data_decriptor(cand): 
+         if is_data_descriptor(cand): 
              return cand['value']
          if cand['get'].is_undefined():
              return cand['get']
@@ -78,22 +80,21 @@ class PyJs:
     def can_put(self, prop):  #to check
         desc = self.get_own_property(prop)
         if desc: #if we have this property
-            if is_data_decriptor(desc):  #data desc
+            if is_accessor_descriptor(desc):
+                return desc['set'].is_callable() # Check if setter method is defined           
+            else:  #data desc 
                 return desc['writable']
-            else:  #accessor desc 
-                return not desc['set'].is_undefined()
-        proto = self.prototype
-        if proto is None and self.extensible:
-            return True
+        if self.prototype is None:
+            return self.extensible
         inherited = self.get_property(prop)
         if inherited is None:
             return self.extensible
-        if is_data_decriptor(inherited):
-            if not self.extensible:
-                return False
-            return inherited['writable']
-        else:
+        if is_accessor_descriptor(inherited):
             return not inherited['set'].is_undefined()
+        elif self.extensible:
+            return inherited['writable']
+        return False
+            
     
     def put(self, prop, val):  #external use!
         #prop = prop.value
@@ -101,7 +102,7 @@ class PyJs:
         if not self.can_put(prop):
             return val
         own_desc = self.get_own_property(prop)
-        if is_data_decriptor(own_desc):
+        if is_data_descriptor(own_desc):
             own_desc['value'] = val
             return val
         desc = self.get_property(prop)
@@ -156,7 +157,7 @@ class PyJs:
         if not current: #We are creating a new property
             if not extensible:
                 return False
-            if is_data_decriptor(desc) or is_generic_descriptor(desc):
+            if is_data_descriptor(desc) or is_generic_descriptor(desc):
                 default_data_desc.update(desc)
                 self.own[prop] = default_data_desc
             else:
@@ -174,10 +175,10 @@ class PyJs:
                 return False
         if is_generic_descriptor(desc):
             pass
-        elif is_data_decriptor(current)!=is_data_decriptor(desc):
+        elif is_data_descriptor(current)!=is_data_descriptor(desc):
             if not configurable:
                 return False
-            if is_data_decriptor(current):
+            if is_data_descriptor(current):
                 del current['value']
                 del current['writable']
                 current['set'] = None #undefined
@@ -187,7 +188,7 @@ class PyJs:
                 del current['get']
                 current['value'] = None #undefined
                 current['writable'] = False 
-        elif is_data_decriptor(current) and is_data_decriptor(desc):
+        elif is_data_descriptor(current) and is_data_descriptor(desc):
             if not configurable:
                 if not current['writable'] and desc['writable']:
                     return False
@@ -216,7 +217,7 @@ class PyJs:
         elif typ=='Null' or typ=='Undefined':
             return false
         elif typ=='Number' or typ=='String':
-            return Js(bool(self.value))
+            return Js(self.value and self.value!=float('nan'))
         else: #object
             return true
             
@@ -279,21 +280,89 @@ class PyJs:
         typ = self.Class
         if typ=='Null' or typ=='Undefined':
             raise TypeError('')
+        elif typ=='Boolean': # Unsure here...
+            return self
         elif typ=='Number':
-            pass
+            return self
         elif typ=='String':
-            pass
+            return self
         else: #object
             return self
-        
     
+    def same_as(self, other):
+        typ = self.Class
+        if typ!=other.Class:
+            return False
+        if typ=='Undefined' or typ=='Null':
+            return True
+        if typ=='Boolean' or typ=='Number' or typ=='String':
+            return self.value==other.value
+        else: #object
+            return self is other #Id compare.
                 
-    #Oprators
+    #Oprators-------------
+    #Unary, other will be implemented as functions. Increments and decrements 
+    # will be methods of Number class
+    def __neg__(self): #-u
+        return Js(-self.to_number().value)
     
+    def __pos__(self): #+u
+        return self.to_number()
+    
+    def __inv__(self): #~u
+        return Js(~self.to_number().value)
+    
+    def neg(self): # !u  cant do not u :(
+        return Js(not self.to_boolean().value)
+        
+    # Additive operators
+    def __add__(self, other):
+        a = self.to_primitive()
+        b = other.to_primitive()
+        if a.Class=='String' or b.Class=='String':
+            return Js(a.to_string().value+b.to_string().value)
+        a = a.to_number()
+        b = b.to_number()
+        return Js(a.value+b.value)
+    
+    def __sub__(self, other):
+        return Js(self.to_number().value-other.to_number().value)
+    
+    #Multiplicative operators
+    def __mul__(self, other):
+        return Js(self.to_number().value*other.to_number().value)
+        
+    def __div__(self, other):
+        a = self.to_number().value
+        b = other.to_number().value
+        if b:
+            return Js(a/b)
+        if not a or a==float('nan'):
+            return NaN
+        return Infinity if a>0 else -Infinity
+    
+    def __mod__(self, other):
+        a = self.to_number().value
+        b = other.to_number().value
+        if abs(a)==float('inf') or not b:
+            return NaN
+        if abs(b)==float('inf'):
+            return Js(a)
+        pyres = Js(a%b) #different signs in python and javascript
+                        #python has the same sign as b and js has the same 
+                        #sign as a.
+        if a<0 and pyres>0:
+            pyres -= b
+        elif a>0 and pyres<0:
+            pyres += b
+        return Js(pyres)
+        
         
     #Other Special methods
     def __call__(self, *args):
-        raise TypeError('%s is not a function'%self.typeof())
+        if not self.is_callable():
+            raise TypeError('%s is not a function'%self.typeof())
+        return self.call(this, args) # global value of this 
     
 
   
@@ -306,3 +375,4 @@ x = a.put('Slon', 594)
 b = a.put('Slon', 594903032230)
 print a.delete('Slond')
 print a.get('Slon'), x, b
+a()
