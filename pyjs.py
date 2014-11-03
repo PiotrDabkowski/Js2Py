@@ -12,7 +12,7 @@ def Js(val):
     elif isinstance(val, bool):
         return true if val else false
     elif isinstance(val, float) or isinstance(val, int) or isinstance(val, long):
-        return PyJsNumber(val, NumberPrototype)
+        return PyJsNumber(float(val), NumberPrototype)
     elif isinstance(val, tuple): # convert to arguments
         return val # todo later
     else:
@@ -25,7 +25,7 @@ def is_accessor_descriptor(desc):
     return desc and ('get' in desc or 'set' in desc)
     
 def is_generic_descriptor(desc):
-    return desc and (is_data_descriptor(desc) or is_accessor_descriptor(desc))
+    return desc and not (is_data_descriptor(desc) or is_accessor_descriptor(desc))
     
 this = globals()  # this should be a global object...
 
@@ -172,14 +172,14 @@ class PyJs:
     def define_own_property(self, prop, desc): #Internal use only. External through Object
         #Messy method -  raw translation from Ecma spec to prevent any bugs.
         current = self.get_own_property(prop)
-        extensible = self.extensible
         
-        default_data_desc = {'value': None, #undefined
+        extensible = self.extensible
+        default_data_desc = {'value': undefined, #undefined
                              'writable': False, 
                              'enumerable': False,
                              'configurable': False}
-        default_accessor_desc = {'get': None, #undefined
-                                 'set': None, #undefined
+        default_accessor_desc = {'get': undefined, #undefined
+                                 'set': undefined, #undefined
                                  'enumerable': False,
                                  'configurable': False}
         if not current: #We are creating a new property
@@ -190,7 +190,7 @@ class PyJs:
                 self.own[prop] = default_data_desc
             else:
                 default_accessor_desc.update(desc)
-                self.own[prop] = default_data_desc
+                self.own[prop] = default_accessor_desc
             return True
         
         if not desc or desc==current: #We dont need to change anything.
@@ -209,12 +209,12 @@ class PyJs:
             if is_data_descriptor(current):
                 del current['value']
                 del current['writable']
-                current['set'] = None #undefined
-                current['get'] = None #undefined
+                current['set'] = undefined #undefined
+                current['get'] = undefined #undefined
             else:
                 del current['set']
                 del current['get']
-                current['value'] = None #undefined
+                current['value'] = undefined #undefined
                 current['writable'] = False 
         elif is_data_descriptor(current) and is_data_descriptor(desc):
             if not configurable:
@@ -245,7 +245,7 @@ class PyJs:
         elif typ=='Null' or typ=='Undefined':
             return false
         elif typ=='Number' or typ=='String':
-            return Js(self.value and self.value==self.value) # test for nan (nan -> flase)
+            return Js(bool(self.value and self.value==self.value)) # test for nan (nan -> flase)
         else: #object
             return true
             
@@ -426,6 +426,14 @@ class PyJs:
     def __gt__(self, other): 
         pass
     
+    #iteration
+    def __iter__(self):
+        #Returns a generator of all own enumerable properties
+        return (Js(name) for name in self.own if self.own[name]['enumerable'])
+    
+    def contains(self, other):
+        return Js(self.has_property(other.to_string().value))
+        
     #Other Special methods
     def __call__(self, *args):
         if not self.is_callable():
@@ -436,6 +444,7 @@ class PyJs:
         return self.to_string().value
     
     def callprop(self, prop, *args):
+        #print 'Called callprop on prop %s with %d arguments'%(prop, len(args))
         cand = self.get(prop)
         if not cand.is_callable():
             raise TypeError('%s is not a function'%cand.typeof())
@@ -464,19 +473,23 @@ ObjectPrototype = PyJsObject()
 #Function
 class PyJsFunction(PyJs):
     Class = 'Function'
-    def __init__(self, func, prototype=None, extensible=True):
+    def __init__(self, func, prototype=None, extensible=True, source=None):
         func = fix_js_args(func)
         self.code = func
+        self.source = source if source else '{ [python code] }'
         self.func_name = func.func_name if func.func_name!='PyJsInlineTemp' else ''
-        self.extensible = True
+        self.extensible = extensible
         self.prototype = prototype
         self.own = {}
     
     def call(self, this, args=()):
         if not hasattr(args, '__iter__'):  #get rid of it later
             args = (args,)
+        args = tuple(Js(e) for e in args)
+        #print 'Calling function', self.func_name
+        #print ('We have %d args'%len(args)), args
         #func has these arguments (some args, this, arguments)
-        arguments = Js(tuple(args)) # tuple will be converted to arguments object.
+        arguments = Js(args) # tuple will be converted to arguments object.
         arglen = self.code.func_code.co_argcount - 2 #function expects this number of args.
         if len(args)>arglen:
             args = args[0:arglen]
@@ -553,7 +566,18 @@ def fill_prototype(prototype, Class, attrs={'writable':True, 'enumerable':False,
             
 from prototypes import jsfunction, jsobject, jsnumber, jsstring, jsboolean
 #Object proto
-fill_prototype(ObjectPrototype, jsobject.ObjectPrototype)    
+fill_prototype(ObjectPrototype, jsobject.ObjectPrototype)
+#Define __proto__
+def __proto__(): 
+    return this.prototype if this.prototype is not None else null
+getter = PyJsFunction(__proto__, FunctionPrototype)
+def __proto__(): pass
+setter =  PyJsFunction(__proto__, FunctionPrototype)     
+ObjectPrototype.define_own_property('__proto__', {'set': setter,
+                                                  'get': getter,
+                                                  'enumerable': False,
+                                                  'configurable':True})
+print ObjectPrototype.own['__proto__']
 #Function proto
 fill_prototype(FunctionPrototype, jsfunction.FunctionPrototype)  
 #Number proto
@@ -564,12 +588,15 @@ fill_prototype(StringPrototype, jsstring.StringPrototype)
 fill_prototype(BooleanPrototype, jsboolean.BooleanPrototype)
  
  
- 
+print 'Started test'
  #test
 if __name__=='__main__':
-    print ObjectPrototype.get('toString').callprop('apply', PyJs(), 1,2,3)
+    print ObjectPrototype.get('toString').callprop('call')
     print FunctionPrototype.own
     a=  null-Js(49404)
     x = a.put('ser', Js('der'))
-    print Js(0) or Js('p')
+    print Js(0) or Js('p') and Js(4.0000000000050000001)
+    FunctionPrototype.put('Chuj', Js(409))
+    for e in FunctionPrototype:
+        print 'Obk', e.get('__proto__').get('__proto__').get('__proto__'), e
         
