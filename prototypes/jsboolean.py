@@ -1,0 +1,5 @@
+
+
+class BooleanPrototype:
+    pass
+
