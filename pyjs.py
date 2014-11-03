@@ -1,5 +1,5 @@
 '''Most important file in Js2Py implementation: PyJs class - father of all PyJs objects'''
-from math import sign
+from injector import fix_js_args
 
 def Js(val):
     '''Converts Py type to PyJs type'''
@@ -23,7 +23,7 @@ this = globals()
 
 class PyJs:
     PRIMITIVES =  set(('String', 'Number', 'Boolean', 'Undefined', 'Null'))
-    Class = 'Base'
+    Class = 'String'
     extensible = True
     prototype = None
     own = {}
@@ -62,7 +62,7 @@ class PyJs:
         cand = self.get_own_property(prop)
         if cand:
             return cand
-        if self.prototype:
+        if self.prototype is not None:
             return self.prototype.get_property(prop)
     
     def get(self, prop): #external use!
@@ -84,7 +84,7 @@ class PyJs:
                 return desc['set'].is_callable() # Check if setter method is defined           
             else:  #data desc 
                 return desc['writable']
-        if self.prototype is None:
+        if self.prototype is not None:
             return self.extensible
         inherited = self.get_property(prop)
         if inherited is None:
@@ -113,7 +113,6 @@ class PyJs:
                               'writable' : True,
                               'configurable' : True,
                               'enumerable' : True}
-
         return val
                 
     def has_property(self, prop):
@@ -125,8 +124,8 @@ class PyJs:
             return Js(True)
         if desc['configurable']:
             del self.own[prop]
-            return True
-        return False
+            return Js(True)
+        return Js(False)
     
     def default_value(self, hint=None):
         order = ['toString', 'valueOf']
@@ -138,11 +137,10 @@ class PyJs:
                 cand = method.call(self)
                 if cand.is_primitive():
                     return cand
-        raise TypeError('Could not compute default value!')
+        raise TypeError('Cannot convert object to primitive value')
         
     def define_own_property(self, prop, desc): #Internal use only. External through Object
         #Messy method -  raw translation from Ecma spec to prevent any bugs.
-        print desc
         current = self.get_own_property(prop)
         extensible = self.extensible
         
@@ -312,8 +310,11 @@ class PyJs:
     def __inv__(self): #~u
         return Js(~self.to_number().value)
     
-    def neg(self): # !u  cant do not u :(
+    def neg(self): # !u  cant do 'not u' :(
         return Js(not self.to_boolean().value)
+    
+    def __nonzero__(self): #For python only
+        return self.to_boolean().value
         
     # Additive operators
     def __add__(self, other):
@@ -364,15 +365,66 @@ class PyJs:
             raise TypeError('%s is not a function'%self.typeof())
         return self.call(this, args) # global value of this 
     
+    def callprop(self, prop, *args):
+        cand = self.get(prop)
+        if not cand.is_callable():
+            raise TypeError('%s is not a function'%cand.typeof())
+        return cand.call(self, args)
 
   
     
-print 'No syntax errors'
+class PyJsObject(PyJs):
+    def __init__(self, prop_descs={}, prototype=None):
+        self.prototype = prototype
+        self.extensible = True
+        self.Class = 'Object'
+        self.own = {}
+        for prop, desc in prop_descs.iteritems():
+            self.define_own_property(prop, desc)
+    
 
-a = PyJs()
+ObjectPrototype = PyJsObject()
 
-x = a.put('Slon', 594)
-b = a.put('Slon', 594903032230)
-print a.delete('Slond')
-print a.get('Slon'), x, b
-a()
+class PyJsFunction(PyJs):
+    def __init__(self, func, prototype=ObjectPrototype):
+        func = fix_js_args(func)
+        self.code = func
+        self.extensible = True
+        self.prototype = prototype
+        self.own = {}
+        self.Class = 'Function'
+    
+    def call(self, this, args):
+        if not hasattr(args, '__iter__'):  #get rid of it later
+            args = (args,)
+        #func has these arguments (some args, this, arguments)
+        arguments = Js(tuple(args)) # tuple will be converted to arguments object.
+        arglen = len(self.code.func_code.co_varnames) - 2 #function expects this number of args.
+        if len(args)>arglen:
+            args = args[0:arglen]
+        elif len(args)<arglen:
+            args += (Js(None),)*(arglen-len(args))
+        args += this, arguments  #append extra params to the arg list
+        return self.code(*args)
+
+def Empty():
+    return Js(None)
+    
+FunctionPrototype = PyJsFunction(Empty, ObjectPrototype)
+
+def fill_prototype(prototype, Class, attrs={'writable':True, 'enumerable':False, 'configurable':True}):
+    for i in dir(Class):
+        e = getattr(Class, i)
+        if hasattr(e, '__func__'):
+            temp = PyJsFunction(e.__func__, FunctionPrototype)
+            attrs = {k:v for k,v in attrs.iteritems()}
+            attrs['value'] = temp
+            prototype.define_own_property(i, attrs)
+            
+class FuncProt:            
+    def toString():
+        return ('function '+this.code.func_name+'('+', '.join(this.code.func_code.co_varnames[0:-2])+') { [native code]}')
+
+fill_prototype(FunctionPrototype, FuncProt)       
+print FunctionPrototype.get('toString').get('toString').callprop('toString')
+        
