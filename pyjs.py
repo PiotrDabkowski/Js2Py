@@ -3,8 +3,21 @@ from injector import fix_js_args
 
 def Js(val):
     '''Converts Py type to PyJs type'''
-    return val
-
+    if isinstance(val, PyJs):
+        return val
+    elif val is None:
+        return undefined
+    elif isinstance(val, basestring):
+        return PyJsString(val, StringPrototype)
+    elif isinstance(val, bool):
+        return true if val else false
+    elif isinstance(val, float) or isinstance(val, int) or isinstance(val, long):
+        return PyJsNumber(val, NumberPrototype)
+    elif isinstance(val, tuple): # convert to arguments
+        return val # todo later
+    else:
+        raise RuntimeError('Cant convert python type to js')
+        
 def is_data_descriptor(desc):
     return desc and ('value' in desc or 'writable' in desc)
     
@@ -14,21 +27,34 @@ def is_accessor_descriptor(desc):
 def is_generic_descriptor(desc):
     return desc and (is_data_descriptor(desc) or is_accessor_descriptor(desc))
     
-NaN = float('nan')
-Undefined = 0
-Infinity = float('inf')
-true = 1
-false = 0
-this = globals()
+this = globals()  # this should be a global object...
+
+##############################################################################
 
 class PyJs:
     PRIMITIVES =  set(('String', 'Number', 'Boolean', 'Undefined', 'Null'))
-    Class = 'String'
+    Class = None
     extensible = True
     prototype = None
     own = {}
     value = None
     
+    def __init__(self, value=None, prototype=None, extensible=False):
+        '''Constructor for Number String and Boolean'''
+        if self.Class=='String' and not isinstance(value, basestring):
+            raise TypeError
+        if self.Class=='Number':
+            if not isinstance(value, float):
+                if not (isinstance(value, int) or isinstance(value, long)):
+                    raise TypeError
+                value = float(value)
+        if self.Class=='Boolean' and not isinstance(value, bool):
+            raise TypeError
+        self.value = value
+        self.extensible = extensible
+        self.prototype = prototype
+        self.own = {}
+        
     def is_undefined(self):
         return self.Class=='Undefined'
     
@@ -67,6 +93,8 @@ class PyJs:
     
     def get(self, prop): #external use!
          #prop = prop.value
+         if self.Class=='Undefined' or self.Class=='Null':
+             raise TypeError('Undefiend and null dont have properties!')
          if not isinstance(prop, basestring): raise RuntimeError('Bug')
          cand = self.get_property(prop)
          if cand is None:
@@ -97,6 +125,8 @@ class PyJs:
             
     
     def put(self, prop, val):  #external use!
+        if self.Class=='Undefined' or self.Class=='Null':
+             raise TypeError('Undefiend and null dont have properties!')
         #prop = prop.value
         if not isinstance(prop, basestring): raise RuntimeError('Bug')
         if not self.can_put(prop):
@@ -133,7 +163,7 @@ class PyJs:
             order.reverse()
         for meth_name in order:
             method = self.get(meth_name)
-            if method.is_callable():
+            if method is not None and method.is_callable():
                 cand = method.call(self)
                 if cand.is_primitive():
                     return cand
@@ -215,7 +245,7 @@ class PyJs:
         elif typ=='Null' or typ=='Undefined':
             return false
         elif typ=='Number' or typ=='String':
-            return Js(self.value and self.value!=float('nan'))
+            return Js(self.value and self.value==self.value) # test for nan (nan -> flase)
         else: #object
             return true
             
@@ -257,21 +287,23 @@ class PyJs:
     def to_string(self):
         typ = self.Class
         if typ=='Null':
-            return Js('Null')
+            return Js('null')
         elif typ=='Undefined':
-            return Js('Undefined')
+            return Js('undefined')
         elif typ=='Boolean':
             return Js('true') if self.value else Js('false')
         elif typ=='Number':
-            if self.is_NaN():
+            if self.is_nan():
                 return Js('NaN')
             elif self.is_infinity():
                 return Js('Infinity')
+            elif self.value.is_integer():  # dont print .0 
+                return Js(str(int(self.value)))
             return Js(str(self.value)) # accurate enough
         elif typ=='String':
             return self
         else: #object
-            self.to_primitive('String').to_string() 
+            return self.to_primitive('String').to_string() 
             
             
     def to_object(self):
@@ -313,10 +345,13 @@ class PyJs:
     def neg(self): # !u  cant do 'not u' :(
         return Js(not self.to_boolean().value)
     
-    def __nonzero__(self): #For python only
+    def __nonzero__(self): 
         return self.to_boolean().value
         
     # Additive operators
+    # + and - are implemented here
+        
+    #+
     def __add__(self, other):
         a = self.to_primitive()
         b = other.to_primitive()
@@ -326,22 +361,28 @@ class PyJs:
         b = b.to_number()
         return Js(a.value+b.value)
     
+    #-
     def __sub__(self, other):
         return Js(self.to_number().value-other.to_number().value)
     
     #Multiplicative operators
+    # *, / and % are implemented here
+    
+    #*
     def __mul__(self, other):
         return Js(self.to_number().value*other.to_number().value)
         
+    #/
     def __div__(self, other):
         a = self.to_number().value
         b = other.to_number().value
         if b:
             return Js(a/b)
-        if not a or a==float('nan'):
+        if not a or a!=a:
             return NaN
         return Infinity if a>0 else -Infinity
     
+    #%
     def __mod__(self, other):
         a = self.to_number().value
         b = other.to_number().value
@@ -358,12 +399,41 @@ class PyJs:
             pyres += b
         return Js(pyres)
         
-        
+    #Comparisons (I dont implement === and !== here, these
+    # will be implemented by external functions)
+    # <, <=, !=, ==, >=, > are implemented here.
+    #<
+    def __lt__(self, other): 
+        pass
+    
+    #<=
+    def __le__(self, other): 
+        pass
+    
+    #!=
+    def __ne__(self, other): 
+        pass
+    
+    #==
+    def __eg__(self, other): 
+        pass
+    
+    #>=
+    def __ge__(self, other): 
+        pass
+    
+    #>
+    def __gt__(self, other): 
+        pass
+    
     #Other Special methods
     def __call__(self, *args):
         if not self.is_callable():
             raise TypeError('%s is not a function'%self.typeof())
         return self.call(this, args) # global value of this 
+    
+    def __repr__(self):
+        return self.to_string().value
     
     def callprop(self, prop, *args):
         cand = self.get(prop)
@@ -372,12 +442,17 @@ class PyJs:
         return cand.call(self, args)
 
   
+  
+  
+##############################################################################
+#Define types
     
+#Object
 class PyJsObject(PyJs):
-    def __init__(self, prop_descs={}, prototype=None):
+    Class = 'Object'
+    def __init__(self, prop_descs={}, prototype=None, extensible=True):
         self.prototype = prototype
-        self.extensible = True
-        self.Class = 'Object'
+        self.extensible = extensible
         self.own = {}
         for prop, desc in prop_descs.iteritems():
             self.define_own_property(prop, desc)
@@ -385,32 +460,87 @@ class PyJsObject(PyJs):
 
 ObjectPrototype = PyJsObject()
 
+
+#Function
 class PyJsFunction(PyJs):
-    def __init__(self, func, prototype=ObjectPrototype):
+    Class = 'Function'
+    def __init__(self, func, prototype=None, extensible=True):
         func = fix_js_args(func)
         self.code = func
+        self.func_name = func.func_name if func.func_name!='PyJsInlineTemp' else ''
         self.extensible = True
         self.prototype = prototype
         self.own = {}
-        self.Class = 'Function'
     
-    def call(self, this, args):
+    def call(self, this, args=()):
         if not hasattr(args, '__iter__'):  #get rid of it later
             args = (args,)
         #func has these arguments (some args, this, arguments)
         arguments = Js(tuple(args)) # tuple will be converted to arguments object.
-        arglen = len(self.code.func_code.co_varnames) - 2 #function expects this number of args.
+        arglen = self.code.func_code.co_argcount - 2 #function expects this number of args.
         if len(args)>arglen:
             args = args[0:arglen]
         elif len(args)<arglen:
             args += (Js(None),)*(arglen-len(args))
         args += this, arguments  #append extra params to the arg list
-        return self.code(*args)
+        return Js(self.code(*args))
 
 def Empty():
     return Js(None)
     
 FunctionPrototype = PyJsFunction(Empty, ObjectPrototype)
+
+
+#Number
+class PyJsNumber(PyJs):  #Note i dont implement +0 and -0. Just 0.
+    Class = 'Number'
+    INF = float('inf')
+    NAN = float('nan')
+    def is_infinity(self):
+        return abs(self.value)==self.INF
+        
+    def is_nan(self):
+        return self.value!=self.value
+
+NumberPrototype = PyJsObject({}, ObjectPrototype)
+Infinity = PyJsNumber(float('inf'), NumberPrototype)
+NaN = PyJsNumber(float('nan'), NumberPrototype)
+
+
+#String
+class PyJsString(PyJs):
+    Class = 'String'
+
+StringPrototype = PyJsObject({}, ObjectPrototype)
+
+
+#Boolean
+class PyJsBoolean(PyJs):
+    Class = 'Boolean'
+
+BooleanPrototype = PyJsObject({}, ObjectPrototype) 
+true = PyJsBoolean(True, BooleanPrototype)
+false = PyJsBoolean(False, BooleanPrototype)
+
+
+#Undefined
+class PyJsUndefined(PyJs):
+    Class = 'Undefined'
+    def __init__(self):
+        pass
+
+undefined = PyJsUndefined()
+
+
+#Null
+class PyJsNull(PyJs):
+    Class = 'Null'
+    def __init__(self):
+        pass
+null = PyJsNull()
+
+##############################################################################
+# Import and fill prototypes here.
 
 def fill_prototype(prototype, Class, attrs={'writable':True, 'enumerable':False, 'configurable':True}):
     for i in dir(Class):
@@ -421,10 +551,25 @@ def fill_prototype(prototype, Class, attrs={'writable':True, 'enumerable':False,
             attrs['value'] = temp
             prototype.define_own_property(i, attrs)
             
-class FuncProt:            
-    def toString():
-        return ('function '+this.code.func_name+'('+', '.join(this.code.func_code.co_varnames[0:-2])+') { [native code]}')
-
-fill_prototype(FunctionPrototype, FuncProt)       
-print FunctionPrototype.get('toString').get('toString').callprop('toString')
+from prototypes import jsfunction, jsobject, jsnumber, jsstring, jsboolean
+#Object proto
+fill_prototype(ObjectPrototype, jsobject.ObjectPrototype)    
+#Function proto
+fill_prototype(FunctionPrototype, jsfunction.FunctionPrototype)  
+#Number proto
+fill_prototype(NumberPrototype, jsnumber.NumberPrototype)  
+#String proto
+fill_prototype(StringPrototype, jsstring.StringPrototype) 
+#Boolean proto
+fill_prototype(BooleanPrototype, jsboolean.BooleanPrototype)
+ 
+ 
+ 
+ #test
+if __name__=='__main__':
+    print ObjectPrototype.get('toString').callprop('apply', PyJs(), 1,2,3)
+    print FunctionPrototype.own
+    a=  null-Js(49404)
+    x = a.put('ser', Js('der'))
+    print Js(0) or Js('p')
         
