@@ -240,24 +240,24 @@ class PyJs:
             
     def to_boolean(self):
         typ = self.Class
-        if typ=='Boolean':
+        if typ=='Boolean': #no need to convert
             return self
-        elif typ=='Null' or typ=='Undefined':
+        elif typ=='Null' or typ=='Undefined': #they are both allways false
             return false
-        elif typ=='Number' or typ=='String':
+        elif typ=='Number' or typ=='String': #false only for 0, '' and NaN
             return Js(bool(self.value and self.value==self.value)) # test for nan (nan -> flase)
-        else: #object
+        else: #object -  allways true
             return true
             
     def to_number(self):
         typ = self.Class
-        if typ=='Null':
+        if typ=='Null':  #null is 0
             return Js(0)
-        elif typ=='Undefined':
+        elif typ=='Undefined':  # undefined is NaN
             return NaN
-        elif typ=='Boolean':
+        elif typ=='Boolean':    # 1 for true 0 for false
             return Js(int(self.value))
-        elif typ=='Number':
+        elif typ=='Number':   # no need to convert
             return self
         elif typ=='String':
             s = self.value.strip() #Strip white space
@@ -271,7 +271,7 @@ class PyJs:
                 return num
             sign = 1 #get sign
             if s[0] in '+-':
-                if s=='-': 
+                if s[0]=='-': 
                     sign = -1
                 s = s[1:]
             if s=='Infinity': #Check for infinity keyword. 'NaN' will be NaN anyway.
@@ -281,7 +281,7 @@ class PyJs:
             except ValueError:
                 return NaN # could not convert to decimal  > return NaN
             return Js(num) 
-        else: #object
+        else: #object -  most likely it will be NaN.
             return self.to_primitive('Number').to_number()
             
     def to_string(self):
@@ -296,7 +296,8 @@ class PyJs:
             if self.is_nan():
                 return Js('NaN')
             elif self.is_infinity():
-                return Js('Infinity')
+                sign = '-' if self.value<0 else ''
+                return Js(sign+'Infinity')
             elif self.value.is_integer():  # dont print .0 
                 return Js(str(int(self.value)))
             return Js(str(self.value)) # accurate enough
@@ -312,9 +313,9 @@ class PyJs:
             raise TypeError('')
         elif typ=='Boolean': # Unsure here...
             return self
-        elif typ=='Number':
+        elif typ=='Number': #?
             return self
-        elif typ=='String':
+        elif typ=='String': #? 
             return self
         else: #object
             return self
@@ -402,13 +403,54 @@ class PyJs:
     #Comparisons (I dont implement === and !== here, these
     # will be implemented by external functions)
     # <, <=, !=, ==, >=, > are implemented here.
+    
+    def abstract_relational_comparison(self, other, self_first=True):
+        ''' self<other if self_first else other<self.
+           Returns the result of the question: is self smaller than other?
+           in case self_first is false it returns the answer of:
+                                               is other smaller than self.
+           result is PyJs type: bool or undefined'''
+        px = self.to_primitive('Number')
+        py = other.to_primitive('Number')
+        if not self_first: #reverse order
+            px, py = py, px
+        if not (px.Class=='String' and py.Class=='String'):
+            px, py = px.to_number(), py.to_number()
+            if px.is_nan() or py.is_nan():
+                return undefined
+            return Js(px.value<py.value) # same cmp algorithm
+        else:
+            # I am pretty sure that python has the same
+            # string cmp algorithm but I have to confirm it
+            return Js(px.value<py.value) 
+        
     #<
     def __lt__(self, other): 
-        pass
+        res = self.abstract_relational_comparison(other, True)
+        if res.is_undefined():
+            return false
+        return res
     
     #<=
     def __le__(self, other): 
-        pass
+        res = self.abstract_relational_comparison(other, False)
+        if res.is_undefined():
+            return false
+        return res.neg() 
+    
+    #>=
+    def __ge__(self, other): 
+        res = self.abstract_relational_comparison(other, True)
+        if res.is_undefined():
+            return false
+        return res.neg() 
+    
+    #>
+    def __gt__(self, other): 
+        res = self.abstract_relational_comparison(other, False)
+        if res.is_undefined():
+            return false
+        return res
     
     #!=
     def __ne__(self, other): 
@@ -418,13 +460,7 @@ class PyJs:
     def __eg__(self, other): 
         pass
     
-    #>=
-    def __ge__(self, other): 
-        pass
     
-    #>
-    def __gt__(self, other): 
-        pass
     
     #iteration
     def __iter__(self):
@@ -436,6 +472,10 @@ class PyJs:
         
     #Other Special methods
     def __call__(self, *args):
+        '''Call a property prop as a function (this will be global object).
+        
+        NOTE: dont pass this and arguments here, these will be added
+        automatically!'''
         if not self.is_callable():
             raise TypeError('%s is not a function'%self.typeof())
         return self.call(this, args) # global value of this 
@@ -444,7 +484,10 @@ class PyJs:
         return self.to_string().value
     
     def callprop(self, prop, *args):
-        #print 'Called callprop on prop %s with %d arguments'%(prop, len(args))
+        '''Call a property prop as a method (this will be self).
+        
+        NOTE: dont pass this and arguments here, these will be added
+        automatically!'''
         cand = self.get(prop)
         if not cand.is_callable():
             raise TypeError('%s is not a function'%cand.typeof())
@@ -476,25 +519,35 @@ class PyJsFunction(PyJs):
     def __init__(self, func, prototype=None, extensible=True, source=None):
         func = fix_js_args(func)
         self.code = func
-        self.source = source if source else '{ [python code] }'
+        self.source = source if source else '{ [native code] }'
         self.func_name = func.func_name if func.func_name!='PyJsInlineTemp' else ''
         self.extensible = extensible
         self.prototype = prototype
         self.own = {}
     
     def call(self, this, args=()):
+        '''Calls this function and returns a result 
+        (converted to PyJs type so func can return python types)
+        
+        this must be a PyJs object and args must be a python tuple of PyJs objects.
+        
+        arguments object is passed automatically and will be equal to Js(args) 
+        (tuple converted to arguments object).You dont need to worry about number 
+        of arguments you provide if you supply less then missing ones will be set 
+        to undefined (but not present in arguments object).
+        And if you supply too much then excess will not be passed 
+        (but they will be present in arguments object).
+        '''
         if not hasattr(args, '__iter__'):  #get rid of it later
             args = (args,)
-        args = tuple(Js(e) for e in args)
-        #print 'Calling function', self.func_name
-        #print ('We have %d args'%len(args)), args
-        #func has these arguments (some args, this, arguments)
+        args = tuple(Js(e) for e in args) # this wont be needed later
+
         arguments = Js(args) # tuple will be converted to arguments object.
         arglen = self.code.func_code.co_argcount - 2 #function expects this number of args.
         if len(args)>arglen:
             args = args[0:arglen]
         elif len(args)<arglen:
-            args += (Js(None),)*(arglen-len(args))
+            args += (undefined,)*(arglen-len(args))
         args += this, arguments  #append extra params to the arg list
         return Js(self.code(*args))
 
@@ -544,7 +597,6 @@ class PyJsUndefined(PyJs):
 
 undefined = PyJsUndefined()
 
-
 #Null
 class PyJsNull(PyJs):
     Class = 'Null'
@@ -555,7 +607,10 @@ null = PyJsNull()
 ##############################################################################
 # Import and fill prototypes here.
 
-def fill_prototype(prototype, Class, attrs={'writable':True, 'enumerable':False, 'configurable':True}):
+#this works only for data properties
+def fill_prototype(prototype, Class, attrs={'writable':True, 
+                                            'enumerable':False,
+                                            'configurable':True}):
     for i in dir(Class):
         e = getattr(Class, i)
         if hasattr(e, '__func__'):
@@ -564,10 +619,13 @@ def fill_prototype(prototype, Class, attrs={'writable':True, 'enumerable':False,
             attrs['value'] = temp
             prototype.define_own_property(i, attrs)
             
+
+PyJs.undefined = undefined
+PyJs.Js = Js
 from prototypes import jsfunction, jsobject, jsnumber, jsstring, jsboolean
 #Object proto
 fill_prototype(ObjectPrototype, jsobject.ObjectPrototype)
-#Define __proto__
+#Define __proto__ accessor (this cant be done by fill_prototype since)
 def __proto__(): 
     return this.prototype if this.prototype is not None else null
 getter = PyJsFunction(__proto__, FunctionPrototype)
@@ -577,7 +635,7 @@ ObjectPrototype.define_own_property('__proto__', {'set': setter,
                                                   'get': getter,
                                                   'enumerable': False,
                                                   'configurable':True})
-print ObjectPrototype.own['__proto__']
+
 #Function proto
 fill_prototype(FunctionPrototype, jsfunction.FunctionPrototype)  
 #Number proto
@@ -586,8 +644,8 @@ fill_prototype(NumberPrototype, jsnumber.NumberPrototype)
 fill_prototype(StringPrototype, jsstring.StringPrototype) 
 #Boolean proto
 fill_prototype(BooleanPrototype, jsboolean.BooleanPrototype)
- 
- 
+
+
 print 'Started test'
  #test
 if __name__=='__main__':
@@ -599,4 +657,9 @@ if __name__=='__main__':
     FunctionPrototype.put('Chuj', Js(409))
     for e in FunctionPrototype:
         print 'Obk', e.get('__proto__').get('__proto__').get('__proto__'), e
-        
+    import code
+    s = Js(4)
+    b = Js(6)
+    s2 = Js(4)
+    e = code.InteractiveConsole(globals())
+    e.interact()
