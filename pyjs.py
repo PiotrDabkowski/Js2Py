@@ -75,11 +75,6 @@ class PyJs:
         if self.is_primitive():
             return typ
         return 'Object'
-            
-    def typeof(self): 
-        if self.is_callable():
-            return Js('function')
-        return Js(self.typ().lower())
     
     def get_own_property(self, prop):
         return self.own.get(prop)
@@ -95,6 +90,8 @@ class PyJs:
          #prop = prop.value
          if self.Class=='Undefined' or self.Class=='Null':
              raise TypeError('Undefiend and null dont have properties!')
+         if not isinstance(prop, basestring):
+             prop = prop.to_string().value
          if not isinstance(prop, basestring): raise RuntimeError('Bug')
          cand = self.get_property(prop)
          if cand is None:
@@ -127,7 +124,8 @@ class PyJs:
     def put(self, prop, val):  #external use!
         if self.Class=='Undefined' or self.Class=='Null':
              raise TypeError('Undefiend and null dont have properties!')
-        #prop = prop.value
+        if not isinstance(prop, basestring):
+             prop = prop.to_string().value
         if not isinstance(prop, basestring): raise RuntimeError('Bug')
         if not self.can_put(prop):
             return val
@@ -340,7 +338,7 @@ class PyJs:
     def __pos__(self): #+u
         return self.to_number()
     
-    def __inv__(self): #~u
+    def __inv__(self): #~u    this one may be wrong! check it when implementing other bitwise ops.
         return Js(~self.to_number().value)
     
     def neg(self): # !u  cant do 'not u' :(
@@ -349,10 +347,38 @@ class PyJs:
     def __nonzero__(self): 
         return self.to_boolean().value
         
+    def typeof(self): 
+        if self.is_callable():
+            return Js('function')
+        return Js(self.typ().lower())
+        
+    #Bitwise operators
+    #  <<, >>,  &, ^, | . I have NEVER used them in python so they can wait.
+    
+    # << 
+    def __lshift__(self, other):
+        raise NotImplementedError()
+    
+    # >>
+    def __rshift__(self, other):
+        raise NotImplementedError()
+     
+    # & 
+    def __and__(self, other):
+        raise NotImplementedError()
+    
+    # ^
+    def __xor__(self, other): 
+        raise NotImplementedError()
+    
+    # |
+    def __or__(self, other):
+        raise NotImplementedError()
+        
     # Additive operators
     # + and - are implemented here
         
-    #+
+    # +
     def __add__(self, other):
         a = self.to_primitive()
         b = other.to_primitive()
@@ -362,18 +388,18 @@ class PyJs:
         b = b.to_number()
         return Js(a.value+b.value)
     
-    #-
+    # -
     def __sub__(self, other):
         return Js(self.to_number().value-other.to_number().value)
     
     #Multiplicative operators
     # *, / and % are implemented here
     
-    #*
+    # *
     def __mul__(self, other):
         return Js(self.to_number().value*other.to_number().value)
         
-    #/
+    # /
     def __div__(self, other):
         a = self.to_number().value
         b = other.to_number().value
@@ -383,7 +409,7 @@ class PyJs:
             return NaN
         return Infinity if a>0 else -Infinity
     
-    #%
+    # %
     def __mod__(self, other):
         a = self.to_number().value
         b = other.to_number().value
@@ -401,7 +427,7 @@ class PyJs:
         return Js(pyres)
         
     #Comparisons (I dont implement === and !== here, these
-    # will be implemented by external functions)
+    # will be implemented as external functions later)
     # <, <=, !=, ==, >=, > are implemented here.
     
     def abstract_relational_comparison(self, other, self_first=True):
@@ -451,23 +477,58 @@ class PyJs:
         if res.is_undefined():
             return false
         return res
-    
+        
+    def abstract_equality_comparison(self, other):
+        ''' returns the result of JS == compare.
+           result is PyJs type: bool'''
+        tx, ty = self.Class, other.Class
+        if tx==ty:
+            if tx=='Undefined' or tx=='Null':
+                return true
+            if tx=='Number' or tx=='String' or tx=='Boolean':
+                return Js(self.value==other.value)
+            return Js(self is other) # Object
+        elif (tx=='Undefined' and ty=='Null') or (ty=='Undefined' and tx=='Null'):
+            return true
+        elif tx=='Number' and ty=='String':
+            return self.abstract_equality_comparison(other.to_number())
+        elif tx=='String' and ty=='Number':
+            return self.to_number().abstract_equality_comparison(other)
+        elif tx=='Boolean':
+            return self.to_number().abstract_equality_comparison(other)
+        elif ty=='Boolean':
+            return self.abstract_equality_comparison(other.to_number())
+        elif (tx=='String' or tx=='Number') and other.is_object():
+            return self.abstract_equality_comparison(other.to_primitive())
+        elif (ty=='String' or ty=='Number') and self.is_object():
+            return self.to_primitive().abstract_equality_comparison(other)
+        else:
+           return false
+                
+    #==
+    def __eq__(self, other): 
+        return self.abstract_equality_comparison(other)
+           
     #!=
     def __ne__(self, other): 
-        pass
+        return self.abstract_equality_comparison(other).neg()
     
-    #==
-    def __eg__(self, other): 
-        pass
+    #Other methods (instanceof)
     
-    
-    
+    def instanceof(self, other):
+        '''checks if self is instance of other'''
+        if not other.hasattr('has_instance'):
+            return false
+        return other.has_instance(self)
+        
     #iteration
     def __iter__(self):
         #Returns a generator of all own enumerable properties
         return (Js(name) for name in self.own if self.own[name]['enumerable'])
     
     def contains(self, other):
+        if not self.is_object():
+            raise TypeError("Cannot use 'in' operator to search in non object")
         return Js(self.has_property(other.to_string().value))
         
     #Other Special methods
@@ -493,8 +554,49 @@ class PyJs:
             raise TypeError('%s is not a function'%cand.typeof())
         return cand.call(self, args)
 
+
+#Define some more classes representing operators:
+
+def PyJsStrictEq(a, b):
+    '''a===b'''
+    tx, ty = a.Class, b.Class
+    if tx!=ty:
+        return false
+    if tx=='Undefined' or tx=='Null':
+        return true
+    if a.is_primitive(): #string bool and number case
+        return Js(a.value==b.value)
+    return Js(a is b) # object comparison
+    
   
-  
+def PyJsStrictNeq(a, b):
+    ''' a!==b'''
+    return PyJsStrictEq(a, b).neg()
+    
+def PyJsComma(a, b):
+    '''a, b'''
+    return b
+    
+def PyJsConditional(q, a, b): 
+    '''q ?a : b'''
+    #maybe it would be clearer to simply translate it to
+    # a if q else b inline 
+    return a if q else b
+
+
+def PyJsVoid(a): #stupid as fuck
+    return undefined
+    
+
+    
+    
+
+# && and || will be replaced by and and or respectively so we dont need
+# to define anything else than __nonzero__ method.
+
+
+
+
   
 ##############################################################################
 #Define types
@@ -509,7 +611,7 @@ class PyJsObject(PyJs):
         for prop, desc in prop_descs.iteritems():
             self.define_own_property(prop, desc)
     
-
+    
 ObjectPrototype = PyJsObject()
 
 
@@ -550,6 +652,23 @@ class PyJsFunction(PyJs):
             args += (undefined,)*(arglen-len(args))
         args += this, arguments  #append extra params to the arg list
         return Js(self.code(*args))
+        
+    def has_instance(self, other):
+        # I am not sure here so instanceof may not work lol.
+        if not other.is_object():
+            return false
+        proto = self.get('prototype')
+        if not proto.is_object():
+            raise TypeError('Function has non-object prototype in instanceof check')
+        while True:
+            other = other.prototype
+            if not other:
+                return false
+            if other is proto:
+                return true
+            
+        
+        
 
 def Empty():
     return Js(None)
@@ -566,7 +685,23 @@ class PyJsNumber(PyJs):  #Note i dont implement +0 and -0. Just 0.
         return abs(self.value)==self.INF
         
     def is_nan(self):
-        return self.value!=self.value
+        return self.value!=self.value #nan!=nan evaluates to true 
+        
+    def PostInc(self):
+        self.value+=1
+        return self.value-1
+    
+    def PreInc(self):
+        self.value+=1
+        return self.value
+    
+    def PostDec(self):
+        self.value-=1
+        return self.value+1
+    
+    def PreDec(self):
+        self.value-=1
+        return self.value
 
 NumberPrototype = PyJsObject({}, ObjectPrototype)
 Infinity = PyJsNumber(float('inf'), NumberPrototype)
@@ -621,7 +756,8 @@ def fill_prototype(prototype, Class, attrs={'writable':True,
             
 
 PyJs.undefined = undefined
-PyJs.Js = Js
+PyJs.Js = staticmethod(Js)
+
 from prototypes import jsfunction, jsobject, jsnumber, jsstring, jsboolean
 #Object proto
 fill_prototype(ObjectPrototype, jsobject.ObjectPrototype)
