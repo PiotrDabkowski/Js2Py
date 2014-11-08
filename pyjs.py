@@ -26,7 +26,18 @@ def is_accessor_descriptor(desc):
     
 def is_generic_descriptor(desc):
     return desc and not (is_data_descriptor(desc) or is_accessor_descriptor(desc))
-    
+
+OP_METHODS = {'*': '__mul__',
+              '/': '__div__',
+              '%': '__mod__',
+              '+': '__add__',
+              '-': '__sub__',
+              '<<': '__lshift__',
+              '>>': '__rshift__',
+              '&': '__and__',
+              '^': '__xor__',
+              '|': '__or__'}
+                      
 this = globals()  # this should be a global object...
 
 ##############################################################################
@@ -121,14 +132,21 @@ class PyJs:
         return False
             
     
-    def put(self, prop, val):  #external use!
+    def put(self, prop, val, op=None):  #external use!
+        '''Just like in js: self.prop op= val
+           for example when op is '+' it will be self.prop+=val
+           op can be either None for simple assignment or one of:
+           * / % + - << >> & ^ |'''
         if self.Class=='Undefined' or self.Class=='Null':
              raise TypeError('Undefiend and null dont have properties!')
         if not isinstance(prop, basestring):
              prop = prop.to_string().value
         if not isinstance(prop, basestring): raise RuntimeError('Bug')
+        #we need to set the value to the incremented one
+        if op is not None:
+            val = getattr(self.get(prop), OP_METHODS[op])(val)
         if not self.can_put(prop):
-            return val
+            return val 
         own_desc = self.get_own_property(prop)
         if is_data_descriptor(own_desc):
             own_desc['value'] = val
@@ -420,10 +438,10 @@ class PyJs:
         pyres = Js(a%b) #different signs in python and javascript
                         #python has the same sign as b and js has the same 
                         #sign as a.
-        if a<0 and pyres>0:
-            pyres -= b
-        elif a>0 and pyres<0:
-            pyres += b
+        if a<0 and pyres.value>0:
+            pyres.value -= abs(b)
+        elif a>0 and pyres.value<0:
+            pyres.value += abs(b)
         return Js(pyres)
         
     #Comparisons (I dont implement === and !== here, these
@@ -587,9 +605,14 @@ def PyJsConditional(q, a, b):
 def PyJsVoid(a): #stupid as fuck
     return undefined
     
+def PyJsAssign(lval, value, scope=None):
+    '''Assaigns value to lval in scope and *returns value*.'''
+    if value.Class=='Number':  # needed because of post and pre increments ++ --
+        value = PyJsNumber(value.value, NumberPrototype)
+    scope[lval] = value
+    return value
 
-    
-    
+
 
 # && and || will be replaced by and and or respectively so we dont need
 # to define anything else than __nonzero__ method.
@@ -689,19 +712,19 @@ class PyJsNumber(PyJs):  #Note i dont implement +0 and -0. Just 0.
         
     def PostInc(self):
         self.value+=1
-        return self.value-1
+        return Js(self.value-1)
     
     def PreInc(self):
         self.value+=1
-        return self.value
+        return Js(self.value) # returning new instance !
     
     def PostDec(self):
         self.value-=1
-        return self.value+1
+        return Js(self.value+1) 
     
     def PreDec(self):
         self.value-=1
-        return self.value
+        return Js(self.value)
 
 NumberPrototype = PyJsObject({}, ObjectPrototype)
 Infinity = PyJsNumber(float('inf'), NumberPrototype)
@@ -797,5 +820,7 @@ if __name__=='__main__':
     s = Js(4)
     b = Js(6)
     s2 = Js(4)
+    o =  ObjectPrototype
+    o.put('x', Js(100))
     e = code.InteractiveConsole(globals())
     e.interact()
