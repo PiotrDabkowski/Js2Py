@@ -615,6 +615,7 @@ def PyJsAssign(lval, value, scope=None):
 
 
 # && and || will be replaced by and and or respectively so we dont need
+
 # to define anything else than __nonzero__ method.
 
 
