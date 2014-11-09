@@ -1,5 +1,6 @@
-from definitions import *
-
+from string import ascii_lowercase
+alphas = ascii_lowercase+ascii_lowercase.upper()
+nums = '0123456789'
 ##################################
 StringName = 'PyJsStringCont%d_'
 RegExpName = 'PyJsRegExpConst%d_'
@@ -14,7 +15,7 @@ def _is_cancelled(source, n):
             break
         cancelled = not cancelled
     return cancelled
-    
+
 def _ensure_regexp(source, n): #<- this function has to be improved
     '''returns True if regexp starts at n else returns False
       checks whether it is not a division '''
@@ -24,23 +25,23 @@ def _ensure_regexp(source, n): #<- this function has to be improved
         k+=1
         if n-k<0:
             return True
-        char = source[n-k] 
+        char = source[n-k]
         if char in markers:
             return True
         if char!=' ' or char!='\n':
             break
     return False
-    
-    
+
+
 def remove_constants(source):
     '''Replaces Strings and Regexp literals in the source code with
        identifiers and *removes comments*. Identifier is of the format:
-       
+
        PyJsStringConst(String const number)_ - for Strings
        PyJsRegExpConst(RegExp const number)_ - for RegExps
 
        Returns dict which relates identifier and replaced constant.
-    
+
        Removes single line and multiline comments from JavaScript source code
        Pseudo comments (inside strings) will not be removed.
 
@@ -53,7 +54,7 @@ def remove_constants(source):
     inside_single, inside_double = False, False
     inside_regexp = False
     regexp_class_count = 0
-    for n in xrange(len(source)):
+    for n in range(len(source)):
         char = source[n]
         if char=='"' and not (inside_comment or inside_single or inside_regexp):
             if not _is_cancelled(source, n):
@@ -93,7 +94,7 @@ def remove_constants(source):
                     elif char==']':
                         regexp_class_count = max(regexp_class_count-1, 0)
                     elif  char=='/' and not regexp_class_count:
-                        quiting_regexp = True 
+                        quiting_regexp = True
                 else:
                     if char not in alphas+nums+'$_':
                         inside_regexp[1] = n
@@ -107,9 +108,9 @@ def remove_constants(source):
                     inside_comment = [n-1, None, 1]
                 elif char=='/' and source[n+1] not in ('/', '*'):
                     if not _ensure_regexp(source, n): #<- improve this one
-                        continue #Probably just a division 
+                        continue #Probably just a division
                     quiting_regexp = False
-                    inside_regexp = [n, None, 2]       
+                    inside_regexp = [n, None, 2]
     res = ''
     start = 0
     count = 0
@@ -129,18 +130,18 @@ def remove_constants(source):
           start = next_start
     res+=source[start:]
     return res.strip(), constants
-    
-    
+
+
 def recover_constants(py_source, replacements): #now has n^2 complexity. improve to n
     '''Converts identifiers representing Js constants to the PyJs constants
     PyJsNumberConst_1_ which has the true value of 5 will be converted to PyJsNumber(5)'''
-    for identifier, value in replacements.iteritems():
+    for identifier, value in replacements.items():
         if 'String' in identifier:
             py_source = py_source.replace(identifier, value)
         elif 'RegExp' in identifier:
             py_source = py_source.replace(identifier, value)
     return py_source
-    
+
 
 
 
@@ -158,29 +159,29 @@ if __name__=='__main__':
             '/* another comment 434 /pseudo regex/ ddf */'
             'another_pseudo_regex = 49/4443/323/t[3/5/22+53/23]+f(5/3+r[4/3])+f(/fdd[/]fdf\[/)'
             )
-            
+
     t, d = remove_constants(test)
 
-    print t
-    print
-    for i, v in d.iteritems():
-        print i
-        print
-        print v
-        print 30*'-'
+    print(t)
+    print()
+    for i, v in d.items():
+        print(i)
+        print()
+        print(v)
+        print(30*'-')
 
     t, d = remove_constants(jq)
 
-    print t
-    print
+    print(t)
+    print()
     import time
- 
+
     time.sleep(10)
-    for i, v in d.iteritems():
-        print i
-        print
-        print v
-        print 30*'-'
-    
+    for i, v in d.items():
+        print(i)
+        print()
+        print(v)
+        print(30*'-')
+
 
 

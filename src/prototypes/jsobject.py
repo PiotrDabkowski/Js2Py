@@ -1,4 +1,4 @@
 
 class ObjectPrototype:
-    def toString():
+    def toString(this, arguments):
         return '[object %s]'%this.Class

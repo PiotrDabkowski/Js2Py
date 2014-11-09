@@ -1,13 +1,13 @@
 
 class FunctionPrototype:            
-    def toString():
+    def toString(this, arguments):
         if not this.is_callable():
             raise TypeError('toString is not generic!')
-        argnum = this.code.func_code.co_argcount-2
-        args = ', '.join(this.code.func_code.co_varnames[0:argnum])
+        argnum = this.code.__code__.co_argcount-2
+        args = ', '.join(this.code.__code__.co_varnames[0:argnum])
         return 'function %s(%s) '%(this.func_name, args)+this.source
     
-    def call(): 
+    def call(this, arguments):
         #change this code to do the same but operating on real arguments instad of tuple
         # remember that you need to supply a tuple to this.call so convert to tuple
         if not len(arguments):
@@ -20,7 +20,7 @@ class FunctionPrototype:
             args = arguments[1]
         return this.call(obj, args)
     
-    def apply():
+    def apply(this, arguments):
         #change this code to do the same but operating on real arguments instad of tuple
         # remember that you need to supply a tuple to this.call so convert to tuple
         if not len(arguments):

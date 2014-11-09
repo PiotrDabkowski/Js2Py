@@ -1,3 +1,0 @@
-kupa
-dupa
-chuj
