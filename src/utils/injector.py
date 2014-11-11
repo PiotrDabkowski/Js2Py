@@ -1,3 +1,5 @@
+__all__ = ['fix_js_args']
+
 import types
 import opcode
 
@@ -9,12 +11,12 @@ STORE_FAST = opcode.opmap['STORE_FAST']
 def fix_js_args(func):
     '''Use this function when unsure whether func takes this and arguments as its last 2 args.
        It will append 2 args if it does not.'''
-    if func.__code__.co_varnames[-2:]==('this', 'arguments'):
+    if func.func_code.co_varnames[-2:]==('this', 'arguments'):
         return func
-    code = append_arguments(func.__code__, ('this','arguments'))
-    return types.FunctionType(code, func.__globals__, func.__name__, closure=func.__closure__)
+    code = append_arguments(func.func_code, ('this','arguments'))
+    return types.FunctionType(code, func.func_globals, func.func_name, closure=func.func_closure)
 
-
+    
 def append_arguments(code_obj, new_locals):
     co_varnames = code_obj.co_varnames   # Old locals
     co_names = code_obj.co_names   # Old globals
@@ -49,7 +51,7 @@ def append_arguments(code_obj, new_locals):
 
     # Build the dictionary that maps indices of entries in the old co_varnames
     # to their indices in the new co_varnames
-    range1, range2 = range(co_argcount), range(co_argcount, len(co_varnames))
+    range1, range2 = xrange(co_argcount), xrange(co_argcount, len(co_varnames))
     varname_translations = dict((i, i) for i in range1)
     varname_translations.update((i, i + new_locals_len) for i in range2)
 
@@ -68,7 +70,7 @@ def append_arguments(code_obj, new_locals):
             if inst[1] in names_to_varnames:
                 inst[0] = LOAD_FAST
                 inst[1] = names_to_varnames[inst[1]]
-            elif inst[1] in name_translations:
+            elif inst[1] in name_translations:    
                 inst[1] = name_translations[inst[1]]
             else:
                 raise ValueError("a name was lost in translation")
@@ -120,9 +122,9 @@ def write_instruction(inst):
     op, oparg = inst
     if oparg is None:
         return [chr(op)]
-    elif oparg <= 65536:
+    elif oparg <= 65536L:
         return [chr(op), chr(oparg & 255), chr((oparg >> 8) & 255)]
-    elif oparg <= 4294967296:
+    elif oparg <= 4294967296L:
         return [chr(opcode.EXTENDED_ARG),
                 chr((oparg >> 16) & 255),
                 chr((oparg >> 24) & 255),
@@ -131,5 +133,4 @@ def write_instruction(inst):
                 chr((oparg >> 8) & 255)]
     else:
         raise ValueError("Invalid oparg: {0} is too large".format(oparg))
-
 
