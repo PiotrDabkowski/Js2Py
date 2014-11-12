@@ -39,7 +39,7 @@ marker PyJs(TYPE_NAME)(NR)
 """
 
 
-def bracket_split(source, brackets=('()','{}','[]'), strip=True):
+def bracket_split(source, brackets=('()','{}','[]'), strip=False):
     starts = [e[0] for e in brackets]
     in_bracket = 0
     n = 0
