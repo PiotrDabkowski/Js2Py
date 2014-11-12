@@ -582,21 +582,17 @@ def PyJsStrictNeq(a, b):
     ''' a!==b'''
     return PyJsStrictEq(a, b).neg()
     
-def PyJsComma(a, b):
-    '''a, b'''
-    return b
-    
-def PyJsConditional(q, a, b): 
-    '''q ?a : b'''
-    #maybe it would be clearer to simply translate it to
-    # a if q else b inline 
-    return a if q else b
+def PyJsBshift(a, b):
+    """a>>>b"""
+    return Js(0)  #NOT IMPLEMENTED YET
 
+def PyJsAdd(a, b):
+    """stupid function but simplifies parsing process A LOT"""
+    return a+b
 
-def PyJsVoid(a): #stupid as fuck
-    return undefined
+def PyJsSub(a, b):
+    return a-b
 
-class ReferenceError(Exception): pass
 
 #Scope class it will hold all the variables accessible to user
 class Scope:
@@ -656,15 +652,6 @@ def PyJsAssign(lval, value, scope=None):
     return value
 
 
-
-# && and || will be replaced by and and or respectively so we dont need
-<<<<<<< HEAD
-=======
-
-# to define anything else than __nonzero__ method.
->>>>>>> parent of bd8b5ed... Revert "c"
-
-# to define anything else than __nonzero__ method.
 
 
 
