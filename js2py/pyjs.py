@@ -840,6 +840,25 @@ fill_prototype(StringPrototype, jsstring.StringPrototype)
 #Boolean proto
 fill_prototype(BooleanPrototype, jsboolean.BooleanPrototype)
 
+from translators import constants, nodevisitor
+
+def sim_translate(code):
+    c, d = constants.remove_constants(code)
+    print c
+    return constants.recover_constants(nodevisitor.exp_translator(c), d)
+
+def interactor(x):
+    import sys, traceback
+    js_code = raw_input(x)
+    try:
+        py_code = sim_translate(js_code)
+        print py_code
+    except SyntaxError:
+        sys.stderr.write(traceback.format_exc())
+        return ''
+    return py_code
+
+var = Scope(globals())
 
 print 'Started test'
  #test
@@ -859,4 +878,5 @@ if __name__=='__main__':
     o =  ObjectPrototype
     o.put('x', Js(100))
     e = code.InteractiveConsole(globals())
+    e.raw_input = interactor
     e.interact()

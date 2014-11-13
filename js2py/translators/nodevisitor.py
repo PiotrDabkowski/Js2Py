@@ -8,77 +8,9 @@ REPL = {}
 
 
 #PROBLEMS
-# +++,  ---, <<=, >>=, >>=, >>>=
+# <<=, >>=, >>>=
 # they are unusual so I will not fix that now. a++ +b works fine and a+++++b  (a++ + ++b) does not work even in V8
-def split_add_ops(text):
-    """Specialized function splitting text at add/sub operators.
-    Operands are *not* translated. Example result ['op1', '+', 'op2', '-', 'op3']"""
-    n = 0
-    text = text.replace('++', '##').replace('--', '@@') #text does not normally contain any of these
-    spotted = False # set to true if noticed anything other than +- or white space
-    last = 0
-    while n<len(text):
-        e = text[n]
-        if e=='+' or e=='-':
-            if spotted:
-                yield text[last:n].replace('##', '++').replace('@@', '--')
-                yield e
-                last = n+1
-                spotted = False
-        elif e=='/' or e=='*' or e=='%':
-            spotted = False
-        elif e!=' ':
-            spotted = True
-        n+=1
-    yield text[last:n].replace('##', '++').replace('@@', '--')
 
-
-def split_at_any(text, lis, translate=False, not_before=[], not_after=[]):
-    """ doc """
-    lis.sort(key=lambda x: len(x), reverse=True)
-    last = 0
-    n = 0
-    text_len = len(text)
-    while n<text_len:
-        if any(text[:n].endswith(e) for e in not_before):  #Cant end with end before
-            n+=1
-            continue
-        for e in lis:
-            s = len(e)
-            if s+n>text_len:
-                continue
-            if any(text[n+s:].startswith(e) for e in not_after):  #Cant end with end before
-                n+=1
-                break
-            if e==text[n:n+s]:
-                yield text[last:n] if not translate else trans(text[last:n])
-                yield e
-                n+=s
-                last = n
-                break
-        else:
-            n+=1
-    yield text[last:n] if not translate else trans(text[last:n])
-
-def split_at_single(text, sep, not_before=[], not_after=[]):
-    """Works like text.split(sep) but separated fragments
-    cant end with not_before or start with not_after"""
-    n = 0
-    lt, s= len(text), len(sep)
-    last = 0
-    while n<lt:
-        if not s+n>lt:
-            if sep==text[n:n+s]:
-                if any(text[last:n].endswith(e) for e in not_before):
-                    pass
-                elif any(text[n+s:].startswith(e) for e in not_after):
-                    pass
-                else:
-                    yield text[last:n]
-                    last = n+s
-                    n += s-1
-        n+=1
-    yield text[last:]
 
 
 class NodeVisitor:
@@ -110,6 +42,8 @@ class NodeVisitor:
     def translate(self):
         """Translates outer operation and calls translate on inner operation.
            Returns fully translated code."""
+        if not self.code:
+            return ''
         new = ''
         for e in bracket_split(self.code, ['()','[]'], False):
             if e[0]=='[':
@@ -130,30 +64,34 @@ class NodeVisitor:
         # dont split at != or !== or == or === or <= or >=
         #note <<=, >>= or this >>> will NOT be supported
         # maybe I will change my mind later
-        cand = list(split_at_single(new, '(((&***)', ['!', '=','<','>'], ['=']))
+        cand = list(split_at_single(new, '=', ['!', '=','<','>'], ['=']))
         if len(cand)>1: # RL
             it = reversed(cand)
             res =  trans(it.next())
             for e in it:
+                e = e.strip()
+                if not e:
+                    raise SyntaxError('Missing left-hand in assignment!')
                 op = ''
-                if e[-1] in OP_METHODS:
-                    op = ','+e[-1]
-                    e = e[:-1]
-                elif e[-2:] in OP_METHODS:
-                    op =  ','+e[-2:]
+                if e[-2:] in OP_METHODS:
+                    op =  ','+e[-2:].__repr__()
                     e = e[:-2]
+                elif e[-1:] in OP_METHODS:
+                    op = ','+e[-1].__repr__()
+                    e = e[:-1]
                 e = trans(e)
                 #Now replace last get method with put and change args
                 c = list(bracket_split(e, ['()']))
                 beg, arglist = ''.join(c[:-1]).strip(), c[-1].strip()  #strips just to make sure... I will remove it later
-                if beg[-4:0]!='.get':
+                if beg[-4:]!='.get':
                     raise SyntaxError('Invalid left-hand side in assignment')
                 beg = beg[0:-3]+'put'
                 arglist = arglist[0:-1]+', '+res+op+')'
                 res = beg+arglist
+            return res
         # Find this crappy ?:
         if '?' in new:
-            res  = ''.join(split_at_any(new, [':', '?'], translate=True))
+            res  = ''.join(split_at_any(new, [':', '?'], translate=trans))
             return transform_crap(res)
         #Now check remaining 2 arg operators that are not handled by python
         #They all have Left to Right (LR) associativity
@@ -170,8 +108,6 @@ class NodeVisitor:
                 continue
             n = 1
             res = trans(cand[0])
-            if len(cand)%2==0:
-                raise RuntimeError('Probably a bug in split_at_any')
             if not res:
                 raise SyntaxError("Missing operand!")
             while n<len(cand):
@@ -204,7 +140,7 @@ class NodeVisitor:
                 else:
                     raise SyntaxError('Invalid use of ++ operator')
                 if cand[pos+2:]:
-                    raise SyntaxError('Invalid unary operation')
+                    raise SyntaxError('Too many operands')
                 operand = meth(trans(a))
                 cand = cand[:pos-1]
             # now last cand should be operand and every other odd element should be empty
@@ -214,14 +150,16 @@ class NodeVisitor:
             for i, e in enumerate(reversed(cand)):
                 if i%2:
                     if e.strip():
-                        raise SyntaxError('Invalid unary operation')
+                        raise SyntaxError('Too many operands')
                 else:
                     operand = UNARY[e](operand)
             return operand
-        #Replace () Function calls and item geters.
+        #Replace brackets
         if new[0]=='@' or new[0]=='#': # in JS [] can be used as brackets as well so 3*[1+2] is 9 :)
-            assert new in REPL
-            return '('+trans(REPL[new][1:-1])+')'
+            if len(list(bracket_split(new, ('#{','@}')))) ==1: # we have only one bracket, otherwise pseudobracket like @@....
+                assert new in REPL
+                return '('+trans(REPL[new][1:-1])+')'
+        #Replace function calls and prop getters
         # 'now' must be a reference like: a or b.c.d but it can have also calls or getters ( for example a["b"](3))
         #From here @@ means a function call and ## means get operation (note they dont have to present)
         it = bracket_split(new, ('#{','@}'))
@@ -233,14 +171,14 @@ class NodeVisitor:
                 res += [e.strip()]
         # res[0] can be inside @@ (name)...
         res = filter(lambda x: x, res)
-        while res[0][0]=='@':
-            res[0] = REPL[res[0]][1:-1].strip()
-        if not is_lval(res[0]) and not is_internal(res[0]):
-            raise SyntaxError('Invalid or missing lval')
         if is_internal(res[0]):
             out = res[0]
-        else:
+        elif res[0][0] in {'#', '@'}:
+            out = '('+trans(REPL[res[0]][1:-1])+')'
+        elif is_lval(res[0]):
             out = 'var.get('+res[0].__repr__()+')'
+        else:
+            raise SyntaxError('Invalid identifier: "%s"'%res[0])
         if len(res)==1:
             return out
         n = 1
@@ -259,7 +197,7 @@ class NodeVisitor:
                 prop = trans(REPL[e][1:-1])
             else:
                 if not is_lval(e):
-                    raise SyntaxError("Invalid or missing lval")
+                    raise SyntaxError('Invalid identifier: "%s"'%e)
                 prop = e.__repr__()
             if args: # prop call
                 n+=1
@@ -455,22 +393,21 @@ from code import InteractiveConsole
 def trans(code):
     return NodeVisitor(code.strip()).translate().strip()
 
-
 def trans_args(code):
     return code
 
-
-
-print 'Here',  trans('(eee).ii[PyJsMarker][jkj](j,j).jiji(h,ji,i)(non)()()()()')
-
-#First line translated with PyJs:  PyJsStrictEq(PyJsAdd((Js(100)*Js(50)),Js(30)), Js("5030")), yay!
 
 def exp_translator(code):
     global REPL
     REPL = {}
     assert '\n' not in code
     assert '@' not in code
+    assert ';' not in code
     assert '#' not in code
     return trans(code)
 
+#print 'Here',  trans('(eee   )  .   ii  [  PyJsMarker   ]  [   jkj  ]  (  j  ,   j  )  .   jiji   (h  ,  ji  ,  i)(non  )(  )()()()')
+for e in xrange(3):
+    print  exp_translator('jk = kk.ik++')
+#First line translated with PyJs:  PyJsStrictEq(PyJsAdd((Js(100)*Js(50)),Js(30)), Js("5030")), yay!
 

@@ -36,8 +36,28 @@ If case of parsing errors it must return a pos of error.
 lval format PyJsLvalNR
 marker PyJs(TYPE_NAME)(NR)
 
+TODO
+1. Number literal replacement
+2. Array literal replacement
+3. Object literal replacement
+5. Function replacement
+4. Literal replacement translators
+
+
 """
 
+
+
+OP_METHODS = {'*': '__mul__',
+              '/': '__div__',
+              '%': '__mod__',
+              '+': '__add__',
+              '-': '__sub__',
+              '<<': '__lshift__',
+              '>>': '__rshift__',
+              '&': '__and__',
+              '^': '__xor__',
+              '|': '__or__'}
 
 def bracket_split(source, brackets=('()','{}','[]'), strip=False):
     starts = [e[0] for e in brackets]
@@ -64,14 +84,73 @@ def bracket_split(source, brackets=('()','{}','[]'), strip=False):
     if source[last:]:
         yield source[last:]
 
-OP_METHODS = {'*': '__mul__',
-              '/': '__div__',
-              '%': '__mod__',
-              '+': '__add__',
-              '-': '__sub__',
-              '<<': '__lshift__',
-              '>>': '__rshift__',
-              '&': '__and__',
-              '^': '__xor__',
-              '|': '__or__'}
 
+def split_add_ops(text):
+    """Specialized function splitting text at add/sub operators.
+    Operands are *not* translated. Example result ['op1', '+', 'op2', '-', 'op3']"""
+    n = 0
+    text = text.replace('++', '##').replace('--', '@@') #text does not normally contain any of these
+    spotted = False # set to true if noticed anything other than +- or white space
+    last = 0
+    while n<len(text):
+        e = text[n]
+        if e=='+' or e=='-':
+            if spotted:
+                yield text[last:n].replace('##', '++').replace('@@', '--')
+                yield e
+                last = n+1
+                spotted = False
+        elif e=='/' or e=='*' or e=='%':
+            spotted = False
+        elif e!=' ':
+            spotted = True
+        n+=1
+    yield text[last:n].replace('##', '++').replace('@@', '--')
+
+
+def split_at_any(text, lis, translate=False, not_before=[], not_after=[]):
+    """ doc """
+    lis.sort(key=lambda x: len(x), reverse=True)
+    last = 0
+    n = 0
+    text_len = len(text)
+    while n<text_len:
+        if any(text[:n].endswith(e) for e in not_before):  #Cant end with end before
+            n+=1
+            continue
+        for e in lis:
+            s = len(e)
+            if s+n>text_len:
+                continue
+            if any(text[n+s:].startswith(e) for e in not_after):  #Cant end with end before
+                n+=1
+                break
+            if e==text[n:n+s]:
+                yield text[last:n] if not translate else translate(text[last:n])
+                yield e
+                n+=s
+                last = n
+                break
+        else:
+            n+=1
+    yield text[last:n] if not translate else translate(text[last:n])
+
+def split_at_single(text, sep, not_before=[], not_after=[]):
+    """Works like text.split(sep) but separated fragments
+    cant end with not_before or start with not_after"""
+    n = 0
+    lt, s= len(text), len(sep)
+    last = 0
+    while n<lt:
+        if not s+n>lt:
+            if sep==text[n:n+s]:
+                if any(text[last:n].endswith(e) for e in not_before):
+                    pass
+                elif any(text[n+s:].startswith(e) for e in not_after):
+                    pass
+                else:
+                    yield text[last:n]
+                    last = n+s
+                    n += s-1
+        n+=1
+    yield text[last:]

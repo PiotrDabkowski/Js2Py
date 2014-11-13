@@ -14,7 +14,7 @@ def is_plval(t):
     return t.startswith('PyJsLval')
 
 def is_marker(t):
-    return t.startswith('PyJsMarker')
+    return t.startswith('PyJsMarker') or t.startswith('PyJsConstant')
 
 def is_internal(t):
     return is_plval(t) or is_marker(t) or t=='var' # var is a scope var
