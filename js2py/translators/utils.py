@@ -3,6 +3,8 @@ import unicodedata
 from collections import defaultdict
 
 def is_lval(t):
+    if not t:
+        return False
     i = iter(t)
     if i.next() not in IDENTIFIER_START:
         return False
@@ -37,3 +39,5 @@ UNICODE_DIGIT = set(U_CATEGORIES['Nd'])
 UNICODE_CONNECTOR_PUNCTUATION = set(U_CATEGORIES['Pc'])
 IDENTIFIER_START = UNICODE_LETTER.union({'$','_'}) # and some fucking unicode escape sequence
 IDENTIFIER_PART = IDENTIFIER_START.union(UNICODE_COMBINING_MARK).union(UNICODE_DIGIT).union(UNICODE_CONNECTOR_PUNCTUATION)
+
+print is_lval('')

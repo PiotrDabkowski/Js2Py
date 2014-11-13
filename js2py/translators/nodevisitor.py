@@ -113,11 +113,11 @@ class NodeVisitor:
         new = ''
         for e in bracket_split(self.code, ['()','[]'], False):
             if e[0]=='[':
-                name = '#PYJSREPL'+str(len(REPL))+'#'
+                name = '#PYJSREPL'+str(len(REPL))+'{'
                 new+= name
                 REPL[name] = e
             elif e[0]=='(': # can be a function call
-                name = '@PYJSREPL'+str(len(REPL))+'@'
+                name = '@PYJSREPL'+str(len(REPL))+'}'
                 new+= name
                 REPL[name] = e
             else:
@@ -130,7 +130,7 @@ class NodeVisitor:
         # dont split at != or !== or == or === or <= or >=
         #note <<=, >>= or this >>> will NOT be supported
         # maybe I will change my mind later
-        cand = list(split_at_single(new, ['!', '=','<','>'], ['=']))
+        cand = list(split_at_single(new, '(((&***)', ['!', '=','<','>'], ['=']))
         if len(cand)>1: # RL
             it = reversed(cand)
             res =  trans(it.next())
@@ -219,7 +219,55 @@ class NodeVisitor:
                     operand = UNARY[e](operand)
             return operand
         #Replace () Function calls and item geters.
-        return new
+        if new[0]=='@' or new[0]=='#': # in JS [] can be used as brackets as well so 3*[1+2] is 9 :)
+            assert new in REPL
+            return '('+trans(REPL[new][1:-1])+')'
+        # 'now' must be a reference like: a or b.c.d but it can have also calls or getters ( for example a["b"](3))
+        #From here @@ means a function call and ## means get operation (note they dont have to present)
+        it = bracket_split(new, ('#{','@}'))
+        res = []
+        for e in it:
+            if e[0]!='#' and e[0]!='@':
+                res += [x.strip() for x in e.split('.')]
+            else:
+                res += [e.strip()]
+        # res[0] can be inside @@ (name)...
+        res = filter(lambda x: x, res)
+        while res[0][0]=='@':
+            res[0] = REPL[res[0]][1:-1].strip()
+        if not is_lval(res[0]) and not is_internal(res[0]):
+            raise SyntaxError('Invalid or missing lval')
+        if is_internal(res[0]):
+            out = res[0]
+        else:
+            out = 'var.get('+res[0].__repr__()+')'
+        if len(res)==1:
+            return out
+        n = 1
+        while n<len(res): #now every func call is a prop call
+            e = res[n]
+            if e[0]=='@': # direct call
+                out += trans_args(REPL[e])
+                n += 1
+                continue
+            args = False #assume not prop call
+            if n+1<len(res) and res[n+1][0]=='@': #prop call
+                args = trans_args(REPL[res[n+1]])[1:]
+                if args!=')':
+                    args = ','+args
+            if e[0]=='#':
+                prop = trans(REPL[e][1:-1])
+            else:
+                if not is_lval(e):
+                    raise SyntaxError("Invalid or missing lval")
+                prop = e.__repr__()
+            if args: # prop call
+                n+=1
+                out += '.callprop('+prop+args
+            else: #prop get
+                out += '.get('+prop+')'
+            n+=1
+        return out
 
 def js_comma(a, b):
     return 'PyJsComma('+a+','+b+')'
@@ -407,8 +455,22 @@ from code import InteractiveConsole
 def trans(code):
     return NodeVisitor(code.strip()).translate().strip()
 
-import time
-print time.time()
-print trans('typeof a++ = 40,++b,c--,--c')
-#print trans('   6   , a.get("her")=8   <=    10   ==    90    <=    202   ==    90    !=   9  ===   8   instanceof    number   &&    38   !==   90   >  true   ?   58:90    ')
-print time.time()
+
+def trans_args(code):
+    return code
+
+
+
+print 'Here',  trans('(eee).ii[PyJsMarker][jkj](j,j).jiji(h,ji,i)(non)()()()()')
+
+#First line translated with PyJs:  PyJsStrictEq(PyJsAdd((Js(100)*Js(50)),Js(30)), Js("5030")), yay!
+
+def exp_translator(code):
+    global REPL
+    REPL = {}
+    assert '\n' not in code
+    assert '@' not in code
+    assert '#' not in code
+    return trans(code)
+
+
