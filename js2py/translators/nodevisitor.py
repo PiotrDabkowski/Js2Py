@@ -415,8 +415,9 @@ def exp_translator(code):
     #    return 'var.get("undefined")'
     return trans(code)
 
-#print 'Here',  trans('(eee   )  .   ii  [  PyJsMarker   ]  [   jkj  ]  (  j  ,   j  )  .   jiji   (h  ,  ji  ,  i)(non  )(  )()()()')
-for e in xrange(3):
-    print  exp_translator('jk = kk.ik++')
-#First line translated with PyJs:  PyJsStrictEq(PyJsAdd((Js(100)*Js(50)),Js(30)), Js("5030")), yay!
+if __name__=='__main__':
+    #print 'Here',  trans('(eee   )  .   ii  [  PyJsMarker   ]  [   jkj  ]  (  j  ,   j  )  .   jiji   (h  ,  ji  ,  i)(non  )(  )()()()')
+    for e in xrange(3):
+        print  exp_translator('jk = kk.ik++')
+    #First line translated with PyJs:  PyJsStrictEq(PyJsAdd((Js(100)*Js(50)),Js(30)), Js("5030")), yay!
 
