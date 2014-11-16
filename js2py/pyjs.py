@@ -1,6 +1,9 @@
 '''Most important file in Js2Py implementation: PyJs class - father of all PyJs objects'''
+from copy import copy
 from utils.injector import fix_js_args
 from translators.jsparser import OP_METHODS
+from types import FunctionType
+import traceback
 
 def Js(val):
     '''Converts Py type to PyJs type'''
@@ -16,6 +19,8 @@ def Js(val):
         return PyJsNumber(float(val), NumberPrototype)
     elif isinstance(val, tuple): # convert to arguments
         return val # todo later
+    elif isinstance(val, FunctionType):
+        return PyJsFunction(val,FunctionPrototype)
     else:
         raise RuntimeError('Cant convert python type to js')
         
@@ -593,6 +598,8 @@ def PyJsAdd(a, b):
 def PyJsSub(a, b):
     return a-b
 
+def PyJsComma(a, b):
+    return b
 
 #Scope class it will hold all the variables accessible to user
 class Scope:
@@ -641,15 +648,6 @@ class Scope:
         del now.scope[lval]
         return true
 
-
-
-
-def PyJsAssign(lval, value, scope=None):
-    '''Assaigns value to lval in scope and *returns value*.'''
-    if value.Class=='Number':  # needed because of post and pre increments ++ --
-        value = PyJsNumber(value.value, NumberPrototype)
-    scope[lval] = value
-    return value
 
 
 
@@ -766,6 +764,10 @@ NumberPrototype = PyJsObject({}, ObjectPrototype)
 Infinity = PyJsNumber(float('inf'), NumberPrototype)
 NaN = PyJsNumber(float('nan'), NumberPrototype)
 
+def log(x):
+    return x
+console = PyJsObject({}, ObjectPrototype)
+console.put('log', Js(log))
 
 #String
 class PyJsString(PyJs):
@@ -843,8 +845,8 @@ fill_prototype(BooleanPrototype, jsboolean.BooleanPrototype)
 from translators import constants, nodevisitor
 
 def sim_translate(code):
+    code = code.replace('var ', '')
     c, d = constants.remove_constants(code)
-    print c
     return constants.recover_constants(nodevisitor.exp_translator(c), d)
 
 def interactor(x):
@@ -858,7 +860,57 @@ def interactor(x):
         return ''
     return py_code
 
-var = Scope(globals())
+
+def appengine_line(code, d, var):
+    try:
+        raw = nodevisitor.exp_translator(code)
+        py_code = constants.recover_constants(raw, d)
+    except SyntaxError:
+        return traceback.format_exc()
+    except:
+        return traceback.format_exc()
+    try:
+        return (py_code, str(eval(py_code)))
+    except:
+        return (py_code, traceback.format_exc(), 1)
+
+def appengine(code):
+    var = Scope(copy(scope))
+    var.scope['this'] = var
+    try:
+        c, d = constants.remove_constants(code)
+        c = c.replace('var ', '')
+    except SyntaxError:
+        return traceback.format_exc()
+    except:
+        return 'Internal parse error \n(%s)'%traceback.format_exc()
+    lines = c.split(';')
+    trans_res = '\n'
+    py_res = '\n'
+    stop_py = False
+    for i, line in enumerate(lines, 1):
+        line = line.replace('\n','').strip()
+        if not line:
+            continue
+        res = appengine_line(line, d, var)
+        if isinstance(res, basestring):
+            return 'Parse error in line %d:\n\n%s'%(i, res)
+        if len(res)==3:
+            py_res+= res[1]+'\n'
+            stop_py = True
+        elif not stop_py:
+            py_res+=res[1]+'\n'
+        trans_res += res[0] + '\n'
+    return 'TRANSLATION RESULT:\n%s\n\nOUT:\n%s'%(trans_res, py_res)
+        
+        
+        
+builtins = ('true','false','null','undefined','Infinity',
+            'NaN')
+
+scope = dict(zip(builtins, [eval(e) for e in builtins]))
+
+
 
 print 'Started test'
  #test
@@ -877,6 +929,7 @@ if __name__=='__main__':
     s2 = Js(4)
     o =  ObjectPrototype
     o.put('x', Js(100))
+    var = Scope(scope)
     e = code.InteractiveConsole(globals())
     e.raw_input = interactor
     e.interact()

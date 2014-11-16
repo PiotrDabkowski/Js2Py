@@ -84,6 +84,19 @@ def bracket_split(source, brackets=('()','{}','[]'), strip=False):
     if source[last:]:
         yield source[last:]
 
+def argsplit(args):
+    """used to split JS args (it is not that simple as it seems because
+       comma can be inside brackets. Used also to parse array and object elements, and more"""
+    parsed_len  = 0
+    last = 0
+    splits = []
+    for e in bracket_split(args, brackets=['()', '[]', '[]']):
+        if e[0] not in {'(', '[', '{'}:
+            for i, char in enumerate(e):
+                if char==',':
+                    splits.append(args[last:parsed_len+i])
+        parsed_len += len(e)
+    return splits
 
 def split_add_ops(text):
     """Specialized function splitting text at add/sub operators.

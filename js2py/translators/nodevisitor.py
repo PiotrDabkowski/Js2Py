@@ -11,7 +11,20 @@ REPL = {}
 # <<=, >>=, >>>=
 # they are unusual so I will not fix that now. a++ +b works fine and a+++++b  (a++ + ++b) does not work even in V8
 
-
+def bracket_replace(code):
+    new = ''
+    for e in bracket_split(code, ['()','[]'], False):
+        if e[0]=='[':
+            name = '#PYJSREPL'+str(len(REPL))+'{'
+            new+= name
+            REPL[name] = e
+        elif e[0]=='(': # can be a function call
+            name = '@PYJSREPL'+str(len(REPL))+'}'
+            new+= name
+            REPL[name] = e
+        else:
+            new+=e
+    return new
 
 class NodeVisitor:
     def __init__(self, code):
@@ -44,18 +57,7 @@ class NodeVisitor:
            Returns fully translated code."""
         if not self.code:
             return ''
-        new = ''
-        for e in bracket_split(self.code, ['()','[]'], False):
-            if e[0]=='[':
-                name = '#PYJSREPL'+str(len(REPL))+'{'
-                new+= name
-                REPL[name] = e
-            elif e[0]=='(': # can be a function call
-                name = '@PYJSREPL'+str(len(REPL))+'}'
-                new+= name
-                REPL[name] = e
-            else:
-                new+=e
+        new = bracket_replace(self.code)
         #Check comma operator:
         cand = new.split(',') #every comma in new must be an operator
         if len(cand)>1:  #LR
@@ -155,9 +157,11 @@ class NodeVisitor:
                     operand = UNARY[e](operand)
             return operand
         #Replace brackets
-        if new[0]=='@' or new[0]=='#': # in JS [] can be used as brackets as well so 3*[1+2] is 9 :)
+        if new[0]=='@' or new[0]=='#':
             if len(list(bracket_split(new, ('#{','@}')))) ==1: # we have only one bracket, otherwise pseudobracket like @@....
                 assert new in REPL
+                if new[0]=='#':
+                    raise SyntaxError('[] cant be used as brackets! Use () instead.')
                 return '('+trans(REPL[new][1:-1])+')'
         #Replace function calls and prop getters
         # 'now' must be a reference like: a or b.c.d but it can have also calls or getters ( for example a["b"](3))
@@ -268,10 +272,10 @@ def js_shit(a, b):
     return 'PyJsBshift('+a+','+b+')'
 
 def js_add(a, b):  # To simplify later process of converting unary operators + and ++
-    return 'PyJsAdd('+a+','+b+')'
+    return '(%s+%s)'%(a, b)
 
 def js_sub(a, b):  # To simplify
-    return 'PyJsSub('+a+','+b+')'
+    return '(%s-%s)'%(a, b)
 
 def js_mul(a, b):
     return '('+a+'*'+b+')'
@@ -393,8 +397,11 @@ from code import InteractiveConsole
 def trans(code):
     return NodeVisitor(code.strip()).translate().strip()
 
+#todo finish this trans args
 def trans_args(code):
-    return code
+    new = bracket_replace(code.strip()[1:-1])
+    args = ','.join(trans(e) for e in new.split(','))
+    return '(%s)'%args
 
 
 def exp_translator(code):
@@ -404,6 +411,8 @@ def exp_translator(code):
     assert '@' not in code
     assert ';' not in code
     assert '#' not in code
+    #if not code.strip(): #?
+    #    return 'var.get("undefined")'
     return trans(code)
 
 #print 'Here',  trans('(eee   )  .   ii  [  PyJsMarker   ]  [   jkj  ]  (  j  ,   j  )  .   jiji   (h  ,  ji  ,  i)(non  )(  )()()()')
