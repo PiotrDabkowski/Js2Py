@@ -60,6 +60,7 @@ OP_METHODS = {'*': '__mul__',
               '|': '__or__'}
 
 def bracket_split(source, brackets=('()','{}','[]'), strip=False):
+    """DOES NOT RETURN EMPTY STRINGS (can only return empty bracket content if strip=True)"""
     starts = [e[0] for e in brackets]
     in_bracket = 0
     n = 0
@@ -83,6 +84,23 @@ def bracket_split(source, brackets=('()','{}','[]'), strip=False):
         n+=1
     if source[last:]:
         yield source[last:]
+
+def pass_bracket(source, start, bracket='()'):
+    """Returns content of brackets with brackets and first pos after brackets
+     if source[start] is followed by some optional white space and brackets.
+     Otherwise None"""
+    e = bracket_split(source[start:],[bracket], False)
+    cand = e.next()
+    if not cand.strip(): #white space...
+        try:
+            res = e.next()
+            return res, start + len(cand) + len(res)
+        except StopIteration:
+            return None, None
+    elif cand[-1] == bracket[1]:
+        return cand, start + len(cand)
+    else:
+        return None, None
 
 def argsplit(args, sep=','):
     """used to split JS args (it is not that simple as it seems because
