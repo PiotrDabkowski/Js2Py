@@ -601,6 +601,21 @@ def PyJsSub(a, b):
 def PyJsComma(a, b):
     return b
 
+class PyJsException(Exception):
+    def __str__(self):
+        if self.mes.Class=='Error':
+            return 'UNKNOWN' #todo idk what to do here
+        else:
+            return str(self.mes)
+
+def JsToPyException(js):
+    temp = PyJsException()
+    temp.mes = js
+    return temp
+
+def PyExceptionToJs(py):
+    return py.mes
+
 #Scope class it will hold all the variables accessible to user
 class Scope:
     registered = set()

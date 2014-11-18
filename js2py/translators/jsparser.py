@@ -104,7 +104,8 @@ def pass_bracket(source, start, bracket='()'):
 
 def argsplit(args, sep=','):
     """used to split JS args (it is not that simple as it seems because
-       comma can be inside brackets. Used also to parse array and object elements, and more"""
+       sep can be inside brackets). pass args without brackets!
+       Used also to parse array and object elements, and more"""
     parsed_len  = 0
     last = 0
     splits = []
@@ -141,7 +142,7 @@ def split_add_ops(text):
     yield text[last:n].replace('##', '++').replace('@@', '--')
 
 
-def split_at_any(text, lis, translate=False, not_before=[], not_after=[]):
+def split_at_any(text, lis, translate=False, not_before=[], not_after=[], validitate=None):
     """ doc """
     lis.sort(key=lambda x: len(x), reverse=True)
     last = 0
@@ -154,6 +155,8 @@ def split_at_any(text, lis, translate=False, not_before=[], not_after=[]):
         for e in lis:
             s = len(e)
             if s+n>text_len:
+                continue
+            if validitate and not validitate(e, text[:n],  text[n+s:]):
                 continue
             if any(text[n+s:].startswith(e) for e in not_after):  #Cant end with end before
                 n+=1

@@ -11,6 +11,13 @@ REPL = {}
 # <<=, >>=, >>>=
 # they are unusual so I will not fix that now. a++ +b works fine and a+++++b  (a++ + ++b) does not work even in V8
 
+def unary_validitator(keyword, before, after):
+    if keyword[-1] in IDENTIFIER_PART:
+        if after and after[0] not in IDENTIFIER_PART:
+            return True
+        return False
+    return True
+
 def bracket_replace(code):
     new = ''
     for e in bracket_split(code, ['()','[]'], False):
@@ -123,7 +130,7 @@ class NodeVisitor:
                 n+=1
             return res
         #Now replace unary operators - only they are left
-        cand = list(split_at_any(new, UNARY.keys(), False))
+        cand = list(split_at_any(new, UNARY.keys(), False, validitate=unary_validitator))
         if len(cand)>1: #contains unary operators
             if '++' in cand or '--' in cand: #it cant contain both ++ and --
                 if '--' in cand:
@@ -345,7 +352,7 @@ COMPS = {'<': js_lt,
          '<=': js_le,
          '>=': js_ge,
          '>': js_gt,
-         ' instanceof ': js_instanceof,
+         ' instanceof ': js_instanceof,  #todo change to validitate
          ' in ': js_in}
 
 BSHIFTS = {'<<': js_lshift,
@@ -362,10 +369,10 @@ MULTS = {'*': js_mul,
 
 #Note they dont contain ++ and -- methods because they both have 2 different methods
 # correct method will be found automatically in translate function
-UNARY = {'typeof ': js_typeof,
-         'void ': js_void,
-         'new ': js_new,
-         'delete ': js_delete,
+UNARY = {'typeof': js_typeof,
+         'void': js_void,
+         'new': js_new,
+         'delete': js_delete,
          '!': js_not,
          '-': js_neg,
          '+': js_pos,
@@ -407,7 +414,7 @@ def trans_args(code):
 def exp_translator(code):
     global REPL
     REPL = {}
-    assert '\n' not in code
+    code = code.replace('\n', ' ')
     assert '@' not in code
     assert ';' not in code
     assert '#' not in code

@@ -3,12 +3,21 @@ import unicodedata
 from collections import defaultdict
 
 def is_lval(t):
+    """Does not chceck whether t is not resticted or internal"""
     if not t:
         return False
     i = iter(t)
     if i.next() not in IDENTIFIER_START:
         return False
     return all(e in IDENTIFIER_PART for e in i)
+
+def is_valid_lval(t):
+    """Checks whether t is valid JS identifier name (no keyword like var, function, if etc)
+    Also returns false on internal"""
+    if not is_internal(t) and is_lval(t) and t not in RESERVED_NAMES:
+        return True
+    return False
+
 
 def is_plval(t):
     return t.startswith('PyJsLval')
@@ -40,4 +49,5 @@ UNICODE_CONNECTOR_PUNCTUATION = set(U_CATEGORIES['Pc'])
 IDENTIFIER_START = UNICODE_LETTER.union({'$','_'}) # and some fucking unicode escape sequence
 IDENTIFIER_PART = IDENTIFIER_START.union(UNICODE_COMBINING_MARK).union(UNICODE_DIGIT).union(UNICODE_CONNECTOR_PUNCTUATION)
 
+RESERVED_NAMES = {'var', 'function', 'if', 'this', 'for', 'in'} #todo complete this list
 print is_lval('')
