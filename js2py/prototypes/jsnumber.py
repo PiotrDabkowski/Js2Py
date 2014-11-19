@@ -1,3 +1,58 @@
 
+class RangeError(Exception): pass
+
+
 class NumberPrototype:
-    pass
+    def toString():
+        # fuck this radix thing
+        return this.to_string()
+
+    def valueOf():
+        return this
+
+    def toLocaleString():
+        return this.to_string()
+
+    def toFixed (fractionDigits):
+        if this.Class!='Number':
+            raise this.JsNumber(TypeError)('Number.prototype.toFixed called on incompatible receiver')
+        digs = fractionDigits.to_int().value
+        if digs<0 or digs>20:
+            raise this.Js(RangeError)('toFixed() digits argument must be between 0 and 20')
+        elif this.is_infinity():
+            return 'Infinity' if this.value>0 else '-Infinity'
+        elif this.is_nan():
+            return 'NaN'
+        return format(this.value, '-.%df'%digs)
+
+
+    def toExponential (fractionDigits):
+        if this.Class!='Number':
+            raise this.JsNumber(TypeError)('Number.prototype.toExponential called on incompatible receiver')
+        digs = fractionDigits.to_int().value
+        if digs<0 or digs>20:
+            raise this.Js(RangeError)('toFixed() digits argument must be between 0 and 20')
+        elif this.is_infinity():
+            return 'Infinity' if this.value>0 else '-Infinity'
+        elif this.is_nan():
+            return 'NaN'
+        return format(this.value, '-.%de'%digs)
+
+    def toPrecision (precision):
+        if this.Class!='Number':
+            raise this.JsNumber(TypeError)('Number.prototype.toPrecision called on incompatible receiver')
+        if precision.is_undefined():
+            return this.to_String()
+        prec = precision.to_int().value
+        if this.is_nan():
+            return 'NaN'
+        elif this.is_infinity():
+            return 'Infinity' if this.value>0 else '-Infinity'
+        digs = prec - len(str(int(this.value)))
+        if digs>=0:
+            return format(this.value, '-.%df'%digs)
+        else:
+            return format(this.value, '-.%df'%(prec-1))
+
+
+

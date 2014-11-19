@@ -11,7 +11,8 @@ STORE_FAST = opcode.opmap['STORE_FAST']
 def fix_js_args(func):
     '''Use this function when unsure whether func takes this and arguments as its last 2 args.
        It will append 2 args if it does not.'''
-    if func.func_code.co_varnames[-2:]==('this', 'arguments'):
+    fcode = func.func_code
+    if fcode.co_varnames[fcode.co_argcount-2:fcode.co_argcount]==('this', 'arguments'):
         return func
     code = append_arguments(func.func_code, ('this','arguments'))
     return types.FunctionType(code, func.func_globals, func.func_name, closure=func.func_closure)
@@ -133,4 +134,7 @@ def write_instruction(inst):
                 chr((oparg >> 8) & 255)]
     else:
         raise ValueError("Invalid oparg: {0} is too large".format(oparg))
+
+
+
 

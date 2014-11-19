@@ -31,10 +31,27 @@ def Js(val):
              temp.put(k, v)
          return temp
     elif isinstance(val, list): #Convert to array
-        raise NotImplementedError()
+        return PyJsArray(val, ArrayPrototype)
     else:
         raise RuntimeError('Cant convert python type to js')
-        
+
+def Type(val):
+    if isinstance(val, PyJsObject):
+        return 'Object'
+    elif isinstance(val, PyJsNumber):
+        return 'Number'
+    elif isinstance(val, PyJsString):
+        return 'String'
+    elif isinstance(val, PyJsBoolean):
+        return 'Boolean'
+    elif isinstance(val, PyJsNull):
+        return 'Null'
+    elif isinstance(val, PyJsUndefined):
+        return 'Undefined'
+    elif isinstance(val, PyJs):
+        return 'Object'
+    raise RuntimeError('Invalid type: '+str(val))
+
 def is_data_descriptor(desc):
     return desc and ('value' in desc or 'writable' in desc)
     
@@ -89,6 +106,9 @@ class PyJs:
         return not self.is_primitive() and hasattr(self, 'call')
         
     def typ(self):
+        """This one checks CLASS property not the instance type
+           So for example (new Number(2)).typ() would give Number but Type(new Number(2)) gives Object
+           Stupid javascript makes no sense."""
         typ = self.Class
         if self.is_primitive():
             return typ
@@ -334,7 +354,7 @@ class PyJs:
         typ = self.Class
         if typ=='Null' or typ=='Undefined':
             raise TypeError('')
-        elif typ=='Boolean': # Unsure here...
+        elif typ=='Boolean': # Unsure here... todo repair here
             return self
         elif typ=='Number': #?
             return self
@@ -342,6 +362,32 @@ class PyJs:
             return self
         else: #object
             return self
+
+    def to_int32(self):
+        num = self.to_number()
+        if num.is_nan() or num.is_infinity():
+            return Js(0)
+        val = num.value
+        pos_int = int(val)
+        int32 = pos_int % 0x10000
+        num.value = int32 - 0x8000 if int32 > 0x8000 else int32
+        return num
+
+    def to_int(self):
+        num = self.to_number()
+        if num.is_nan():
+            return Js(0)
+        elif num.is_infinity():
+            return num
+        num.value = int(num)
+        return num
+
+    def to_unit32(self):
+        num = self.to_number()
+        if num.is_nan() or num.is_infinity():
+            return Js(0)
+        num.value = int(num.value) % 0x10000
+        return num
     
     def same_as(self, other):
         typ = self.Class
@@ -353,7 +399,20 @@ class PyJs:
             return self.value==other.value
         else: #object
             return self is other #Id compare.
-                
+
+    #Not to be used by translation (only internal use)
+    def __getitem__(self, item):
+        return self.get(str(item))
+
+    def __setitem__(self, key, value):
+        self.put(str(key),  Js(value))
+
+    def __len__(self):
+        try:
+            l = int(self.get('length').value)
+            return l
+        except:
+            raise TypeError('This object (%s) does not have length property'%self.Class)
     #Oprators-------------
     #Unary, other will be implemented as functions. Increments and decrements 
     # will be methods of Number class
@@ -704,11 +763,29 @@ class PyJsFunction(PyJs):
     def __init__(self, func, prototype=None, extensible=True, source=None):
         func = fix_js_args(func)
         self.code = func
-        self.source = source if source else '{ [native code] }'
-        self.func_name = func.func_name if func.func_name!='PyJsInlineTemp' else ''
+        self.source = source if source else '{ [python code] }'
+        self.func_name = func.func_name if not func.func_nam.startswith('PyJsInlineTemp') else ''
         self.extensible = extensible
         self.prototype = prototype
         self.own = {}
+        #set own property length to the number of arguments
+        self.define_own_property('length', {'value': Js(func.func_code.co_argcount-2), 'writable': False,
+                                            'enumerable': False, 'configurable': False})
+        # set own prototype
+        proto = Js({})
+        # constructor points to this function
+        proto.define_own_property('constructor',{'value': self, 'writable': True,
+                                                 'enumerable': False, 'configurable': True})
+        self.define_own_property('prototype', {'value': proto, 'writable': True,
+                                                 'enumerable': False, 'configurable': False})
+
+    def construct(self, *args):
+        proto = self.get('prototype')
+        if not proto.is_object(): # set to standard prototype
+            proto = ObjectPrototype
+        obj = PyJsObject(prototype=proto)
+        cand = self.call(obj, *args)
+        return cand if cand.is_object() else obj
     
     def call(self, this, args=()):
         '''Calls this function and returns a result 
@@ -727,7 +804,7 @@ class PyJsFunction(PyJs):
             args = (args,)
         args = tuple(Js(e) for e in args) # this wont be needed later
 
-        arguments = Js(args) # tuple will be converted to arguments object.
+        arguments = PyJsArguments(args, self) # tuple will be converted to arguments object.
         arglen = self.code.func_code.co_argcount - 2 #function expects this number of args.
         if len(args)>arglen:
             args = args[0:arglen]
@@ -745,7 +822,7 @@ class PyJsFunction(PyJs):
             raise TypeError('Function has non-object prototype in instanceof check')
         while True:
             other = other.prototype
-            if not other:
+            if not other:  # todo make sure that the condition is not None or null
                 return false
             if other is proto:
                 return true
@@ -755,8 +832,7 @@ class PyJsFunction(PyJs):
 
 def Empty():
     return Js(None)
-    
-FunctionPrototype = PyJsFunction(Empty, ObjectPrototype)
+
 
 
 #Number
@@ -786,14 +862,12 @@ class PyJsNumber(PyJs):  #Note i dont implement +0 and -0. Just 0.
         self.value-=1
         return Js(self.value)
 
+
 NumberPrototype = PyJsObject({}, ObjectPrototype)
 Infinity = PyJsNumber(float('inf'), NumberPrototype)
 NaN = PyJsNumber(float('nan'), NumberPrototype)
 
-def log(x):
-    return x
-console = PyJsObject({}, ObjectPrototype)
-console.put('log', Js(log))
+
 
 #String
 class PyJsString(PyJs):
@@ -828,14 +902,47 @@ null = PyJsNull()
 
 class PyJsArray(PyJs):
     Class = 'Array'
-    def __init__(arr=[], prototype=None):
-        pass
+    def __init__(self, arr=[], prototype=None):
+        if arr and arr[-1] is None:
+            del arr[-1]
+        self.extensible = True
+        self.prototype = prototype
+        self.own = {}
+        self.define_own_property('length', {'value': Js(len(arr)), 'writable': True,
+                                            'enumerable': False, 'configurable': False})
+        for i, e in enumerate(arr):
+            self.define_own_property(str(i), {'value': Js(e), 'writable': True,
+                                              'enumerable': True, 'configurable': True})
+
+    def put(self, prop, val, op=None):
+        super(PyJsArray, self).put(prop, val, op)
+
+ArrayPrototype = PyJsArray([], ObjectPrototype)
+
+class PyJsArguments(PyJs):
+    Class = 'Arguments'
+    def __init__(self, args, callee):
+        self.own = {}
+        self.extensible = True
+        self.prototype = ObjectPrototype
+        self.define_own_property('length', {'value': Js(len(args)), 'writable': True,
+                                            'enumerable': False, 'configurable': False})
+        self.define_own_property('callee', {'value': callee, 'writable': True,
+                                            'enumerable': False, 'configurable': False})
+        for i, e in enumerate(args):
+            self.put(str(i), Js(e))
+
+
+#We can define function proto after number proto because func uses number in its init
+FunctionPrototype = PyJsFunction(Empty, ObjectPrototype)
+
+
 
 ##############################################################################
 # Import and fill prototypes here.
 
 #this works only for data properties
-def fill_prototype(prototype, Class, attrs):
+def fill_prototype(prototype, Class, attrs, constructor=False):
     for i in dir(Class):
         e = getattr(Class, i)
         if hasattr(e, '__func__'):
@@ -843,8 +950,12 @@ def fill_prototype(prototype, Class, attrs):
             attrs = {k:v for k,v in attrs.iteritems()}
             attrs['value'] = temp
             prototype.define_own_property(i, attrs)
+        if constructor:
+            attrs['value'] = constructor
+            prototype.define_own_property('constructor', attrs)
             
 default_attrs = {'writable':True, 'enumerable':False, 'configurable':True}
+
 
 PyJs.undefined = undefined
 PyJs.Js = staticmethod(Js)
