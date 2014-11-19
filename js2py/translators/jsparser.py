@@ -90,7 +90,10 @@ def pass_bracket(source, start, bracket='()'):
      if source[start] is followed by some optional white space and brackets.
      Otherwise None"""
     e = bracket_split(source[start:],[bracket], False)
-    cand = e.next()
+    try:
+        cand = e.next()
+    except StopIteration:
+        return None, None
     if not cand.strip(): #white space...
         try:
             res = e.next()

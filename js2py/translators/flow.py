@@ -18,6 +18,9 @@ TO_REGISTER = []
 CONTINUE_LABEL = 'JS_CONTINUE_LABEL_%s'
 BREAK_LABEL = 'JS_BREAK_LABEL_%s'
 
+
+
+
 def pass_white(source, start):
     n = start
     while n<len(source):
@@ -114,11 +117,20 @@ def do_statement(source, start):
     """returns none if not found other functions that begin with 'do_' raise
     also this do_ type function passes white space"""
     start = pass_white(source, start)
-    bra, cand = pass_bracket(source, start, '{}')
-    if bra:
-        return bra+'\n', cand
-    else:
-        return do_if(source, start)
+    # start is the fist position after initial start that is not a white space or \n
+    if not start < len(source): #if finished parsing return None
+        return None, None
+    rest = source[start:]
+    for key, meth in KEYWORD_METHODS.iteritems():  # check for statements that are uniquely defined by their keywords
+        if rest.startswith(key):
+            # has to startwith this keyword and the next letter after keyword must be either EOF or not in IDENTIFIER_PART
+            if len(key)==len(rest) or rest[len(key)] not in IDENTIFIER_PART:
+                return meth(source, start)
+    if rest[0] == '{': #Block
+        return do_block(source, start)
+    # Now only label and expression left
+    # todo check for label
+    return do_expression(source, start)
 
 
 def do_while(source, start):
@@ -145,21 +157,21 @@ def do_dowhile(source, start):
 
 def do_block(source, start):
     bra, start = pass_bracket(source, start, '{}')
-    print source[start:], bra
-    return bra +'\n', start
+    #print source[start:], bra
+    #return bra +'\n', start
     if bra is None:
         raise SyntaxError('Missing block ( {code} )')
     code = ''
     bra_pos = 1
-    while True:
+    while bra_pos<len(bra)-1:
         st, bra_pos = do_statement(bra, bra_pos)
         if st is None:
             break
         code += st
-    st = pass_white(bra, st)
-    if source[st]!='}' or st+1!=len(bra): # has some more code that could not be parsed...
+    st = pass_white(bra, bra_pos)
+    if bra[st]!='}' or st+1!=len(bra): # has some more code that could not be parsed...
         raise SyntaxError('Could not parse source code, unknown statement')
-    return code, source
+    return code, start
 
 def do_empty(source, start):
     return 'pass\n', start + 1
@@ -237,7 +249,6 @@ def do_for(source, start):
                 args.append(do_var(item, end)[0])
                 continue
             args.append(do_expression(item, end)[0])
-        print args
         return '#for JS loop\n%swhile %s:\n%s%s\n' %(args[0], args[1].strip(), indent(inside), indent(args[2])), start
     # iteration
     end = pass_white(bra, 0)
@@ -280,30 +291,20 @@ def do_break(source, start):
 
 def do_return(source, start):
     start += 6 # pass return
-    end = pass_until(source, start)
-    print end
-    if end<len(source): #check whether we found ; or just run our of source code
-        # found ;
-        to = end-1
-    else:
-        # run out of source
-        to = len(source)
-    trans = exp_translator(source[start:to])
+    end = source.find(';', start)+1
+    if end==-1:
+        end = len(source)
+    trans = exp_translator(source[start:end].rstrip(';'))
     return 'return %s\n' % (trans if trans else "var.get('undefined')"), end
 
 
 # todo later?- Also important
 def do_throw(source, start):
-    start += 5 # pass return
-    end = pass_until(source, start)
-    print end
-    if end<len(source): #check whether we found ; or just run our of source code
-        # found ;
-        to = end-1
-    else:
-        # run out of source
-        to = len(source)
-    trans = exp_translator(source[start:to])
+    start += 5 # pass throw
+    end = source.find(';', start)+1
+    if not end:
+        end = len(source)
+    trans = exp_translator(source[start:end].rstrip(';'))
     if not trans:
         raise SyntaxError('Invalid throw statement: nothing to throw')
     res = 'TempJsException = JsToPyException(%s)\nraise TempJsException\n' % trans
@@ -318,7 +319,6 @@ def do_try(source, start):
     if catch:
         bra, catch = pass_bracket(source, catch, '()')
         bra = bra[1:-1]
-        print bra
         identifier, bra_end = parse_identifier(bra, 0)
         holder = 'PyJsHolder_%s_%d'%(identifier.encode('hex'), random.randrange(1e8))
         identifier = identifier.__repr__()
@@ -345,15 +345,55 @@ def do_try(source, start):
     block, start = do_block(source, final)
     return result + 'finally:\n%s' % indent(block), start
 
+def do_debugger(source, start):
+    start += 8 # pass debugger
+    end = pass_white(source, start)
+    if end<len(source) and source[end]==';':
+        end += 1
+    return 'pass\n', end #ignore errors...
+
+
 # todo automatic ; insertion. fuck this crappy feature
 
 # Least important
+
+def do_with(source, start):
+    raise NotImplementedError('With statement is not implemented yet')
+
 def do_switch(source, start):
-    pass
+    raise NotImplementedError('Switch statement is not implemented yet :(')
+
+KEYWORD_METHODS = {'do': do_dowhile,
+                  'while': do_while,
+                  'if': do_if,
+                  'throw': do_throw,
+                  'return': do_return,
+                  'continue': do_continue,
+                  'break': do_break,
+                  'try': do_try,
+                  'for': do_for,
+                  'switch': do_switch,
+                  'var': do_var,
+                  'debugger': do_debugger, # this one does not do anything
+                  'with': do_with
+                  }
+#Also not specific statements (harder to detect)
+# Block {}
+# Expression or Empty Statement
+# Label
+#
+# Its easy to recognize block but harder to distinguish between label and expression statement
+
+def translate_flow(source):
+    """Source cant have arrays, object, constant or function literals.
+       Returns PySource and variables to register"""
+    global TO_REGISTER
+    TO_REGISTER = []
+    return do_block('{%s}'%source, 0)[0], TO_REGISTER
 
 
-
-#print do_dowhile('do {} while(k+f)', 0)[0]
-#print 'e: "%s"'%do_expression('++(c?g:h);   mj', 0)[0]
-print do_try('try {1} catch (j) {2} finally {3}', 0)[0]
-print TO_REGISTER
+if __name__=='__main__':
+    #print do_dowhile('do {} while(k+f)', 0)[0]
+    #print 'e: "%s"'%do_expression('++(c?g:h);   mj', 0)[0]
+    print do_statement('try {throw a;debugger;} catch (g) {console.log(a);console.log(g);}', 0)[0]
+    print TO_REGISTER

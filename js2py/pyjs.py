@@ -4,6 +4,10 @@ from utils.injector import fix_js_args
 from translators.jsparser import OP_METHODS
 from types import FunctionType
 import traceback
+__all__ = ['Js', 'PyJsComma', 'PyJsStrictEq', 'PyJsStrictNeq',
+           'PyJsException', 'PyJsBshift', 'Scope', 'PyExceptionToJs',
+           'JsToPyException', 'JS_BUILTINS']
+
 
 def Js(val):
     '''Converts Py type to PyJs type'''
@@ -20,7 +24,14 @@ def Js(val):
     elif isinstance(val, tuple): # convert to arguments
         return val # todo later
     elif isinstance(val, FunctionType):
-        return PyJsFunction(val,FunctionPrototype)
+        return PyJsFunction(val, FunctionPrototype)
+    elif isinstance(val, dict): # convert to object
+         temp = PyJsObject({}, ObjectPrototype)
+         for k, v in val.iteritems():
+             temp.put(k, v)
+         return temp
+    elif isinstance(val, list): #Convert to array
+        raise NotImplementedError()
     else:
         raise RuntimeError('Cant convert python type to js')
         
@@ -815,13 +826,16 @@ class PyJsNull(PyJs):
         pass
 null = PyJsNull()
 
+class PyJsArray(PyJs):
+    Class = 'Array'
+    def __init__(arr=[], prototype=None):
+        pass
+
 ##############################################################################
 # Import and fill prototypes here.
 
 #this works only for data properties
-def fill_prototype(prototype, Class, attrs={'writable':True, 
-                                            'enumerable':False,
-                                            'configurable':True}):
+def fill_prototype(prototype, Class, attrs):
     for i in dir(Class):
         e = getattr(Class, i)
         if hasattr(e, '__func__'):
@@ -830,13 +844,14 @@ def fill_prototype(prototype, Class, attrs={'writable':True,
             attrs['value'] = temp
             prototype.define_own_property(i, attrs)
             
+default_attrs = {'writable':True, 'enumerable':False, 'configurable':True}
 
 PyJs.undefined = undefined
 PyJs.Js = staticmethod(Js)
 
 from prototypes import jsfunction, jsobject, jsnumber, jsstring, jsboolean
 #Object proto
-fill_prototype(ObjectPrototype, jsobject.ObjectPrototype)
+fill_prototype(ObjectPrototype, jsobject.ObjectPrototype, default_attrs)
 #Define __proto__ accessor (this cant be done by fill_prototype since)
 def __proto__(): 
     return this.prototype if this.prototype is not None else null
@@ -848,14 +863,19 @@ ObjectPrototype.define_own_property('__proto__', {'set': setter,
                                                   'enumerable': False,
                                                   'configurable':True})
 
+
 #Function proto
-fill_prototype(FunctionPrototype, jsfunction.FunctionPrototype)  
+fill_prototype(FunctionPrototype, jsfunction.FunctionPrototype, default_attrs)
 #Number proto
-fill_prototype(NumberPrototype, jsnumber.NumberPrototype)  
+fill_prototype(NumberPrototype, jsnumber.NumberPrototype, default_attrs)
 #String proto
-fill_prototype(StringPrototype, jsstring.StringPrototype) 
+fill_prototype(StringPrototype, jsstring.StringPrototype, default_attrs)
 #Boolean proto
-fill_prototype(BooleanPrototype, jsboolean.BooleanPrototype)
+fill_prototype(BooleanPrototype, jsboolean.BooleanPrototype, default_attrs)
+
+
+
+#########################################################################
 
 from translators import constants, nodevisitor
 
@@ -925,6 +945,7 @@ builtins = ('true','false','null','undefined','Infinity',
 
 scope = dict(zip(builtins, [eval(e) for e in builtins]))
 
+JS_BUILTINS = {k:v for k,v in scope.iteritems()}
 
 
 print 'Started test'
@@ -946,5 +967,5 @@ if __name__=='__main__':
     o.put('x', Js(100))
     var = Scope(scope)
     e = code.InteractiveConsole(globals())
-    e.raw_input = interactor
+    #e.raw_input = interactor
     e.interact()
