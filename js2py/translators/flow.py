@@ -21,14 +21,6 @@ BREAK_LABEL = 'JS_BREAK_LABEL_%s'
 
 
 
-def pass_white(source, start):
-    n = start
-    while n<len(source):
-        if source[n] in {' ', '\n'}:
-            n += 1
-        else:
-            break
-    return n
 
 def get_continue_label(label):
     return CONTINUE_LABEL%label.encode('hex')
@@ -70,23 +62,7 @@ def do_bracket_exp(source, start, throw=True):
     return bra, cand if bra else start
 
 
-def parse_identifier(source, start, throw=True):
-    """passes white space from start and returns first identifier,
-       if identifier invalid and throw raises SyntaxError otherwise returns None"""
-    start = pass_white(source, start)
-    end = start
-    if source[end] not in IDENTIFIER_START:
-        if throw:
-            raise SyntaxError('Invalid identifier start: "%s"'%source[end])
-        return None
-    end += 1
-    while end < len(source) and source[end] in IDENTIFIER_PART:
-        end += 1
-    if not is_valid_lval(source[start:end]):
-        if throw:
-            raise SyntaxError('Invalid identifier start: "%s"'%source[start:end])
-        return None
-    return source[start:end], end
+
 
 
 def do_if(source, start):
@@ -198,6 +174,8 @@ def do_var(source, start):
             if de[var_end] != '=':
                 raise SyntaxError('Unexpected initializer in var statement. Expected "=", got "%s"'%de[var_end])
             code += exp_translator(de) + '\n'
+    if not code.strip():
+        code = 'pass\n'
     return code, end
 
 

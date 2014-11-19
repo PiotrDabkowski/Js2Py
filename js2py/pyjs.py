@@ -341,7 +341,7 @@ class PyJs:
             elif self.is_infinity():
                 sign = '-' if self.value<0 else ''
                 return Js(sign+'Infinity')
-            elif self.value.is_integer():  # dont print .0 
+            elif self.value.s():  # dont print .0
                 return Js(str(int(self.value)))
             return Js(str(self.value)) # accurate enough
         elif typ=='String':
@@ -710,6 +710,11 @@ class Scope:
         if lval not in self.scope:
             self.scope[lval] = undefined
 
+    def registers(self, lvals):
+        """register multiple variables"""
+        for lval in lvals:
+            self.register(lval)
+
     def put(self, lval, val, op=None):
         cand = self.scope.get(lval)
         if (cand is not None) or (self.closure is None): #If not found set global
@@ -764,7 +769,7 @@ class PyJsFunction(PyJs):
         func = fix_js_args(func)
         self.code = func
         self.source = source if source else '{ [python code] }'
-        self.func_name = func.func_name if not func.func_nam.startswith('PyJsInlineTemp') else ''
+        self.func_name = func.func_name if not func.func_nam.startswith('PyJsLvalInline') else ''
         self.extensible = extensible
         self.prototype = prototype
         self.own = {}

@@ -42,14 +42,14 @@ class FunctionPrototype:
         else:
             args = tuple(arguments[e] for e in xrange(1, len(arguments)))
         if obj.is_undefined():
-            def PyJsInlineTemp(this, arguments):
+            def PyJsLvalInline(this, arguments):
                 args2 = args + tuple(arguments[e] for e in xrange(0, len(arguments)))
                 return to_call(*args2)
         else:
-            def PyJsInlineTemp(this, arguments):
+            def PyJsLvalInline(this, arguments):
                 args2 = args + tuple(arguments[e] for e in xrange(0, len(arguments)))
                 return to_call.call(obj, args2)
-        return PyJsInlineTemp  # it will be automatically converted to js function :)
+        return PyJsLvalInline  # it will be automatically converted to js function :)
 
 
 

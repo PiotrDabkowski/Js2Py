@@ -46,7 +46,7 @@ TODO
 
 """
 
-
+from utils import *
 
 OP_METHODS = {'*': '__mul__',
               '/': '__div__',
@@ -105,9 +105,45 @@ def pass_bracket(source, start, bracket='()'):
     else:
         return None, None
 
+
+def pass_white(source, start):
+    n = start
+    while n<len(source):
+        if source[n] in {' ', '\n'}:
+            n += 1
+        else:
+            break
+    return n
+
+def parse_identifier(source, start, throw=True):
+    """passes white space from start and returns first identifier,
+       if identifier invalid and throw raises SyntaxError otherwise returns None"""
+    start = pass_white(source, start)
+    end = start
+    if not end<len(source):
+        if throw:
+            raise SyntaxError('Missing identifier!')
+        return None
+    if source[end] not in IDENTIFIER_START:
+        if throw:
+            raise SyntaxError('Invalid identifier start: "%s"'%source[end])
+        return None
+    end += 1
+    while end < len(source) and source[end] in IDENTIFIER_PART:
+        end += 1
+    if not is_valid_lval(source[start:end]):
+        if throw:
+            raise SyntaxError('Invalid identifier name: "%s"'%source[start:end])
+        return None
+    return source[start:end], end
+
+
 def argsplit(args, sep=','):
     """used to split JS args (it is not that simple as it seems because
-       sep can be inside brackets). pass args without brackets!
+       sep can be inside brackets).
+
+       pass args *without* brackets!
+
        Used also to parse array and object elements, and more"""
     parsed_len  = 0
     last = 0
