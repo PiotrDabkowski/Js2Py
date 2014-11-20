@@ -12,7 +12,7 @@ CONTINUE, BREAK, RETURN, LABEL, THROW, TRY, SWITCH
 from utils import *
 from jsparser import *
 from nodevisitor import exp_translator
-import random
+
 
 TO_REGISTER = []
 CONTINUE_LABEL = 'JS_CONTINUE_LABEL_%s'
@@ -103,7 +103,6 @@ def do_statement(source, start):
     if rest[0] == '{': #Block
         return do_block(source, start)
     # Now only label and expression left
-    # todo check for label
     return do_expression(source, start)
 
 

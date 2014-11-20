@@ -274,7 +274,7 @@ def js_gt(a, b):
     return '('+a+'>'+b+')'
 
 def js_in(a, b):
-    return a+'.contains('+b+')'
+    return b+'.contains('+a+')'
 
 def js_instanceof(a, b):
     return a+'.instanceof('+b+')'

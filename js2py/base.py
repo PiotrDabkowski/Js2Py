@@ -70,6 +70,7 @@ class PyJs:
     extensible = True
     prototype = None
     own = {}
+    GlobalObject = None
     value = None
     
     def __init__(self, value=None, prototype=None, extensible=False):
@@ -190,6 +191,8 @@ class PyJs:
         return self.get_property(prop) is not None
     
     def delete(self, prop):
+        if not isinstance(prop, basestring):
+            prop = prop.to_string().value
         desc = self.get_own_property(prop)
         if desc is None: 
             return Js(True)
@@ -606,7 +609,15 @@ class PyJs:
     #iteration
     def __iter__(self):
         #Returns a generator of all own enumerable properties
-        return (Js(name) for name in self.own if self.own[name]['enumerable'])
+        # since the size od self.own can change we need to use different method of iteration.
+        # SLOW! New items will NOT show up.
+        returned = {}
+        cands = sorted(name for name in self.own if self.own[name]['enumerable'])
+        for cand in cands:
+            check = self.own.get(cand)
+            if check and check['enumerable']:
+                yield Js(cand)
+
     
     def contains(self, other):
         if not self.is_object():
@@ -621,7 +632,7 @@ class PyJs:
         automatically!'''
         if not self.is_callable():
             raise TypeError('%s is not a function'%self.typeof())
-        return self.call(this, args) # global value of this 
+        return self.call(self.GlobalObject, args) # todo  value of this
     
     def __repr__(self):
         return self.to_string().value
@@ -631,6 +642,8 @@ class PyJs:
         
         NOTE: dont pass this and arguments here, these will be added
         automatically!'''
+        if not isinstance(prop, basestring):
+            prop = prop.to_string().value
         cand = self.get(prop)
         if not cand.is_callable():
             raise TypeError('%s is not a function'%cand.typeof())
@@ -694,6 +707,8 @@ class Scope:
         self.closure = closure
 
     def get(self, lval):
+        if not isinstance(lval, basestring):
+            lval = lval.to_string().value
         cand = self.scope.get(lval)
         if cand is not None:
             return cand
@@ -714,6 +729,8 @@ class Scope:
             self.register(lval)
 
     def put(self, lval, val, op=None):
+        if not isinstance(lval, basestring):
+            lval = lval.to_string().value
         cand = self.scope.get(lval)
         if (cand is not None) or (self.closure is None): #If not found set global
             if op: #Increment or other assign operation eg: *=
@@ -723,6 +740,8 @@ class Scope:
         return self.closure.put(lval, val, op)
 
     def delete(self, lval): # i have to improve it because registered cant be deleted ...
+        if not isinstance(lval, basestring):
+            lval = lval.to_string().value
         if lval in self.registered: #we can only delete global not registered lvals and this one is registered
             return false
         # Note registered keeps only global registered variables
@@ -764,7 +783,10 @@ ObjectPrototype = PyJsObject()
 class PyJsFunction(PyJs):
     Class = 'Function'
     def __init__(self, func, prototype=None, extensible=True, source=None):
-        func = fix_js_args(func)
+        cand = fix_js_args(func)
+        has_scope = cand is func
+        func = cand
+        self.argcount = func.func_code.co_argcount - 2 - has_scope
         self.code = func
         self.source = source if source else '{ [python code] }'
         self.func_name = func.func_name if not func.func_name.startswith('PyJsLvalInline') else ''
@@ -772,7 +794,7 @@ class PyJsFunction(PyJs):
         self.prototype = prototype
         self.own = {}
         #set own property length to the number of arguments
-        self.define_own_property('length', {'value': Js(func.func_code.co_argcount-2), 'writable': False,
+        self.define_own_property('length', {'value': Js(self.argcount), 'writable': False,
                                             'enumerable': False, 'configurable': False})
         # set own prototype
         proto = Js({})
@@ -808,7 +830,7 @@ class PyJsFunction(PyJs):
         args = tuple(Js(e) for e in args) # this wont be needed later
 
         arguments = PyJsArguments(args, self) # tuple will be converted to arguments object.
-        arglen = self.code.func_code.co_argcount - 2 #function expects this number of args.
+        arglen = self.argcount #function expects this number of args.
         if len(args)>arglen:
             args = args[0:arglen]
         elif len(args)<arglen:
@@ -875,6 +897,21 @@ NaN = PyJsNumber(float('nan'), NumberPrototype)
 #String
 class PyJsString(PyJs):
     Class = 'String'
+    def __init__(self, value=None, prototype=None, extensible=False):
+        '''Constructor for Number String and Boolean'''
+        if not isinstance(value, basestring):
+            raise TypeError
+        self.value = value
+        self.prototype = prototype
+        self.own = {}
+        self.extensible = True
+        self.put('length', Js(len(value)))
+        if len(value)==1:
+            self.put('0', self)
+        elif value:
+            for i, e in enumerate(value):
+                self.put(str(i), Js(e))
+        self.extensible = extensible
 
 StringPrototype = PyJsObject({}, ObjectPrototype)
 
@@ -917,8 +954,7 @@ class PyJsArray(PyJs):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
 
-    def put(self, prop, val, op=None):
-        super(PyJsArray, self).put(prop, val, op)
+
 
 ArrayPrototype = PyJsArray([], ObjectPrototype)
 

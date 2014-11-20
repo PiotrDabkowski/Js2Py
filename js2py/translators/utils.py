@@ -50,4 +50,3 @@ IDENTIFIER_START = UNICODE_LETTER.union({'$','_'}) # and some fucking unicode es
 IDENTIFIER_PART = IDENTIFIER_START.union(UNICODE_COMBINING_MARK).union(UNICODE_DIGIT).union(UNICODE_CONNECTOR_PUNCTUATION)
 
 RESERVED_NAMES = {'var', 'function', 'if', 'this', 'for', 'in'} #todo complete this list
-print is_lval('')

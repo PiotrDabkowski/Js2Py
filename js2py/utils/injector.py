@@ -12,7 +12,8 @@ def fix_js_args(func):
     '''Use this function when unsure whether func takes this and arguments as its last 2 args.
        It will append 2 args if it does not.'''
     fcode = func.func_code
-    if fcode.co_varnames[fcode.co_argcount-2:fcode.co_argcount]==('this', 'arguments'):
+    fargs = fcode.co_varnames[fcode.co_argcount-2:fcode.co_argcount]
+    if fargs==('this', 'arguments') or fargs==('arguments', 'var'):
         return func
     code = append_arguments(func.func_code, ('this','arguments'))
     return types.FunctionType(code, func.func_globals, func.func_name, closure=func.func_closure)

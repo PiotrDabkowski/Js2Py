@@ -3,8 +3,7 @@ class FunctionPrototype:
     def toString():
         if not this.is_callable():
             raise TypeError('toString is not generic!')
-        argnum = this.code.__code__.co_argcount-2
-        args = ', '.join(this.code.__code__.co_varnames[0:argnum])
+        args = ', '.join(this.code.__code__.co_varnames[:this.argcount])
         return 'function %s(%s) '%(this.func_name, args)+this.source
     
     def call():
