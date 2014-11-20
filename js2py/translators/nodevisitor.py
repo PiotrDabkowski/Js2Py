@@ -319,7 +319,11 @@ def js_new(a):
 def js_delete(a):
     # To simplify
     #replace last get with delete.
-    return a
+    c = list(bracket_split(a, ['()']))
+    beg, arglist = ''.join(c[:-1]).strip(), c[-1].strip()  #strips just to make sure... I will remove it later
+    if beg[-4:]!='.get':
+        raise SyntaxError('Invalid delete operation')
+    return beg[:-3]+'delete'+arglist
 
 def js_neg(a):
     return '(-'+a+')'
@@ -446,4 +450,5 @@ if __name__=='__main__':
     for e in xrange(3):
         print  exp_translator('jk = kk.ik++')
     #First line translated with PyJs:  PyJsStrictEq(PyJsAdd((Js(100)*Js(50)),Js(30)), Js("5030")), yay!
-    print exp_translator('a?x?y:z:c')
+    print exp_translator('delete a.f')
+

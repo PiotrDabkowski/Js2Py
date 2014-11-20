@@ -4,7 +4,7 @@ from objects import remove_objects, remove_arrays, translate_object, translate_a
 from functions import remove_functions, reset_inline_count
 from jsparser import inject_before_lval, indent, dbg
 
-TOP_GLOBAL = '''from pyjs.pyjs import *\nvar = Scope({k:v for k,v in JS_BUILTINS.iteritems()})\n'''
+TOP_GLOBAL = '''from js2py.pyjs import *\nvar = Scope({k:v for k,v in JS_BUILTINS.iteritems()})\n'''
 
 
 
@@ -37,10 +37,11 @@ def translate_js(js, top=TOP_GLOBAL):
     # hoisted functions recovery
     defs = ''
     #defs += '# define hoisted functions\n'
+    print len(hoisted) , 'HH'*40
     for nested_name, nested_info in hoisted.iteritems():
         nested_block, nested_args = nested_info
-        new_code = translate_func(nested_name, nested_block, nested_args)
-        top += new_code +'\n'
+        new_code = translate_func('PyJsLvalTempHoisted', nested_block, nested_args)
+        defs += new_code +'\nvar.put(%s, PyJsLvalTempHoisted)\n' % repr(nested_name)
     #defs += '# Everting ready!\n'
     # inline functions recovery
     for nested_name, nested_info in inline.iteritems():
@@ -109,42 +110,36 @@ import time
 #print translate_js('if (1) console.log("Hello, World!"); else if (5) console.log("Hello world?");')
 #print time.time()
 t = """
-// Both setters and getters work
-var object = {element1: 1, element2: 2, set x(val) {this.x = val;}};
+var glob = 'glo';
+function f() {
+    var x = 10;
+    glob = 50;
+    function xy() {
+        var glob = 'lol';
+        x = 'dziala';
+        var p = 'nie dziala';
+        };
+    function py() {
+        console.log(x);
+        console.log(z);
+        var z = 50;
+        };
+    return [xy, py];
+};
+console.log(glob);
+ser = f();
+console.log(glob);
+console.log(x);
 
-for (var element in array) {
-  console.log(element);
-}
 
-// ?: expression too
-var result = Math.random() < 0.3 ? 'Less than 0.3' : 'More than 0.3';
 
-// functions of course
-var func = function (a, b, c) {
-  if (a + b === c)
-    console.log("Hello, World!");
-  else if (Something) {
-    var y = 109<<30, z = 8 + "hey";
-    console.log( z );
-  }
-   else
-     return function () {console.log("Else");};
-}, n = 0;
-
-//loops
-do {
-   var def = n += 1;
-   n++;
-   ++n;
-} while ( n < 100 )
-
-}
 """
 if __name__=='__main__':
     # test with jq if works then it really works :)
-    with open('jq.js', 'r') as f:
-        jq = f.read()
+    #with open('jq.js', 'r') as f:
+        #jq = f.read()
 
-    res = translate_js(jq)
-
+    #res = translate_js(jq)
+    res = translate_js(t)
     dbg(res)
+    print 'Done'

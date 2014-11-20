@@ -125,7 +125,7 @@ def do_dowhile(source, start):
     if not start:
         raise SyntaxError('Missing while keyword in do-while loop')
     bra, start = do_bracket_exp(source, start, throw=True)
-    statement += 'if %s:\n' % bra + indent('break\n')
+    statement += 'if not %s:\n' % bra + indent('break\n')
     return  'while 1:\n' + indent(statement), start
 
 

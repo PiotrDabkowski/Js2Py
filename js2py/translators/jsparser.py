@@ -60,7 +60,7 @@ OP_METHODS = {'*': '__mul__',
               '|': '__or__'}
 
 def dbg(source):
-    with open('dbg.txt','w') as f:
+    with open('C:\Users\Piotrek\Desktop\dbg.py','w') as f:
         f.write(source)
 
 
