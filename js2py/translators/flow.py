@@ -48,8 +48,6 @@ def except_keyword(source, start, keyword):
     return start + kl
 
 
-def indent(lines, ind=4):
-    return ind*' '+lines.replace('\n', '\n'+ind*' ').rstrip(' ')
 
 
 def do_bracket_exp(source, start, throw=True):
@@ -139,7 +137,6 @@ def do_block(source, start):
         raise SyntaxError('Missing block ( {code} )')
     code = ''
     bra = bra[1:-1]+';'
-    print 'Indide block:', bra
     bra_pos = 0
     while bra_pos<len(bra):
         st, bra_pos = do_statement(bra, bra_pos)

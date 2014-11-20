@@ -71,6 +71,7 @@ def is_object(n, last):
 
 def is_array(last):
     #it can be prop getter
+    print last
     last = last.strip()
     if endswith_keyword(last, 'return'):
         return True
@@ -121,11 +122,16 @@ def remove_arrays(code, count=1):
     last = ''
     replacements = {}
     for e in bracket_split(code, ['[]']):
-        if e[0]=='[' and is_array(last):
-            name = ARRAY_LVAL % count
-            res += ' ' + name
-            replacements[name] = e
-            count += 1
+        if e[0]=='[':
+            if is_array(last):
+                name = ARRAY_LVAL % count
+                res += ' ' + name
+                replacements[name] = e
+                count += 1
+            else: # pseudo array. But pseudo array can contain true array. for example a[['d'][3]] has 2 pseudo and 1 true array
+                cand, new_replacements, count = remove_arrays(e[1:-1], count)
+                res += '[%s]' % cand
+                replacements.update(new_replacements)
         else:
             res += e
         last = e
@@ -136,6 +142,11 @@ def translate_object(obj, lval, obj_count=1, arr_count=1):
     obj = obj[1:-1] # remove {} from both ends
     obj, obj_rep, obj_count = remove_objects(obj, obj_count)
     obj, arr_rep, arr_count = remove_arrays(obj, arr_count)
+    # functions can be defined inside objects. exp translator cant translate them.
+    # we have to remove them and translate with func translator
+    # its better explained in translate_array function
+    obj, hoisted, inline = functions.remove_functions(obj, all_inline=True)
+    assert not hoisted
     gsetters_after = ''
     keys = argsplit(obj)
     res = []
@@ -150,18 +161,31 @@ def translate_object(obj, lval, obj_count=1, arr_count=1):
                 raise SyntaxError('Unexpected "," in Object literal')
             break
         else: #Not getter, setter or elision
-            key, value = e.split(':')
+            spl = argsplit(e, ':')
+            if len(spl)<2:
+                raise SyntaxError('Invalid Object literal: '+e)
+            try:
+                key, value = spl
+            except:  #len(spl)> 2
+                print 'Unusual case ' + repr(e)
+                key = spl[0]
+                value = ':'.join(spl[1:])
             key = key.strip().__repr__()
             value = exp_translator(value)
             if not value:
                 raise SyntaxError('Missing value in Object literal')
             res.append('%s:%s' % (key, value))
     res = '%s = Js({%s})\n' % (lval, ','.join(res)) + gsetters_after
-    for lval, obj in obj_rep.iteritems():
+    # translate all the nested objects (including removed earlier functions)
+    for nested_name, nested_info in inline.iteritems(): # functions
+        nested_block, nested_args = nested_info
+        new_def = FUNC_TRANSLATOR(nested_name, nested_block, nested_args)
+        res = new_def + res
+    for lval, obj in obj_rep.iteritems(): #objects
         new_def, obj_count, arr_count = translate_object(obj, lval, obj_count, arr_count)
         # add object definition BEFORE array definition
         res = new_def + res
-    for lval, obj in arr_rep.iteritems():
+    for lval, obj in arr_rep.iteritems(): # arrays
         new_def, obj_count, arr_count = translate_array(obj, lval, obj_count, arr_count)
         # add object definition BEFORE array definition
         res = new_def + res
@@ -211,13 +235,26 @@ def translate_array(array, lval, obj_count=1, arr_count=1):
     array = array[1:-1]
     array, obj_rep, obj_count = remove_objects(array, obj_count)
     array, arr_rep, arr_count = remove_arrays(array, arr_count)
+    #functions can be also defined in arrays, this caused many problems since in Python
+    # functions cant be defined inside literal
+    # remove functions (they dont contain arrays or objects so can be translated easily)
+    # hoisted functions are treated like inline
+    array, hoisted, inline = functions.remove_functions(array, all_inline=True)
+    assert not hoisted
     arr = []
-    for e in argsplit(array):
+    # separate elements in array
+    for e in argsplit(array, ','):
+        # translate expressions in array PyJsLvalInline will not be translated!
         e = exp_translator(e.replace('\n', ''))
         arr.append(e if e else 'None')
     arr = '%s = Js([%s])\n' % (lval, ','.join(arr))
-    #But we can have more code to add to define arrays/objects defined inside this array
+    #But we can have more code to add to define arrays/objects/functions defined inside this array
     # translate nested objects:
+    # functions:
+    for nested_name, nested_info in inline.iteritems():
+        nested_block, nested_args = nested_info
+        new_def = FUNC_TRANSLATOR(nested_name, nested_block, nested_args)
+        arr = new_def + arr
     for lval, obj in obj_rep.iteritems():
         new_def, obj_count, arr_count = translate_object(obj, lval, obj_count, arr_count)
         # add object definition BEFORE array definition
@@ -239,7 +276,7 @@ if __name__=='__main__':
     #print remove_objects(test)
     #print list(bracket_split(' {}'))
     print
-    print translate_object('{}', 'ser')[0]
+    print remove_arrays('typeof a&&!db.test(a)&&!ib[(bb.exec(a)||["",""], [][[5][5]])[1].toLowerCase()])')
     print  is_object('', ')')
 
 

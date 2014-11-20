@@ -1,33 +1,12 @@
-from flow import translate_flow, indent
+from flow import translate_flow
 from constants import remove_constants, recover_constants
 from objects import remove_objects, remove_arrays, translate_object, translate_array, set_func_translator
 from functions import remove_functions, reset_inline_count
-
-def dbg(source):
-    with open('dbg.txt','w') as f:
-        f.write(source)
+from jsparser import inject_before_lval, indent, dbg
 
 TOP_GLOBAL = '''from pyjs.pyjs import *\nvar = Scope({k:v for k,v in JS_BUILTINS.iteritems()})\n'''
 
-def inject_before_lval(source, lval, code):
-    if source.count(lval)>1:
-        dbg(source)
-        print
-        print lval
-        raise RuntimeError('To many lvals')
-    elif not source.count(lval):
-        dbg(source)
-        print
-        print lval
-        assert lval not in source
-        raise RuntimeError('No lval found   "%s"'%lval)
-    end = source.index(lval)
-    inj = source.rfind('\n', 0, end)
-    ind = inj
-    while source[ind+1]==' ':
-        ind+=1
-    ind -= inj
-    return source[:inj+1]+ indent(code, ind) + source[inj+1:]
+
 
 def translate_js(js, top=TOP_GLOBAL):
     """Js has to be a javascript code. Functions and getters/ setters are not supported yet but will be very soon.
@@ -40,7 +19,6 @@ def translate_js(js, top=TOP_GLOBAL):
     # Remove object literals
     no_obj, objects, obj_count = remove_objects(no_const)
     print 'obj count', len(objects)
-    print objects['PyJsLvalObject1_']
     # Remove arrays
     no_arr, arrays, arr_count = remove_arrays(no_obj)
     print 'arr count', len(arrays)
@@ -162,9 +140,11 @@ do {
 
 }
 """
+if __name__=='__main__':
+    # test with jq if works then it really works :)
+    with open('jq.js', 'r') as f:
+        jq = f.read()
 
-# test with jq if passed then it works :)
-with open('jq.js', 'r') as f:
-    jq = f.read()
+    res = translate_js(jq)
 
-res = translate_js(jq)
+    dbg(res)

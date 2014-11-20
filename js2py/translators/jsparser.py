@@ -59,6 +59,36 @@ OP_METHODS = {'*': '__mul__',
               '^': '__xor__',
               '|': '__or__'}
 
+def dbg(source):
+    with open('dbg.txt','w') as f:
+        f.write(source)
+
+
+def indent(lines, ind=4):
+    return ind*' '+lines.replace('\n', '\n'+ind*' ').rstrip(' ')
+
+
+def inject_before_lval(source, lval, code):
+    if source.count(lval)>1:
+        dbg(source)
+        print
+        print lval
+        raise RuntimeError('To many lvals')
+    elif not source.count(lval):
+        dbg(source)
+        print
+        print lval
+        assert lval not in source
+        raise RuntimeError('No lval found   "%s"'%lval)
+    end = source.index(lval)
+    inj = source.rfind('\n', 0, end)
+    ind = inj
+    while source[ind+1]==' ':
+        ind+=1
+    ind -= inj
+    return source[:inj+1]+ indent(code, ind) + source[inj+1:]
+
+
 def bracket_split(source, brackets=('()','{}','[]'), strip=False):
     """DOES NOT RETURN EMPTY STRINGS (can only return empty bracket content if strip=True)"""
     starts = [e[0] for e in brackets]

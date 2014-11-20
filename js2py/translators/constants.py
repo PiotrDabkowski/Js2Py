@@ -25,7 +25,7 @@ def _is_cancelled(source, n):
 def _ensure_regexp(source, n): #<- this function has to be improved
     '''returns True if regexp starts at n else returns False
       checks whether it is not a division '''
-    markers = '(+~"\'=[%!*^|&-,;/\\'
+    markers = '(+~"\'=[%:?!*^|&-,;/\\'
     k = 0
     while True:
         k+=1
@@ -143,7 +143,7 @@ def remove_constants(source):
                 quiting_regexp = False
                 inside_regexp = [n, None, 2]
             elif not (inside_comment or inside_regexp):
-                if 1 and (char in NUMS or char=='.') and source[n-1] not in IDENTIFIER_PART:
+                if (char in NUMS  and source[n-1] not in IDENTIFIER_PART) or char=='.':
                     if char=='.':
                         k = parse_num(source,n+1, NUMS)
                         if k==n+1: # just a stupid dot...
@@ -191,7 +191,10 @@ def recover_constants(py_source, replacements): #now has n^2 complexity. improve
     '''Converts identifiers representing Js constants to the PyJs constants
     PyJsNumberConst_1_ which has the true value of 5 will be converted to PyJsNumber(5)'''
     for identifier, value in replacements.iteritems():
-        py_source = py_source.replace(identifier, 'Js(%s)'%value)
+        if identifier.startswith('PyJsConstantRegExp'):
+            py_source = py_source.replace(identifier, 'JsRegExp(%s)'%repr(value))
+        else:
+            py_source = py_source.replace(identifier, 'Js(%s)'%value)
     return py_source
 
 
@@ -208,12 +211,5 @@ if __name__=='__main__':
             'another_pseudo_regex = 49/4443/323/t[3/5/22+53/23]+f09990(5/3+r[4/k.434])+f(/fdd[/]fdf\[/)'
             )
             
-    t, d = remove_constants(test)
-    import time
-    with open('jq.js') as f:
-        jq = f.read()
-    print time.time()
-    t, d = remove_constants(jq)
-    print time.time()
-    b = recover_constants(t, d)
-    print time.time()
+    t, d = remove_constants('  /rree/   " ss" ')
+    print t, d

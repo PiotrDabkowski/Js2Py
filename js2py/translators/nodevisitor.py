@@ -426,7 +426,7 @@ def exp_translator(code):
     global REPL, EXP
     EXP += 1
     REPL = {}
-    print EXP, code
+    #print EXP, code
     code = code.replace('\n', ' ')
     assert '@' not in code
     assert ';' not in code
@@ -436,13 +436,13 @@ def exp_translator(code):
     try:
         return trans(code)
     except:
-
         print '\n\ntrans failed on \n\n' + code
         raw_input('\n\npress enter')
         raise
 
 if __name__=='__main__':
-    #print 'Here',  trans('(eee   )  .   ii  [  PyJsMarker   ]  [   jkj  ]  (  j  ,   j  )  .   jiji   (h  ,  ji  ,  i)(non  )(  )()()()')
+    #print 'Here',  trans('(eee   )  .   ii  [  PyJsMarker   ]  [   jkj  ]  (  j  ,   j  )  .
+    #    jiji   (h  ,  ji  ,  i)(non  )(  )()()()')
     for e in xrange(3):
         print  exp_translator('jk = kk.ik++')
     #First line translated with PyJs:  PyJsStrictEq(PyJsAdd((Js(100)*Js(50)),Js(30)), Js("5030")), yay!

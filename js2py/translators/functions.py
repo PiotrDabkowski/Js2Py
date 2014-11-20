@@ -9,7 +9,7 @@ def reset_inline_count():
     global INLINE_COUNT
     INLINE_COUNT = 0
 
-def remove_functions(source):
+def remove_functions(source, all_inline=False):
     """removes functions and returns new source, and 2 dicts.
         first dict with removed hoisted(global) functions and second with replaced inline functions"""
     global INLINE_COUNT
@@ -42,7 +42,7 @@ def remove_functions(source):
             block, n =  pass_bracket(source, n, '{}')
             if not block:
                 raise SyntaxError('Function does not have any code block to execute')
-            if name:
+            if name and not all_inline:
                 hoisted[name] = block, args
             else:
                 INLINE_COUNT += 1
