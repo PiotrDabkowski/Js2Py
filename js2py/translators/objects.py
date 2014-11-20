@@ -7,6 +7,7 @@ from utils import *
 from jsparser import *
 from nodevisitor import  exp_translator
 import functions
+from flow import KEYWORD_METHODS
 
 def FUNC_TRANSLATOR(*a):#  stupid import system in python
     raise RuntimeError('Remember to set func translator. Thank you.')
@@ -18,6 +19,7 @@ def set_func_translator(ftrans):
 
 
 def is_empty_object(n, last):
+    """n may be the inside of block or object"""
     if n.strip():
         return False
     # seems to be but can be empty code
@@ -27,9 +29,51 @@ def is_empty_object(n, last):
         return False
     return True
 
+def is_object(n, last):
+    """n may be the inside of block or object.
+       last is the code before object"""
+    if is_empty_object(n, last):
+        return True
+    if not n.strip():
+        return False
+    #Object contains lines of code so it cant be an object
+    if len(argsplit(n, ';'))>1:
+        return False
+    cands = argsplit(n, ',')
+    if not cands[-1].strip():
+        return True # {xxxx,} empty after last , it must be an object
+    for cand in cands:
+        cand = cand.strip()
+        # separate each candidate element at : in dict and check whether they are correct...
+        kv = argsplit(cand, ':')
+        if len(kv) > 2:  # set the len of kv to 2 because of this stupid : expression
+            kv = kv[0],':'.join(kv[1:])
+
+        if len(kv)==2:
+            # key value pair, check whether not label or ?:
+            k, v = kv
+            if not is_lval(k.strip()):
+                return False
+            v = v.strip()
+            if v.startswith('function'):
+                continue
+            #will fail on label... {xxx: while {}}
+            if v[0]=='{': # value cant be a code block
+                return False
+            for e in KEYWORD_METHODS:
+                # if v starts with any statement then return false
+                if v.startswith(e) and len(e)<len(v) and v[len(e)] not in IDENTIFIER_PART:
+                    return False
+        elif not (cand.startswith('set ') or cand.startswith('get ')):
+            return False
+    return True
+
+
 def is_array(last):
     #it can be prop getter
     last = last.strip()
+    if endswith_keyword(last, 'return'):
+        return True
     markers = {')', ']'}
     return not last or  not (last[-1] in markers or last[-1] in IDENTIFIER_PART)
 
@@ -46,9 +90,9 @@ def remove_objects(code, count=1):
         if e[0]=='{':
             n, temp_rep, cand_count = remove_objects(e[1:-1], count)
             # if e was not an object then n should not contain any :
-            if ':' in n or is_empty_object(n, last):
+            if is_object(n, last):
                 #e was an object
-                res += OBJECT_LVAL % count
+                res += ' '+OBJECT_LVAL % count
                 replacements[OBJECT_LVAL % count] = e
                 count += 1
             else:
@@ -79,7 +123,7 @@ def remove_arrays(code, count=1):
     for e in bracket_split(code, ['[]']):
         if e[0]=='[' and is_array(last):
             name = ARRAY_LVAL % count
-            res += name
+            res += ' ' + name
             replacements[name] = e
             count += 1
         else:
@@ -195,6 +239,7 @@ if __name__=='__main__':
     #print remove_objects(test)
     #print list(bracket_split(' {}'))
     print
-    print translate_object('{,}', 'ser')[0]
+    print translate_object('{}', 'ser')[0]
+    print  is_object('', ')')
 
 

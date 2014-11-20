@@ -180,12 +180,12 @@ def remove_constants(source):
               name = NumberName
           else:
               raise RuntimeError()
-          res += name % count
+          res += ' '+name % count+' '
           constants[name % count] = source[end: next_start]
           count += 1
     res+=source[start:]
     return res.strip(), constants
-    
+
     
 def recover_constants(py_source, replacements): #now has n^2 complexity. improve to n
     '''Converts identifiers representing Js constants to the PyJs constants

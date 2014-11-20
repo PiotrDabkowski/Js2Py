@@ -106,6 +106,15 @@ def pass_bracket(source, start, bracket='()'):
         return None, None
 
 
+def endswith_keyword(ending, keyword):
+    if ending.endswith(keyword):
+        if len(keyword)<len(ending):
+            if ending[len(ending)-len(keyword)-1] in IDENTIFIER_PART:
+                return False
+        return True
+    return False
+
+
 def pass_white(source, start):
     n = start
     while n<len(source):
@@ -148,7 +157,7 @@ def argsplit(args, sep=','):
     parsed_len  = 0
     last = 0
     splits = []
-    for e in bracket_split(args, brackets=['()', '[]', '[]']):
+    for e in bracket_split(args, brackets=['()', '[]', '{}']):
         if e[0] not in {'(', '[', '{'}:
             for i, char in enumerate(e):
                 if char==sep:

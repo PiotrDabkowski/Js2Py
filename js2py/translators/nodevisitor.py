@@ -13,9 +13,18 @@ REPL = {}
 
 def unary_validitator(keyword, before, after):
     if keyword[-1] in IDENTIFIER_PART:
-        if after and after[0] not in IDENTIFIER_PART:
-            return True
-        return False
+        if not after or after[0] in IDENTIFIER_PART:
+            return False
+        if before and before[-1] in IDENTIFIER_PART: # I am not sure here...
+            return False
+    return True
+
+def comb_validitator(keyword, before, after):
+    if keyword=='instanceof' or keyword=='in':
+        if before and before[-1] in IDENTIFIER_PART:
+            return False
+        elif after and after[0] in IDENTIFIER_PART:
+            return False
     return True
 
 def bracket_replace(code):
@@ -73,6 +82,10 @@ class NodeVisitor:
         # dont split at != or !== or == or === or <= or >=
         #note <<=, >>= or this >>> will NOT be supported
         # maybe I will change my mind later
+        # Find this crappy ?:
+        if '?' in new:
+            res  = ''.join(split_at_any(new, [':', '?'], translate=trans))
+            return transform_crap(res)
         cand = list(split_at_single(new, '=', ['!', '=','<','>'], ['=']))
         if len(cand)>1: # RL
             it = reversed(cand)
@@ -98,10 +111,6 @@ class NodeVisitor:
                 arglist = arglist[0:-1]+', '+res+op+')'
                 res = beg+arglist
             return res
-        # Find this crappy ?:
-        if '?' in new:
-            res  = ''.join(split_at_any(new, [':', '?'], translate=trans))
-            return transform_crap(res)
         #Now check remaining 2 arg operators that are not handled by python
         #They all have Left to Right (LR) associativity
         order = [OR, AND, BOR, BXOR, BAND, EQS, COMPS, BSHIFTS, ADDS, MULTS]
@@ -112,7 +121,8 @@ class NodeVisitor:
             if '+' in typ:
                 cand = list(split_add_ops(new))
             else:
-               cand = list(split_at_any(new, typ.keys(), False, dangerous, dangerous))  #dont translate and cant start on end on dangerous op.
+                #dont translate. cant start or end on dangerous op.
+               cand = list(split_at_any(new, typ.keys(), False, dangerous, dangerous,validitate=comb_validitator))
             if not len(cand)>1:
                 continue
             n = 1
@@ -352,8 +362,8 @@ COMPS = {'<': js_lt,
          '<=': js_le,
          '>=': js_ge,
          '>': js_gt,
-         ' instanceof ': js_instanceof,  #todo change to validitate
-         ' in ': js_in}
+         'instanceof': js_instanceof,  #todo change to validitate
+         'in': js_in}
 
 BSHIFTS = {'<<': js_lshift,
            '>>': js_rshift,
@@ -394,15 +404,16 @@ def transform_crap(code): #needs some more tests
     end = code.find(':',sep+1)
     end = len(code) if end==-1 else end
     formula = '('+code[ind+1:sep]+' if '+code[beg:ind]+' else '+code[sep+1:end]+')'
-    return code[:beg]+formula+code[end:]
+    return transform_crap(code[:beg]+formula+code[end:])
 
 
 from code import InteractiveConsole
 
 #e = InteractiveConsole(globals()).interact()
-
+import traceback
 def trans(code):
     return NodeVisitor(code.strip()).translate().strip()
+
 
 #todo finish this trans args
 def trans_args(code):
@@ -410,21 +421,29 @@ def trans_args(code):
     args = ','.join(trans(e) for e in new.split(','))
     return '(%s)'%args
 
-
+EXP = 0
 def exp_translator(code):
-    global REPL
+    global REPL, EXP
+    EXP += 1
     REPL = {}
+    print EXP, code
     code = code.replace('\n', ' ')
     assert '@' not in code
     assert ';' not in code
     assert '#' not in code
     #if not code.strip(): #?
     #    return 'var.get("undefined")'
-    return trans(code)
+    try:
+        return trans(code)
+    except:
+
+        print '\n\ntrans failed on \n\n' + code
+        raw_input('\n\npress enter')
+        raise
 
 if __name__=='__main__':
     #print 'Here',  trans('(eee   )  .   ii  [  PyJsMarker   ]  [   jkj  ]  (  j  ,   j  )  .   jiji   (h  ,  ji  ,  i)(non  )(  )()()()')
     for e in xrange(3):
         print  exp_translator('jk = kk.ik++')
     #First line translated with PyJs:  PyJsStrictEq(PyJsAdd((Js(100)*Js(50)),Js(30)), Js("5030")), yay!
-
+    print exp_translator('a?x?y:z:c')

@@ -95,20 +95,17 @@ def do_statement(source, start):
     start = pass_white(source, start)
     # start is the fist position after initial start that is not a white space or \n
     if not start < len(source): #if finished parsing return None
-        return None, None
+        return None, start
     rest = source[start:]
     for key, meth in KEYWORD_METHODS.iteritems():  # check for statements that are uniquely defined by their keywords
         if rest.startswith(key):
             # has to startwith this keyword and the next letter after keyword must be either EOF or not in IDENTIFIER_PART
             if len(key)==len(rest) or rest[len(key)] not in IDENTIFIER_PART:
-                t= meth(source, start)
-                return t
+                return meth(source, start)
     if rest[0] == '{': #Block
         return do_block(source, start)
     # Now only label and expression left
     # todo check for label
-    if source[start] == '}':
-        return None, start
     return do_expression(source, start)
 
 
@@ -141,15 +138,17 @@ def do_block(source, start):
     if bra is None:
         raise SyntaxError('Missing block ( {code} )')
     code = ''
-    bra_pos = 1
-    while bra_pos<len(bra)-1:
+    bra = bra[1:-1]+';'
+    print 'Indide block:', bra
+    bra_pos = 0
+    while bra_pos<len(bra):
         st, bra_pos = do_statement(bra, bra_pos)
         if st is None:
             break
         code += st
-    st = pass_white(bra, bra_pos)
-    if bra[st]!='}' or st+1!=len(bra): # has some more code that could not be parsed...
-        raise SyntaxError('Could not parse source code, unknown statement')
+    bra_pos =  pass_white(bra, bra_pos)
+    if bra_pos<len(bra):
+        raise SyntaxError('Block has more code that could not be parsed:\n'+bra[bra_pos:])
     return code, start
 
 def do_empty(source, start):
@@ -210,6 +209,7 @@ def do_label(source, start):
 
 def do_for(source, start):
     start += 3 # pass for
+    entered = start
     bra, start = pass_bracket(source, start , '()')
     inside, start = do_statement(source, start)
     if inside is None:
@@ -243,6 +243,7 @@ def do_for(source, start):
         TO_REGISTER.append(name)
     end = pass_white(bra, end)
     if bra[end:end+2]!='in' or bra[end+2] in IDENTIFIER_PART:
+        print source[entered-10:entered+50]
         raise SyntaxError('Invalid "for x in y" statement')
     end+=2 # pass in
     exp = exp_translator(bra[end:])

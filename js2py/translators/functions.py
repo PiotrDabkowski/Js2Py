@@ -2,7 +2,7 @@
 from jsparser import *
 from utils import *
 
-INLINE_NAME = 'PyJsLvalInline%d'
+INLINE_NAME = 'PyJsLvalInline%d_'
 INLINE_COUNT = 0
 
 def reset_inline_count():
@@ -24,6 +24,7 @@ def remove_functions(source):
             n+=1
             continue
         if source[n:n+8] == 'function' and source[n+8] not in IDENTIFIER_PART:
+            entered = n
             res += source[last:n]
             name = False
             n = pass_white(source, n+8)
@@ -46,7 +47,7 @@ def remove_functions(source):
             else:
                 INLINE_COUNT += 1
                 name = INLINE_NAME%INLINE_COUNT
-                res += name
+                res += ' '+ name
                 inline[name] = block, args
             last = n
         else:

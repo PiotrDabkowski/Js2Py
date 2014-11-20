@@ -3,16 +3,24 @@ from constants import remove_constants, recover_constants
 from objects import remove_objects, remove_arrays, translate_object, translate_array, set_func_translator
 from functions import remove_functions, reset_inline_count
 
+def dbg(source):
+    with open('dbg.txt','w') as f:
+        f.write(source)
 
 TOP_GLOBAL = '''from pyjs.pyjs import *\nvar = Scope({k:v for k,v in JS_BUILTINS.iteritems()})\n'''
 
 def inject_before_lval(source, lval, code):
     if source.count(lval)>1:
-        print source
+        dbg(source)
+        print
         print lval
         raise RuntimeError('To many lvals')
     elif not source.count(lval):
-        raise RuntimeError('No lval found')
+        dbg(source)
+        print
+        print lval
+        assert lval not in source
+        raise RuntimeError('No lval found   "%s"'%lval)
     end = source.index(lval)
     inj = source.rfind('\n', 0, end)
     ind = inj
@@ -28,13 +36,14 @@ def translate_js(js, top=TOP_GLOBAL):
         are not implemented yet"""
     # Remove constant literals
     no_const, constants = remove_constants(js)
-
+    print 'const count', len(constants)
     # Remove object literals
     no_obj, objects, obj_count = remove_objects(no_const)
-
+    print 'obj count', len(objects)
+    print objects['PyJsLvalObject1_']
     # Remove arrays
     no_arr, arrays, arr_count = remove_arrays(no_obj)
-
+    print 'arr count', len(arrays)
     # Here remove and replace functions
     reset_inline_count()
     no_func, hoisted, inline = remove_functions(no_arr)
@@ -154,4 +163,8 @@ do {
 }
 """
 
-print translate_js(t)
+# test with jq if passed then it works :)
+with open('jq.js', 'r') as f:
+    jq = f.read()
+
+res = translate_js(jq)
