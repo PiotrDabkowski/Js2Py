@@ -1,12 +1,13 @@
 '''Most important file in Js2Py implementation: PyJs class - father of all PyJs objects'''
 from copy import copy
+from translators import translator
 from utils.injector import fix_js_args
 from translators.jsparser import OP_METHODS
 from types import FunctionType
 import traceback
 __all__ = ['Js', 'PyJsComma', 'PyJsStrictEq', 'PyJsStrictNeq',
            'PyJsException', 'PyJsBshift', 'Scope', 'PyExceptionToJs',
-           'JsToPyException', 'JS_BUILTINS']
+           'JsToPyException', 'JS_BUILTINS', 'appengine']
 
 
 def Js(val):
@@ -341,7 +342,7 @@ class PyJs:
             elif self.is_infinity():
                 sign = '-' if self.value<0 else ''
                 return Js(sign+'Infinity')
-            elif self.value.s():  # dont print .0
+            elif self.value.is_integer():  # dont print .0
                 return Js(str(int(self.value)))
             return Js(str(self.value)) # accurate enough
         elif typ=='String':
@@ -769,7 +770,7 @@ class PyJsFunction(PyJs):
         func = fix_js_args(func)
         self.code = func
         self.source = source if source else '{ [python code] }'
-        self.func_name = func.func_name if not func.func_nam.startswith('PyJsLvalInline') else ''
+        self.func_name = func.func_name if not func.func_name.startswith('PyJsLvalInline') else ''
         self.extensible = extensible
         self.prototype = prototype
         self.own = {}
@@ -993,66 +994,13 @@ fill_prototype(BooleanPrototype, jsboolean.BooleanPrototype, default_attrs)
 
 #########################################################################
 
-from translators import constants, nodevisitor
 
-def sim_translate(code):
-    code = code.replace('var ', '')
-    c, d = constants.remove_constants(code)
-    return constants.recover_constants(nodevisitor.exp_translator(c), d)
-
-def interactor(x):
-    import sys, traceback
-    js_code = raw_input(x)
-    try:
-        py_code = sim_translate(js_code)
-        print py_code
-    except SyntaxError:
-        sys.stderr.write(traceback.format_exc())
-        return ''
-    return py_code
-
-
-def appengine_line(code, d, var):
-    try:
-        raw = nodevisitor.exp_translator(code)
-        py_code = constants.recover_constants(raw, d)
-    except SyntaxError:
-        return traceback.format_exc()
-    except:
-        return traceback.format_exc()
-    try:
-        return (py_code, str(eval(py_code)))
-    except:
-        return (py_code, traceback.format_exc(), 1)
 
 def appengine(code):
-    var = Scope(copy(scope))
-    var.scope['this'] = var
     try:
-        c, d = constants.remove_constants(code)
-        c = c.replace('var ', '')
-    except SyntaxError:
-        return traceback.format_exc()
+        return translator.translate_js(code)
     except:
-        return 'Internal parse error \n(%s)'%traceback.format_exc()
-    lines = c.split(';')
-    trans_res = '\n'
-    py_res = '\n'
-    stop_py = False
-    for i, line in enumerate(lines, 1):
-        line = line.replace('\n','').strip()
-        if not line:
-            continue
-        res = appengine_line(line, d, var)
-        if isinstance(res, basestring):
-            return 'Parse error in line %d:\n\n%s'%(i, res)
-        if len(res)==3:
-            py_res+= res[1]+'\n'
-            stop_py = True
-        elif not stop_py:
-            py_res+=res[1]+'\n'
-        trans_res += res[0] + '\n'
-    return 'TRANSLATION RESULT:\n%s\n\nOUT:\n%s'%(trans_res, py_res)
+        return traceback.format_exc()
         
         
         

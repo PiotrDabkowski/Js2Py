@@ -33,7 +33,6 @@ def remove_functions(source):
             if not args:
                 raise SyntaxError('Function misses bracket with argnames ()')
             args = args.strip('() \n')
-            print args
             args = tuple(parse_identifier(e, 0)[0] for e in argsplit(args)) if args else ()
             if len(args) - len(set(args)):
                 # I know its legal in JS but python does not allow duplicate argnames

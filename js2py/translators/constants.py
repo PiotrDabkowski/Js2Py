@@ -169,6 +169,7 @@ def remove_constants(source):
     constants = {}
     for end, next_start, typ in comments:
           res += source[start:end]
+          start = next_start
           if typ==0: # String
               name = StringName
           elif typ==1: # comment
@@ -181,7 +182,6 @@ def remove_constants(source):
               raise RuntimeError()
           res += name % count
           constants[name % count] = source[end: next_start]
-          start = next_start
           count += 1
     res+=source[start:]
     return res.strip(), constants

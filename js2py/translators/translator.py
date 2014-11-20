@@ -1,7 +1,7 @@
 from flow import translate_flow, indent
 from constants import remove_constants, recover_constants
-from objects import remove_objects, remove_arrays, translate_object, translate_array
-from functions import remove_functions
+from objects import remove_objects, remove_arrays, translate_object, translate_array, set_func_translator
+from functions import remove_functions, reset_inline_count
 
 
 TOP_GLOBAL = '''from pyjs.pyjs import *\nvar = Scope({k:v for k,v in JS_BUILTINS.iteritems()})\n'''
@@ -36,24 +36,25 @@ def translate_js(js, top=TOP_GLOBAL):
     no_arr, arrays, arr_count = remove_arrays(no_obj)
 
     # Here remove and replace functions
+    reset_inline_count()
     no_func, hoisted, inline = remove_functions(no_arr)
 
     #translate flow and expressions
     py_seed, to_register = translate_flow(no_func)
 
     # register variables and hoisted functions
-    top += '# register variables\n'
+    #top += '# register variables\n'
     top += 'var.registers(%s)\n' % str(to_register + hoisted.keys())
 
     #Recover functions
     # hoisted functions recovery
     defs = ''
-    defs += '# define hoisted functions\n'
+    #defs += '# define hoisted functions\n'
     for nested_name, nested_info in hoisted.iteritems():
         nested_block, nested_args = nested_info
         new_code = translate_func(nested_name, nested_block, nested_args)
         top += new_code +'\n'
-    defs += '# Everting ready!\n'
+    #defs += '# Everting ready!\n'
     # inline functions recovery
     for nested_name, nested_info in inline.iteritems():
         nested_block, nested_args = nested_info
@@ -62,15 +63,16 @@ def translate_js(js, top=TOP_GLOBAL):
     # add hoisted definitiond - they have literals that have to be recovered
     py_seed = defs + py_seed
 
+    #Recover arrays
+    for arr_lval, arr_code in arrays.iteritems():
+        translation, obj_count, arr_count = translate_array(arr_code, arr_lval, obj_count, arr_count)
+        py_seed = inject_before_lval(py_seed, arr_lval, translation)
+
     #Recover objects
     for obj_lval, obj_code in objects.iteritems():
         translation, obj_count, arr_count = translate_object(obj_code, obj_lval, obj_count, arr_count)
         py_seed = inject_before_lval(py_seed, obj_lval, translation)
 
-    #Recover arrays
-    for arr_lval, arr_code in arrays.iteritems():
-        translation, obj_count, arr_count = translate_object(arr_code, arr_lval, obj_count, arr_count)
-        py_seed = inject_before_lval(py_seed, arr_lval, translation)
 
     #Recover constants
     py_code = recover_constants(py_seed, constants)
@@ -107,10 +109,11 @@ def translate_func(name, block, args):
         new_code = translate_func(nested_name, nested_block, nested_args)
         # Inject definitions of inline functions just before usage
         py_code = inject_before_lval(py_code, nested_name, new_code)
-    code += indent(py_code)
+    if py_code.strip():
+        code += indent(py_code)
     return code
 
-
+set_func_translator(translate_func)
 
 
 #print inject_before_lval('   chuj\n   moj\n   lval\nelse\n', 'lval', 'siema\njestem piter\n')
@@ -118,4 +121,37 @@ import time
 #print time.time()
 #print translate_js('if (1) console.log("Hello, World!"); else if (5) console.log("Hello world?");')
 #print time.time()
-print translate_js('{function (x) {function (x) {x+y;}+j;}+j;function (x) {x+y;}+j;function (x) {x+y;}+j; a+b;}')
+t = """
+// Both setters and getters work
+var object = {element1: 1, element2: 2, set x(val) {this.x = val;}};
+
+for (var element in array) {
+  console.log(element);
+}
+
+// ?: expression too
+var result = Math.random() < 0.3 ? 'Less than 0.3' : 'More than 0.3';
+
+// functions of course
+var func = function (a, b, c) {
+  if (a + b === c)
+    console.log("Hello, World!");
+  else if (Something) {
+    var y = 109<<30, z = 8 + "hey";
+    console.log( z );
+  }
+   else
+     return function () {console.log("Else");};
+}, n = 0;
+
+//loops
+do {
+   var def = n += 1;
+   n++;
+   ++n;
+} while ( n < 100 )
+
+}
+"""
+
+print translate_js(t)

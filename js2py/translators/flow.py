@@ -101,11 +101,14 @@ def do_statement(source, start):
         if rest.startswith(key):
             # has to startwith this keyword and the next letter after keyword must be either EOF or not in IDENTIFIER_PART
             if len(key)==len(rest) or rest[len(key)] not in IDENTIFIER_PART:
-                return meth(source, start)
+                t= meth(source, start)
+                return t
     if rest[0] == '{': #Block
         return do_block(source, start)
     # Now only label and expression left
     # todo check for label
+    if source[start] == '}':
+        return None, start
     return do_expression(source, start)
 
 

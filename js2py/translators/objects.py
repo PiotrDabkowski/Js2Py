@@ -6,6 +6,15 @@ ARRAY_LVAL = 'PyJsLvalArray%d_'
 from utils import *
 from jsparser import *
 from nodevisitor import  exp_translator
+import functions
+
+def FUNC_TRANSLATOR(*a):#  stupid import system in python
+    raise RuntimeError('Remember to set func translator. Thank you.')
+
+def set_func_translator(ftrans):
+    # stupid stupid Python or Peter
+    global FUNC_TRANSLATOR
+    FUNC_TRANSLATOR = ftrans
 
 
 def is_empty_object(n, last):
@@ -117,12 +126,38 @@ def translate_object(obj, lval, obj_count=1, arr_count=1):
 
 
 def translate_setter(lval, setter):
-    trans = ''
-    return trans
+    func = 'function' + setter[3:]
+    try:
+        _, data, _ = functions.remove_functions(func)
+        if not data or len(data)>1:
+            raise Exception()
+    except:
+        raise SyntaxError('Could not parse setter: '+setter)
+    prop = data.keys()[0]
+    body, args = data[prop]
+    if len(args)!=1:  #setter must have exactly 1 argument
+        raise SyntaxError('Invalid setter. It must take exactly 1 argument.')
+    # now messy part
+    res = FUNC_TRANSLATOR('setter', body, args)
+    res += "%s.define_own_property(%s, {'set': setter})\n"%(lval, repr(prop))
+    return res
 
 def translate_getter(lval, getter):
-    trans = ''
-    return trans
+    func = 'function' + getter[3:]
+    try:
+        _, data, _ = functions.remove_functions(func)
+        if not data or len(data)>1:
+            raise Exception()
+    except:
+        raise SyntaxError('Could not parse getter: '+getter)
+    prop = data.keys()[0]
+    body, args = data[prop]
+    if len(args)!=0:  #setter must have exactly 0 argument
+        raise SyntaxError('Invalid getter. It must take exactly 0 argument.')
+    # now messy part
+    res = FUNC_TRANSLATOR('getter', body, args)
+    res += "%s.define_own_property(%s, {'get': setter})\n"%(lval, repr(prop))
+    return res
 
 
 def translate_array(array, lval, obj_count=1, arr_count=1):
@@ -148,6 +183,8 @@ def translate_array(array, lval, obj_count=1, arr_count=1):
         # add object definition BEFORE array definition
         arr = new_def + arr
     return arr, obj_count, arr_count
+
+
 
 
 
