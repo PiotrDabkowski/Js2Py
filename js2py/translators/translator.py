@@ -41,7 +41,7 @@ def translate_js(js, top=TOP_GLOBAL):
     for nested_name, nested_info in hoisted.iteritems():
         nested_block, nested_args = nested_info
         new_code = translate_func('PyJsLvalTempHoisted', nested_block, nested_args)
-        new_code += indent('PyJsLvalTempHoisted.func_name = %s\n' %repr(nested_name))
+        new_code += 'PyJsLvalTempHoisted.func_name = %s\n' %repr(nested_name)
         defs += new_code +'\nvar.put(%s, PyJsLvalTempHoisted)\n' % repr(nested_name)
     #defs += '# Everting ready!\n'
     # inline functions recovery

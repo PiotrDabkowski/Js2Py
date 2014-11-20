@@ -11,6 +11,7 @@ class EvalJs:
 
     def execute(self, js):
         """executes javascript js in current context"""
+        js = js.replace('\t', '\n')  # have to remove tabs in parser 
         if not self.__started:
             code = translate_js(js)
             self.__started = True
@@ -24,40 +25,5 @@ class EvalJs:
 
     def __getitem__(self, var):
         return self.get_variable(var)
-    
-e = EvalJs()
-x = '''function lcs(string1, string2){
-	var longestCommonSubstring = 0;
-	var table = [],
-            len1 = string1.length,
-            len2 = string2.length,
-            row, col;
-	for(row = 0; row <= len1; row++){
-		table[row] = [];
-		for(col = 0; col <= len2; col++){
-			table[row][col] = 0;
-		}
-	}
-        var i, j;
-	for(i = 0; i < len1; i++){
-		for(j = 0; j < len2; j++){
-			if(string1[i]==string2[j]){
-				if(table[i][j] == 0){
-					table[i+1][j+1] = 1;
-				} else {
-					table[i+1][j+1] = table[i][j] + 1;
-				}
-				if(table[i+1][j+1] > longestCommonSubstring){
-					longestCommonSubstring = table[i+1][j+1];
-				}
-			} else {
-				table[i+1][j+1] = 0;
-			}
-		}
-	}
-	return longestCommonSubstring;
-}'''.replace('\t', '\n')
 
-e.execute(x)
-print e['lcs']('absdsa','cccccccccccccbsjdcccc')
 
