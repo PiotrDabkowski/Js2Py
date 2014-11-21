@@ -2,7 +2,7 @@
 
 Still under development prototypes are not fully finished and constructors are not implemented at all. But it can do basic translations. For example let's translate this LongestCommonSubstring algorithm:
 
-    x = '''function longestCommonSubstring(string1, string2){
+    x = '''function lcs(string1, string2){
         	// init max value
         	var longestCommonSubstring = 0;
         	// init 2D array with 0
