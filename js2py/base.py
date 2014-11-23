@@ -1,5 +1,6 @@
 '''Most important file in Js2Py implementation: PyJs class - father of all PyJs objects'''
 from copy import copy
+import re
 from translators import translator
 from utils.injector import fix_js_args
 from translators.jsparser import OP_METHODS
@@ -167,12 +168,11 @@ class PyJs:
              raise TypeError('Undefiend and null dont have properties!')
         if not isinstance(prop, basestring):
              prop = prop.to_string().value
-        if not isinstance(prop, basestring): raise RuntimeError('Bug')
         #we need to set the value to the incremented one
         if op is not None:
             val = getattr(self.get(prop), OP_METHODS[op])(val)
         if not self.can_put(prop):
-            return val 
+            return val
         own_desc = self.get_own_property(prop)
         if is_data_descriptor(own_desc):
             own_desc['value'] = val
@@ -236,9 +236,9 @@ class PyJs:
                 default_accessor_desc.update(desc)
                 self.own[prop] = default_accessor_desc
             return True
-        
         if not desc or desc==current: #We dont need to change anything.
             return True
+
         configurable = current['configurable']  
         if not configurable:  #Prevent changing configurable or enumerable
             if desc['configurable']:
@@ -370,9 +370,14 @@ class PyJs:
             return Js(0)
         val = num.value
         pos_int = int(val)
-        int32 = pos_int % 0x10000
-        num.value = int32 - 0x8000 if int32 > 0x8000 else int32
+        int32 = pos_int % 2**32
+        num.value = int32 - 2**31 if int32 > 2**31 else int32
         return num
+
+    def cok(self):
+        """Check object coercible"""
+        if self.Class in {'Undefined', 'Null'}:
+            raise Js(TypeError)('Cant convert to object')
 
     def to_int(self):
         num = self.to_number()
@@ -383,13 +388,20 @@ class PyJs:
         num.value = int(num)
         return num
 
-    def to_unit32(self):
+    def to_uint32(self):
         num = self.to_number()
         if num.is_nan() or num.is_infinity():
             return Js(0)
-        num.value = int(num.value) % 0x10000
+        num.value = int(num.value) % 2**32
         return num
-    
+
+    def to_uint16(self):
+        num = self.to_number()
+        if num.is_nan() or num.is_infinity():
+            return Js(0)
+        num.value = int(num.value) % 2**16
+        return num
+
     def same_as(self, other):
         typ = self.Class
         if typ!=other.Class:
@@ -698,30 +710,40 @@ def PyExceptionToJs(py):
     return py.mes
 
 #Scope class it will hold all the variables accessible to user
-class Scope:
-    registered = set()
+class Scope(PyJs):
+    Class = 'global'
+    extensible = True
+    # todo speed up
+    # in order to speed up this very important class the top scope should behave differently than
+    # child scopes, child scope should not have this property descriptor thing because they cant be changed anyway
+    # they are all confugurable= False
 
     def __init__(self, scope, closure=None):
         """Doc"""
-        self.scope = scope
-        self.closure = closure
-
-    def get(self, lval):
-        if not isinstance(lval, basestring):
-            lval = lval.to_string().value
-        cand = self.scope.get(lval)
-        if cand is not None:
-            return cand
-        if self.closure is None:
-            raise ReferenceError(lval + ' is not defined')
-        return self.closure.get(lval)
+        self.prototype = closure
+        if closure is None:
+            # global, top level scope
+            self.own = {}
+            for k, v in scope.iteritems():
+                # set all the global items
+                self.define_own_property(k, {'value': v, 'configurable': False,
+                                                'writable': False, 'enumerable': False})
+        else:
+            # not global, less powerful but faster closure.
+            self.own = scope # simple dictionary which maps name directly to js object.
 
     def register(self, lval):
         # registered keeps only global registered variables
-        if not self.closure:
-            self.registered.add(lval)
-        if lval not in self.scope:
-            self.scope[lval] = undefined
+        if self.prototype is None:
+            # define in global scope
+            if lval in self.own:
+                self.own[lval]['configurable'] = False
+            else:
+                self.define_own_property(lval, {'value': undefined, 'configurable': False,
+                                                'writable': True, 'enumerable': True})
+        elif lval not in self.own:
+            # define in local scope since it has not been defined yet
+            self.own[lval] = undefined # default value
 
     def registers(self, lvals):
         """register multiple variables"""
@@ -729,31 +751,45 @@ class Scope:
             self.register(lval)
 
     def put(self, lval, val, op=None):
-        if not isinstance(lval, basestring):
-            lval = lval.to_string().value
-        cand = self.scope.get(lval)
-        if (cand is not None) or (self.closure is None): #If not found set global
-            if op: #Increment or other assign operation eg: *=
-                val = getattr(cand, OP_METHODS[op])(val)
-            self.scope[lval] = val
-            return val
-        return self.closure.put(lval, val, op)
+        if self.prototype is None:
+            # global scope put, simple
+            return PyJs.put(self, lval, val, op)
+        else:
+            # trying to put in local scope
+            # we dont know yet in which scope we should place this var
+            if lval in self.own:
+                if op: # increment operation
+                     val = getattr(self.own[lval], OP_METHODS[op])(val)
+                self.own[lval] = val
+                return val
+            else:
+                #try to put in the lower scope since we cant put in this one (var wasn't registered)
+                return self.prototype.put(lval, val, op)
 
-    def delete(self, lval): # i have to improve it because registered cant be deleted ...
-        if not isinstance(lval, basestring):
-            lval = lval.to_string().value
-        if lval in self.registered: #we can only delete global not registered lvals and this one is registered
-            return false
-        # Note registered keeps only global registered variables
-        now = self
-        while now.closure is not None: # we cant delete any variables from closures because they are all registered
-            if lval in now.scope:
+    def get(self, prop):
+        if self.prototype is not None:
+            # fast local scope
+            cand = self.own.get(prop)
+            if cand is None:
+                return self.prototype.get(prop)
+            return cand
+        # slow, global scope
+        return PyJs.get(self, prop)
+
+    def delete(self, lval):
+        if self.prototype is not None:
+            if lval in self.own:
                 return false
-            now = now.closure
-        if lval not in now.scope:  # lval not present in global
+            return self.prototype.delete(lval)
+        # we are in global scope here. Must exist and be configurable to delete
+        if lval not in self.own:
+            # this lval does not exist, why do you want to delete it???
             return true
-        del now.scope[lval]
-        return true
+        if self.own[lval]['configurable']:
+            del self.own[lval]
+            return true
+        # not configurable, cant delete
+        return false
 
 
 
@@ -891,30 +927,55 @@ class PyJsNumber(PyJs):  #Note i dont implement +0 and -0. Just 0.
 NumberPrototype = PyJsObject({}, ObjectPrototype)
 Infinity = PyJsNumber(float('inf'), NumberPrototype)
 NaN = PyJsNumber(float('nan'), NumberPrototype)
+PyJs.NaN = NaN
+PyJs.Infinity = Infinity
 
-
-
+# This dict aims to increase speed of string creation by storing character instances
+CHAR_BANK = {}
+PyJs.CHAR_BANK = CHAR_BANK
 #String
+# Different than implementation design in order to improve performance
+#for example I dont create separate property for each character in string, it would take ages.
 class PyJsString(PyJs):
     Class = 'String'
-    def __init__(self, value=None, prototype=None, extensible=False):
+    extensible = False
+    def __init__(self, value=None, prototype=None):
         '''Constructor for Number String and Boolean'''
         if not isinstance(value, basestring):
             raise TypeError
         self.value = value
         self.prototype = prototype
         self.own = {}
-        self.extensible = True
-        self.put('length', Js(len(value)))
+         # this should be optimized because its mych slower than python str creation (about 50 times!)
+        # Dont create separate properties for every index. Just
+        self.own['length'] = {'value': Js(len(value)), 'writable': False,
+                             'enumerable': False, 'configurable': False}
         if len(value)==1:
-            self.put('0', self)
-        elif value:
-            for i, e in enumerate(value):
-                self.put(str(i), Js(e))
-        self.extensible = extensible
+            CHAR_BANK[value] = self #, 'writable': False,
+                               # 'enumerable': True, 'configurable': False}
+
+    def get(self, prop):
+        try:
+            if not isinstance(prop, basestring):
+                prop = prop.value
+            char = self.value[int(prop)]
+            if char not in CHAR_BANK:
+                Js(char) # this will add char to CHAR BANK
+            return CHAR_BANK[char]
+        except ValueError:
+            pass
+        return PyJs.get(self, prop)
+
+    def can_put(self, prop):
+        return False
+
+    def __iter__(self):
+        for i in xrange(len(self.value)):
+            yield Js(i)  # maybe create an int bank?
+
 
 StringPrototype = PyJsObject({}, ObjectPrototype)
-
+CHAR_BANK[''] = Js('')
 
 #Boolean
 class PyJsBoolean(PyJs):
@@ -971,9 +1032,47 @@ class PyJsArguments(PyJs):
         for i, e in enumerate(args):
             self.put(str(i), Js(e))
 
+    def to_list(self):
+        return [self.get(str(e)) for e in xrange(int(self.own['length']['value'].value))]
+
 
 #We can define function proto after number proto because func uses number in its init
 FunctionPrototype = PyJsFunction(Empty, ObjectPrototype)
+
+
+class PyJsRegExp(PyJs):
+    Class = 'RegExp'
+    def __init__(self, regexp, prototype=None):
+        self.prototype = prototype
+        self.own = {}
+        self.glob = False
+        self.ignore_case = 0
+        self.multiline = 0
+        if not regexp[-1]=='/':
+            #contains some flags (allowed are i, g, m
+            spl =  regexp.rfind('/')
+            flags = set(regexp[spl+1:])
+            self.value = regexp[1:spl]
+            if 'g' in flags:
+                self.glob = True
+            if 'i' in flags:
+                self.ignore_case = re.IGNORECASE
+            if 'm' in flags:
+                self.multiline = True
+        else:
+            self.value = regexp[1:-1]
+        try:
+            # we have to check whether pattern is valid.
+            # also this will speed up matching later
+            self.pat = re.compile(self.value, self.ignore_case | self.multiline)
+        except:
+            raise SyntaxError('Invalid RegExp pattern: %s'% repr(self.value))
+
+
+
+
+
+RegExpPrototype = PyJsRegExp('//', ObjectPrototype)
 
 
 
@@ -999,14 +1098,18 @@ default_attrs = {'writable':True, 'enumerable':False, 'configurable':True}
 PyJs.undefined = undefined
 PyJs.Js = staticmethod(Js)
 
-from prototypes import jsfunction, jsobject, jsnumber, jsstring, jsboolean
+from prototypes import jsfunction, jsobject, jsnumber, jsstring, jsboolean, jsarray, jsregexp
+
+
 #Object proto
 fill_prototype(ObjectPrototype, jsobject.ObjectPrototype, default_attrs)
 #Define __proto__ accessor (this cant be done by fill_prototype since)
 def __proto__(): 
     return this.prototype if this.prototype is not None else null
 getter = PyJsFunction(__proto__, FunctionPrototype)
-def __proto__(): pass
+def __proto__(val):
+    if val.is_object():
+        this.prototype = val
 setter =  PyJsFunction(__proto__, FunctionPrototype)     
 ObjectPrototype.define_own_property('__proto__', {'set': setter,
                                                   'get': getter,
@@ -1022,8 +1125,10 @@ fill_prototype(NumberPrototype, jsnumber.NumberPrototype, default_attrs)
 fill_prototype(StringPrototype, jsstring.StringPrototype, default_attrs)
 #Boolean proto
 fill_prototype(BooleanPrototype, jsboolean.BooleanPrototype, default_attrs)
-
-
+#Array proto
+fill_prototype(ArrayPrototype, jsarray.ArrayPrototype, default_attrs)
+#RegExp proto
+fill_prototype(RegExpPrototype, jsregexp.RegExpPrototype, default_attrs)
 
 #########################################################################
 
