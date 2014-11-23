@@ -7,6 +7,8 @@ RegExpName = 'PyJsConstantRegExp%d_'
 ALPHAS = set(ascii_lowercase+ ascii_lowercase.upper())
 NUMS = set(digits)
 IDENTIFIER_START = ALPHAS.union(NUMS)
+ESCAPE_CHARS = {'n', '0', 'b', 'f', 'r', 't', 'v', '"', "'", '\\'}
+OCTAL = {'0', '1', '2', '3', '4', '5', '6', '7'}
 HEX = set('0123456789abcdefABCDEF')
 from utils import IDENTIFIER_PART
 IDENTIFIER_PART  = IDENTIFIER_PART.union({'.'})
@@ -40,7 +42,7 @@ def _ensure_regexp(source, n): #<- this function has to be improved
 
 def parse_num(source, start, charset):
     """Returns a first index>=start of chat not in charset"""
-    while source[start] in charset:
+    while start<len(source) and source[start] in charset:
         start+=1
     return start
 
@@ -193,9 +195,68 @@ def recover_constants(py_source, replacements): #now has n^2 complexity. improve
     for identifier, value in replacements.iteritems():
         if identifier.startswith('PyJsConstantRegExp'):
             py_source = py_source.replace(identifier, 'JsRegExp(%s)'%repr(value))
+        elif identifier.startswith('PyJsConstantString'):
+            py_source = py_source.replace(identifier, 'Js(u%s)' % unify_string_literals(value))
         else:
             py_source = py_source.replace(identifier, 'Js(%s)'%value)
     return py_source
+
+
+def unify_string_literals(js_string):
+    """this function parses the string just like javascript
+       for example literal '\d' in JavaScript would be interpreted
+       as 'd' - backslash would be ignored and in Pyhon this
+       would be interpreted as '\\d' This function fixes this problem."""
+    n = 0
+    res = ''
+    limit = len(js_string)
+    while n < limit:
+        char = js_string[n]
+        if char=='\\':
+            new, n = do_escape(js_string, n)
+            res += new
+        else:
+            res += char
+            n += 1
+    return res
+
+
+
+def do_escape(source, n):
+    """Its actually quite complicated to cover every case :)
+       http://www.javascriptkit.com/jsref/escapesequence.shtml"""
+    if not n+1 < len(source):
+        return '' # not possible here but can be possible in general case.
+    if source[n+1] in ESCAPE_CHARS:
+        return source[n:n+2], n+2
+    if source[n+1]in {'x', 'u'}:
+        char, length = ('u', 4) if source[n+1]=='u' else ('x', 2)
+        n+=2
+        end = parse_num(source, n, HEX)
+        if end-n < length:
+                raise SyntaxError('Invalid escape sequence!')
+        #if length==4:
+        #    return unichr(int(source[n:n+4], 16)), n+4 # <- this was a very bad way of solving this problem :)
+        return source[n-2:n+length], n+length
+    if source[n+1] in OCTAL:
+        n += 1
+        end = parse_num(source, n, OCTAL)
+        end = min(end, n+3) # cant be longer than 3
+        # now the max allowed is 377 ( in octal) and 255 in decimal
+        max_num = 255
+        num = 0
+        len_parsed = 0
+        for e in source[n:end]:
+            cand = 8*num + int(e)
+            if cand > max_num:
+                break
+            num = cand
+            len_parsed += 1
+        # we have to return in a different form because python may want to parse more...
+        # for example '\777' will be parsed by python as a whole while js will use only \77
+        return '\\' + hex(num)[1:], n + len_parsed
+    return source[n+1], n+2
+
 
 
 

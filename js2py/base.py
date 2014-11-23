@@ -343,8 +343,8 @@ class PyJs:
                 sign = '-' if self.value<0 else ''
                 return Js(sign+'Infinity')
             elif self.value.is_integer():  # dont print .0
-                return Js(str(int(self.value)))
-            return Js(str(self.value)) # accurate enough
+                return Js(unicode(int(self.value)))
+            return Js(unicode(self.value)) # accurate enough
         elif typ=='String':
             return self
         else: #object
@@ -646,8 +646,14 @@ class PyJs:
             raise TypeError('%s is not a function'%self.typeof())
         return self.call(self.GlobalObject, args) # todo  value of this
     
-    def __repr__(self):
+    def __unicode__(self):
         return self.to_string().value
+
+    def __repr__(self):
+        val = self.to_string().value.encode('utf-8')
+        if self.Class=='String':
+            return repr(val)
+        return val
     
     def callprop(self, prop, *args):
         '''Call a property prop as a method (this will be self).
@@ -699,7 +705,7 @@ class PyJsException(Exception):
         if self.mes.Class=='Error':
             return 'UNKNOWN' #todo idk what to do here
         else:
-            return str(self.mes)
+            return unicode(self.mes)
 
 def JsToPyException(js):
     temp = PyJsException()
