@@ -46,6 +46,100 @@ class StringPrototype:
             res += e.to_string().value
         return this.Js(res)
 
+    def indexOf(searchString, position):
+        this.cok()
+        s = this.to_string().value
+        search = searchString.to_stirng().value
+        pos = position.to_int()
+        return this.Js(s.find(search, min(max(pos, 0), len(s))) )
+
+    def lastIndexOf(searchString, position):
+        this.cok()
+        s = this.to_string().value
+        search = searchString.to_stirng().value
+        pos = position.to_number()
+        pos = 10**15 if pos.is_nan() else pos.to_int()
+        return this.Js(s.rfind(search, 0, min(max(pos, 0)+1, len(s))) )
+
+    def localeCompare (that):
+        this.cok()
+        s = this.to_string()
+        that = that.to_string()
+        if s<that:
+            return this.Js(-1)
+        elif s>that:
+            return this.Js(1)
+        return this.Js(0)
+
+    def match(regexp):
+        pass
+
+    def replace(searchValue, replaceValue):
+        pass
+
+    def search(regexp):
+        pass
+
+    def slice(start, end):
+        pass
+
+    def split (separator, limit):
+        pass
+
+    def substring (start, end):
+        pass
+
+    def toLowerCase():
+        pass
+
+    def toLocaleLowerCase():
+        pass
+
+    def toUpperCase():
+        pass
+
+    def toLocaleUpperCase():
+        pass
+
+    def trim():
+        pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

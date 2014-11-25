@@ -220,6 +220,8 @@ def unify_string_literals(js_string):
             n += 1
     return res
 
+def unify_regexp_literals(js):
+    pass
 
 
 def do_escape(source, n):

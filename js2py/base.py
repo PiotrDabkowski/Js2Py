@@ -1046,11 +1046,14 @@ class PyJsArguments(PyJs):
 FunctionPrototype = PyJsFunction(Empty, ObjectPrototype)
 
 
+# I will not rewrite RegExp engine from scratch. I will use re because its much faster.
+# I have to only make sure that I am handling all the differences correctly.
 class PyJsRegExp(PyJs):
     Class = 'RegExp'
+    extensible = True
+
     def __init__(self, regexp, prototype=None):
         self.prototype = prototype
-        self.own = {}
         self.glob = False
         self.ignore_case = 0
         self.multiline = 0
@@ -1064,7 +1067,7 @@ class PyJsRegExp(PyJs):
             if 'i' in flags:
                 self.ignore_case = re.IGNORECASE
             if 'm' in flags:
-                self.multiline = True
+                self.multiline = re.MULTILINE
         else:
             self.value = regexp[1:-1]
         try:
@@ -1073,12 +1076,20 @@ class PyJsRegExp(PyJs):
             self.pat = re.compile(self.value, self.ignore_case | self.multiline)
         except:
             raise SyntaxError('Invalid RegExp pattern: %s'% repr(self.value))
+        # now set own properties:
+        self.own = {'source' : {'value': Js(self.value), 'enumerable': False, 'writable': False, 'configurable': False},
+                    'global' : {'value': Js(self.glob), 'enumerable': False, 'writable': False, 'configurable': False},
+                    'ignoreCase' : {'value': Js(bool(self.ignore_case)), 'enumerable': False, 'writable': False, 'configurable': False},
+                    'multiline' : {'value': Js(bool(self.multiline)), 'enumerable': False, 'writable': False, 'configurable': False},
+                    'lastIndex' : {'value': Js(0), 'enumerable': False, 'writable': True, 'configurable': False}}
+
+    def match(self, string, pos):
+        return re.match(self.pat, string[pos:])
 
 
 
 
-
-RegExpPrototype = PyJsRegExp('//', ObjectPrototype)
+RegExpPrototype = PyJsRegExp('/(?:)/', ObjectPrototype)
 
 
 
@@ -1135,6 +1146,9 @@ fill_prototype(BooleanPrototype, jsboolean.BooleanPrototype, default_attrs)
 fill_prototype(ArrayPrototype, jsarray.ArrayPrototype, default_attrs)
 #RegExp proto
 fill_prototype(RegExpPrototype, jsregexp.RegExpPrototype, default_attrs)
+# add exec to regexpfunction (cant add it automatically because of its name :(
+default_attrs['value'] = jsregexp.Exec
+RegExpPrototype.define_own_property('exec', default_attrs)
 
 #########################################################################
 
