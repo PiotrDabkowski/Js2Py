@@ -8,7 +8,8 @@ class RegExpPrototype:
             flags += u'i'
         if this.multiline:
             flags += u'm'
-        return u'/%s/'%self.value + flags
+        v = self.value if self.value else '(?:)'
+        return u'/%s/'%v + flags
 
     def test(string):
         return Exec(this, string) is not this.null

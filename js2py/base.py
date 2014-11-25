@@ -981,6 +981,8 @@ class PyJsString(PyJs):
 
 
 StringPrototype = PyJsObject({}, ObjectPrototype)
+StringPrototype.Class = 'String'
+StringPrototype.value = ''
 CHAR_BANK[''] = Js('')
 
 #Boolean
@@ -1087,7 +1089,9 @@ class PyJsRegExp(PyJs):
         return re.match(self.pat, string[pos:])
 
 
-
+def JsRegExp(source):
+    # Takes regexp literal!
+    return PyJsRegExp(source, RegExpPrototype)
 
 RegExpPrototype = PyJsRegExp('/(?:)/', ObjectPrototype)
 
@@ -1151,8 +1155,52 @@ default_attrs['value'] = jsregexp.Exec
 RegExpPrototype.define_own_property('exec', default_attrs)
 
 #########################################################################
+# Constructors
+
+# String
+@Js
+def String():
+    if not len(arguments):
+        return Js('')
+    return arguments[0].to_string()
+
+@Js
+def string_constructor():
+    temp = PyJsObject(prototype=StringPrototype)
+    temp.Class = 'String'
+    if not len(arguments):
+        temp.value = ''
+    else:
+        temp.value = arguments[0].to_string().value
+    return temp
+
+String.create = string_constructor
+
+# RegExp
+
+@Js
+def RegExp(pattern, flags):
+    if pattern.Class=='RegExp':
+        if flags.is_undefined():
+            raise Js(TypeError)('Cannot supply flags when constructing one RegExp from another')
+        # copy the pattern
+        temp  = copy(pattern)
+        temp.own = copy(pattern.own)
+        return temp
+    #pattern is not a regexp
+    if pattern.is_undefined():
+        pattern = ''
+    else:
+        pattern = pattern.to_string().value
+    flags = flags.to_string().value if not flags.is_undefined() else ''
+    pattern  = '/%s/'%(pattern if pattern else '(?:)') + flags
+    return JsRegExp(pattern)
+
+RegExp.create = RegExp
 
 
+
+##############################################################################
 
 def appengine(code):
     try:

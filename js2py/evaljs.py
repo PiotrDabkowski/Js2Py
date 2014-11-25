@@ -31,11 +31,11 @@ class EvalJs(object):
         return self.get_variable(var)
 
 
-x = r'''x = "\u494339\x594\nddssd\0fkdf\ddk\777dfldfj\'"'''
+x = r'''
+console.log('123abn456abn89'.replace(/(abn)/g, '$\''))
+'''
 
 
 
 e = EvalJs()
 e.execute(x)
-pp = e.context['var'].own['x']['value']
-print e['x']
