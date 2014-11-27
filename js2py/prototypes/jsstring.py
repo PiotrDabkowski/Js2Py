@@ -4,7 +4,49 @@ import re
 DIGS = set('0123456789')
 
 
+def replacement_template(rep, source, span, npar):
+    """Takes the replacement template and some info about the match and returns filled template
+       """
+    n = 0
+    res = ''
+    while n < len(rep)-1:
+        char = rep[n]
+        if char=='$':
+            if rep[n+1]=='$':
+                res += '$'
+                n += 2
+                continue
+            elif rep[n+1]=='`':
+                # replace with string that is BEFORE match
+                res += source[:span[0]]
+                n += 2
+                continue
+            elif rep[n+1]=='\'':
+                # replace with string that is AFTER match
+                res += source[span[1]:]
+                n += 2
+                continue
+            elif rep[n+1] in DIGS:
+                dig = rep[n+1]
+                if n+2<len(rep) and rep[n+2] in DIGS:
+                    dig += rep[n+2]
+                num = int(dig)
+                # we will not do any replacements if we dont have this npar or dig is 0
+                if not num or num>len(npar):
+                    res += '$'+dig
+                else:
+                    # None - undefined has to be replaced with ''
+                    res += npar[num-1] if npar[num-1] else ''
+                n += 1 + len(dig)
+                continue
+        res += char
+        n += 1
+    if n<len(rep):
+        res += rep[-1]
+    return res
 
+
+###################################################
 
 class StringPrototype:
     def toString():
@@ -50,7 +92,7 @@ class StringPrototype:
         res = s.value
         for e in arguments.to_list():
             res += e.to_string().value
-        return this.Js(res)
+        return res
 
     def indexOf(searchString, position):
         this.cok()
@@ -65,7 +107,7 @@ class StringPrototype:
         search = searchString.to_stirng().value
         pos = position.to_number()
         pos = 10**15 if pos.is_nan() else pos.to_int()
-        return this.Js(s.rfind(search, 0, min(max(pos, 0)+1, len(s))) )
+        return s.rfind(search, 0, min(max(pos, 0)+1, len(s)))
 
     def localeCompare (that):
         this.cok()
@@ -100,7 +142,7 @@ class StringPrototype:
             n += 1
         if not n:
             return this.null
-        return this.Js(found)
+        return found
 
     def replace(searchValue, replaceValue):
         # VERY COMPLICATED. to check again.
@@ -152,83 +194,114 @@ class StringPrototype:
         else:
             res += replacement_template(replaceValue, s, span, pars)
         res += s[span[1]:]
-        return this.Js(res)
+        return res
 
     def search(regexp):
-        pass
+        this.cok()
+        string = this.to_string()
+        if regexp.Class=='RegExp':
+            rx = regexp
+        else:
+            rx = this.RegExp(regexp)
+        res = re.search(rx.pat, string.value)
+        if res is not None:
+            return this.Js(res.span()[0])
+        return -1
 
     def slice(start, end):
-        pass
+        this.cok()
+        s = this.to_string()
+        start = start.to_int()
+        length = len(s.value)
+        end = length if  end.is_undefined() else end.to_int()
+        #From = max(length+start, 0) if start<0 else min(length, start)
+        #To = max(length+end, 0) if end<0 else min(length, end)
+        return s.value[start:end]
+
 
     def split (separator, limit):
-        pass
+        # its a bit different that re.split!
+        this.cok()
+        S = this.to_string()
+        s = S.value
+        lim = 2**32-1 if limit.is_undefined() else limit.to_uint32()
+        if not lim:
+            return []
+        if separator.is_undefined():
+            return [s]
+        len_s = len(s)
+        res = []
+        R = separator if separator.Class=='RegExp' else separator.to_string()
+        if not len_s:
+            if SplitMatch(s, 0, R) is None:
+                return [S]
+            return []
+        p = q = 0
+        while q!=len_s:
+            e, cap = SplitMatch(s, q, R)
+            if e is None or e==p:
+                q += 1
+                continue
+            res.append(s[p:e])
+            p = q = e
+            if len(res)==lim:
+                return res
+            for element in cap:
+                res.append(this.Js(element))
+                if len(res)==lim:
+                    return res
+        res.append(s[p:])
+        return res
+
+
+
+
 
 
 
     def substring (start, end):
-        pass
+        this.cok()
+        s = this.to_string()
+        start = start.to_int()
+        length = len(s.value)
+        end = length if  end.is_undefined() else end.to_int()
+        fstart = min(max(start, 0), len)
+        fend = min(max(end, 0), len)
+        return this.Js(s[min(ftart, fend):max(fstart, fend)])
 
     def toLowerCase():
-        pass
+        this.cok()
+        return this.Js(this.to_string().value.lower())
 
     def toLocaleLowerCase():
-        pass
+        this.cok()
+        return this.Js(this.to_string().value.lower())
 
     def toUpperCase():
-        pass
+        this.cok()
+        return this.Js(this.to_string().value.upper())
 
     def toLocaleUpperCase():
-        pass
+        this.cok()
+        return this.Js(this.to_string().value.upper())
 
     def trim():
-        pass
+        this.cok()
+        return this.Js(this.to_string().value.strip())
 
 
 
 
 
-
-def replacement_template(rep, source, span, npar):
-    """Takes the replacement template and some info about the match and returns filled template
-       """
-    n = 0
-    res = ''
-    while n < len(rep)-1:
-        char = rep[n]
-        if char=='$':
-            if rep[n+1]=='$':
-                res += '$'
-                n += 2
-                continue
-            elif rep[n+1]=='`':
-                # replace with string that is BEFORE match
-                res += source[:span[0]]
-                n += 2
-                continue
-            elif rep[n+1]=='\'':
-                # replace with string that is AFTER match
-                res += source[span[1]:]
-                n += 2
-                continue
-            elif rep[n+1] in DIGS:
-                dig = rep[n+1]
-                if n+2<len(rep) and rep[n+2] in DIGS:
-                    dig += rep[n+2]
-                num = int(dig)
-                # we will not do any replacements if we dont have this npar or dig is 0
-                if not num or num>len(npar):
-                    res += '$'+dig
-                else:
-                    # None - undefined has to be replaced with ''
-                    res += npar[num-1] if npar[num-1] else ''
-                n += 1 + len(dig)
-                continue
-        res += char
-        n += 1
-    if n<len(rep):
-        res += rep[-1]
-    return res
-
+def SplitMatch(s, q, R):
+    # s is Py String to match, q is the py int match start and R is Js RegExp or String.
+    if R.Class=='RegExp':
+        res = R.match(s, q)
+        return (res, ()) if res is None else (res.span()[1], res.groups())
+    # R is just a string
+    if s[q:].startswith(R.value):
+        return q+len(R.value), ()
+    return None, ()
 
 
 

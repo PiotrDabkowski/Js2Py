@@ -367,12 +367,11 @@ class PyJs:
     def to_int32(self):
         num = self.to_number()
         if num.is_nan() or num.is_infinity():
-            return Js(0)
+            return 0
         val = num.value
         pos_int = int(val)
         int32 = pos_int % 2**32
-        num.value = int32 - 2**31 if int32 > 2**31 else int32
-        return num
+        return int32 - 2**31 if int32 > 2**31 else int32
 
     def cok(self):
         """Check object coercible"""
@@ -382,25 +381,22 @@ class PyJs:
     def to_int(self):
         num = self.to_number()
         if num.is_nan():
-            return Js(0)
+            return 0
         elif num.is_infinity():
-            return num
-        num.value = int(num)
-        return num
+            return 10**20
+        return int(num)
 
     def to_uint32(self):
         num = self.to_number()
         if num.is_nan() or num.is_infinity():
-            return Js(0)
-        num.value = int(num.value) % 2**32
-        return num
+            return 0
+        return int(num.value) % 2**32
 
     def to_uint16(self):
         num = self.to_number()
         if num.is_nan() or num.is_infinity():
-            return Js(0)
-        num.value = int(num.value) % 2**16
-        return num
+            return 0
+        return int(num.value) % 2**16
 
     def same_as(self, other):
         typ = self.Class
@@ -1023,6 +1019,9 @@ class PyJsArray(PyJs):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
 
+   # def define_own_property(self, prop, desc):
+    #    pass
+
 
 
 ArrayPrototype = PyJsArray([], ObjectPrototype)
@@ -1197,7 +1196,7 @@ def RegExp(pattern, flags):
     return JsRegExp(pattern)
 
 RegExp.create = RegExp
-
+PyJs.RegExp = RegExp
 
 
 ##############################################################################
