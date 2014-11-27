@@ -175,16 +175,23 @@ class PyJs:
             return val
         own_desc = self.get_own_property(prop)
         if is_data_descriptor(own_desc):
-            own_desc['value'] = val
+            if self.Class=='Array': #only array has different define_own_prop
+                self.define_own_property(prop, {'value':val})
+            else:
+                self.own[prop]['value'] = val
             return val
         desc = self.get_property(prop)
         if is_accessor_descriptor(desc):
             desc['set'].call(self, val)
         else:
-            self.own[prop] = {'value' : val, 
-                              'writable' : True,
-                              'configurable' : True,
-                              'enumerable' : True}
+            new = {'value' : val,
+                   'writable' : True,
+                   'configurable' : True,
+                   'enumerable' : True}
+            if self.Class=='Array':
+                self.define_own_property(prop, new)
+            else:
+                self.own[prop] = new
         return val
                 
     def has_property(self, prop):
@@ -214,15 +221,16 @@ class PyJs:
         raise TypeError('Cannot convert object to primitive value')
         
     def define_own_property(self, prop, desc): #Internal use only. External through Object
+        # prop must be a Py string. Desc is either a descriptor or accessor.
         #Messy method -  raw translation from Ecma spec to prevent any bugs.
         current = self.get_own_property(prop)
-        
+
         extensible = self.extensible
-        default_data_desc = {'value': undefined, #undefined
-                             'writable': False, 
+        DEFAULT_DATA_DESC = {'value': undefined, #undefined
+                             'writable': False,
                              'enumerable': False,
                              'configurable': False}
-        default_accessor_desc = {'get': undefined, #undefined
+        DEFAULT_ACCESSOR_DESC = {'get': undefined, #undefined
                                  'set': undefined, #undefined
                                  'enumerable': False,
                                  'configurable': False}
@@ -230,20 +238,20 @@ class PyJs:
             if not extensible:
                 return False
             if is_data_descriptor(desc) or is_generic_descriptor(desc):
-                default_data_desc.update(desc)
-                self.own[prop] = default_data_desc
+                DEFAULT_DATA_DESC.update(desc)
+                self.own[prop] = DEFAULT_DATA_DESC
             else:
-                default_accessor_desc.update(desc)
-                self.own[prop] = default_accessor_desc
+                DEFAULT_ACCESSOR_DESC.update(desc)
+                self.own[prop] = DEFAULT_ACCESSOR_DESC
             return True
+        # todo make sure that == is a right comparison.
         if not desc or desc==current: #We dont need to change anything.
             return True
-
         configurable = current['configurable']  
         if not configurable:  #Prevent changing configurable or enumerable
-            if desc['configurable']:
+            if desc.get('configurable'):
                 return False
-            if desc['enumerable']!=current['enumerable']:
+            if 'enumerable' in desc and desc['enumerable']!=current['enumerable']:
                 return False
         if is_generic_descriptor(desc):
             pass
@@ -342,7 +350,7 @@ class PyJs:
             elif self.is_infinity():
                 sign = '-' if self.value<0 else ''
                 return Js(sign+'Infinity')
-            elif self.value.is_integer():  # dont print .0
+            elif isinstance(self.value, long) or self.value.is_integer():  # dont print .0
                 return Js(unicode(int(self.value)))
             return Js(unicode(self.value)) # accurate enough
         elif typ=='String':
@@ -371,7 +379,7 @@ class PyJs:
         val = num.value
         pos_int = int(val)
         int32 = pos_int % 2**32
-        return int32 - 2**31 if int32 > 2**31 else int32
+        return int(int32 - 2**31 if int32 > 2**31 else int32)
 
     def cok(self):
         """Check object coercible"""
@@ -390,13 +398,13 @@ class PyJs:
         num = self.to_number()
         if num.is_nan() or num.is_infinity():
             return 0
-        return int(num.value) % 2**32
+        return int(int(num.value) % 2**32)
 
     def to_uint16(self):
         num = self.to_number()
         if num.is_nan() or num.is_infinity():
             return 0
-        return int(num.value) % 2**16
+        return int(int(num.value) % 2**16)
 
     def same_as(self, other):
         typ = self.Class
@@ -1012,15 +1020,57 @@ class PyJsArray(PyJs):
             del arr[-1]
         self.extensible = True
         self.prototype = prototype
-        self.own = {}
-        self.define_own_property('length', {'value': Js(len(arr)), 'writable': True,
-                                            'enumerable': False, 'configurable': False})
+        self.own = {'length' : {'value': Js(0), 'writable': True,
+                                            'enumerable': False, 'configurable': False}}
         for i, e in enumerate(arr):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
 
-   # def define_own_property(self, prop, desc):
-    #    pass
+    def define_own_property(self, prop, desc):
+        old_len_desc = self.get_own_property('length')
+        old_len = old_len_desc['value'].value  #  value is js type so convert to py.
+        if prop=='length':
+            if 'value' not in desc:
+                return PyJs.define_own_property(self, prop, desc)
+            new_len =  desc['value'].to_uint32()
+            if new_len!=desc['value'].to_number().value:
+                raise ValueError() #todo RangeError
+            new_desc = {k:v for k,v in desc.iteritems()}
+            new_desc['value'] = Js(new_len)
+            if new_len>=old_len:
+                return PyJs.define_own_property(self, prop, new_desc)
+            if not old_len_desc['writable']:
+                return False
+            if 'writable' not in new_desc or new_desc['writable']==True:
+                new_writable = True
+            else:
+                new_writable = False
+                new_desc['writable'] = True
+            if not PyJs.define_own_property(self, prop, new_desc):
+                return False
+            while new_len<old_len:
+                old_len -= 1
+                if not self.delete(str(old_len)): # if failed to delete set len to current len and reject.
+                    new_desc['value'] = Js(old_len+1)
+                    if not new_writable:
+                        new_desc['writable'] = False
+                    PyJs.define_own_property(self, prop, new_desc)
+                    return False
+            if not new_writable:
+                self.own['length']['writable'] = False
+            return True
+        elif prop.isdigit():
+            index = int(prop) % 2**32
+            if index>=old_len and not old_len_desc['writable']:
+                return False
+            if not PyJs.define_own_property(self, prop, desc):
+                return False
+            if index>=old_len:
+                old_len_desc['value'].value = index + 1
+            return True
+        else:
+            return PyJs.define_own_property(self, prop, desc)
+
 
 
 

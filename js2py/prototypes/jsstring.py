@@ -239,10 +239,11 @@ class StringPrototype:
         p = q = 0
         while q!=len_s:
             e, cap = SplitMatch(s, q, R)
+            print q,e
             if e is None or e==p:
                 q += 1
                 continue
-            res.append(s[p:e])
+            res.append(s[p:q])
             p = q = e
             if len(res)==lim:
                 return res
@@ -252,10 +253,6 @@ class StringPrototype:
                     return res
         res.append(s[p:])
         return res
-
-
-
-
 
 
 
@@ -297,7 +294,7 @@ def SplitMatch(s, q, R):
     # s is Py String to match, q is the py int match start and R is Js RegExp or String.
     if R.Class=='RegExp':
         res = R.match(s, q)
-        return (res, ()) if res is None else (res.span()[1], res.groups())
+        return (None, ()) if res is None else (q+res.span()[1], res.groups())
     # R is just a string
     if s[q:].startswith(R.value):
         return q+len(R.value), ()

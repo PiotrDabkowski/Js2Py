@@ -60,8 +60,11 @@ OP_METHODS = {'*': '__mul__',
               '|': '__or__'}
 
 def dbg(source):
-    with open('C:\Users\Piotrek\Desktop\dbg.py','w') as f:
-        f.write(source)
+    try:
+        with open('C:\Users\Piotrek\Desktop\dbg.py','w') as f:
+            f.write(source)
+    except:
+        pass
 
 
 def indent(lines, ind=4):
