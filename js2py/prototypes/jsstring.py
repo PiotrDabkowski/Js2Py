@@ -52,12 +52,12 @@ class StringPrototype:
     def toString():
         if this.Class!='String':
             raise this.Js(TypeError)('String.prototype.toString is not generic')
-        return this
+        return this.value
 
     def valueOf():
         if this.Class!='String':
             raise this.Js(TypeError)('String.prototype.valueOf is not generic')
-        return this
+        return this.value
 
     # todo this should be in constructor
     def fromCharCode():

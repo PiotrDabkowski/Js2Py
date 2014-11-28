@@ -5,17 +5,21 @@ class RangeError(Exception): pass
 class NumberPrototype:
     def toString():
         # fuck this radix thing
-        return this.to_string()
+        if this.Class!='Number':
+            raise this.MakeError('TypeError', 'Number.prototype.valueOf is not generic')
+        return this.value
 
     def valueOf():
-        return this
+        if this.Class!='Number':
+            raise this.MakeError('TypeError', 'Number.prototype.valueOf is not generic')
+        return this.value
 
     def toLocaleString():
         return this.to_string()
 
     def toFixed (fractionDigits):
         if this.Class!='Number':
-            raise this.JsNumber(TypeError)('Number.prototype.toFixed called on incompatible receiver')
+            raise this.MakeError('TypeError', 'Number.prototype.toFixed called on incompatible receiver')
         digs = fractionDigits.to_int().value
         if digs<0 or digs>20:
             raise this.Js(RangeError)('toFixed() digits argument must be between 0 and 20')
@@ -28,7 +32,7 @@ class NumberPrototype:
 
     def toExponential (fractionDigits):
         if this.Class!='Number':
-            raise this.JsNumber(TypeError)('Number.prototype.toExponential called on incompatible receiver')
+            raise this.MakeError('TypeError', 'Number.prototype.toExponential called on incompatible receiver')
         digs = fractionDigits.to_int().value
         if digs<0 or digs>20:
             raise this.Js(RangeError)('toFixed() digits argument must be between 0 and 20')
@@ -40,7 +44,7 @@ class NumberPrototype:
 
     def toPrecision (precision):
         if this.Class!='Number':
-            raise this.JsNumber(TypeError)('Number.prototype.toPrecision called on incompatible receiver')
+            raise this.MakeError('TypeError', 'Number.prototype.toPrecision called on incompatible receiver')
         if precision.is_undefined():
             return this.to_String()
         prec = precision.to_int().value

@@ -32,8 +32,7 @@ class EvalJs(object):
 
 
 x = r'''
-a = '    ABCdef    \n   ';
-console.log(a.toUpperCase());
+console.log(Object('abcdef') + '9');
 '''
 
 

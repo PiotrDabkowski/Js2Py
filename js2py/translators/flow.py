@@ -12,6 +12,7 @@ CONTINUE, BREAK, RETURN, LABEL, THROW, TRY, SWITCH
 from utils import *
 from jsparser import *
 from nodevisitor import exp_translator
+import random
 
 
 TO_REGISTER = []
@@ -19,8 +20,9 @@ CONTINUE_LABEL = 'JS_CONTINUE_LABEL_%s'
 BREAK_LABEL = 'JS_BREAK_LABEL_%s'
 
 
-
-
+PREPARE = '''HOLDER = var.own.get(NAME)\nvar.force_own_put(NAME, PyExceptionToJs(PyJsTempException))\n'''
+RESTORE = '''if HOLDER is not None:\n    var.own[NAME] = HOLDER\nelse:\n    del var.own[NAME]\ndel HOLDER\n'''
+TRY_CATCH = '''%stry:\nBLOCKfinally:\n%s''' % (PREPARE, indent(RESTORE))
 
 def get_continue_label(label):
     return CONTINUE_LABEL%label.encode('hex')
@@ -285,7 +287,7 @@ def do_throw(source, start):
     trans = exp_translator(source[start:end].rstrip(';'))
     if not trans:
         raise SyntaxError('Invalid throw statement: nothing to throw')
-    res = 'TempJsException = JsToPyException(%s)\nraise TempJsException\n' % trans
+    res = 'PyJsTempException = JsToPyException(%s)\nraise PyJsTempException\n' % trans
     return res, end
 
 
@@ -303,16 +305,10 @@ def do_try(source, start):
         bra_end = pass_white(bra, bra_end)
         if bra_end<len(bra):
             raise SyntaxError('Invalid content of catch statement')
-        result += 'except PyJsException as PyJsTempException:\n'
-        result += indent('%s = var.scope.get(%s)\n'%(holder, identifier))
-        result += indent('var.scope[%s] = PyExceptionToJs(PyJsTempException)\n' % identifier)
+        result += 'except:\n'
         block, catch = do_block(source, catch)
-        result += indent(block)
-        result += indent('if %s is not None:\n' % holder)
-        result += indent(indent('var.scope[%s] = %s\n' % (identifier, holder)))
-        result += indent('else:\n')
-        result += indent(indent('del var.scope[%s]\n' % identifier))
-        result += indent('del %s\n' % holder)
+        # fill in except ( catch ) block and remember to recover holder variable to its previous state
+        result += indent(TRY_CATCH.replace('HOLDER', holder).replace('NAME', identifier).replace('BLOCK', indent(block)))
     start = max(catch, start)
     final = except_keyword(source, start, 'finally')
     if not (final or catch):

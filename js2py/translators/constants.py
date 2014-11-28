@@ -36,7 +36,7 @@ def _ensure_regexp(source, n): #<- this function has to be improved
         char = source[n-k] 
         if char in markers:
             return True
-        if char!=' ' or char!='\n':
+        if char!=' ' and char!='\n':
             break
     return False
 

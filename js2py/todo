@@ -6,6 +6,7 @@ TODO
 5. Fix string/regexp to regexp transformation
 6. Fix ?:
 7. Fix array elision ( handle None elements in array passed to Js function )
+8. Fix increments. Again...
 
 !!!. Run 262 test! I cant run it now because errors and constructors are not implemented yet.
      90% of tests fail because of that.
@@ -14,3 +15,20 @@ TODO Maybe
 1. Add regexp to NodeVisitor
 2. Fix <<= and other operators
 3. Speed up NodeVisitor
+
+
+BUILTINS
+DONE
+1. Math
+2. Errors
+3. Object
+4. String
+5. Boolean
+6. Number
+
+todo
+1. Array
+2. Function
+3. Date
+4. JSON
+5. RegExp
