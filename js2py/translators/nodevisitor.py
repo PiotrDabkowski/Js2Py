@@ -304,20 +304,42 @@ def js_mod(a, b):
     return '('+a+'%'+b+')'
 
 def js_typeof(a):
+    cand = list(bracket_split(a, ('()',)))
+    if len(cand)==2 and cand[0]=='var.get':
+        return cand[0]+cand[1][:-1]+',throw=False).typeof()'
     return a+'.typeof()'
 
 def js_void(a):
     return '('+a+')'
 
 def js_new(a):
-    # i am not sure here yet
-    #case 1: got object without calling, in this case a will end with .get(...)
-    #        we should simply add .create() at the end
-    #case2: got object with calling without callprop.
-    return a+'.create()'
+    cands = list(bracket_split(a, ('()',)))
+    lim = len(cands)
+    if lim < 2:
+        return a + '.create()'
+    n = 0
+    while n < lim:
+        c = cands[n]
+        if c[0]=='(':
+            if cands[n-1].endswith('.get') and n+1>=lim:  # last get operation.
+                return a + '.create()'
+            elif cands[n-1][0]=='(':
+                return ''.join(cands[:n])+'.create' + c + ''.join(cands[n+1:])
+            elif cands[n-1]=='.callprop':
+                 beg = ''.join(cands[:n-1])
+                 args = argsplit(c[1:-1],',')
+                 prop = args[0]
+                 new_args = ','.join(args[1:])
+                 create = '.get(%s).create(%s)' % (prop, new_args)
+                 return beg + create +  ''.join(cands[n+1:])
+        n+=1
+    return a + '.create()'
+
+
+
+
 
 def js_delete(a):
-    # To simplify
     #replace last get with delete.
     c = list(bracket_split(a, ['()']))
     beg, arglist = ''.join(c[:-1]).strip(), c[-1].strip()  #strips just to make sure... I will remove it later

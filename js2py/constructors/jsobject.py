@@ -36,10 +36,10 @@ class ObjectMethods:
     def getOwnPropertyNames(obj):
         if not obj.is_object():
             raise MakeError('TypeError', 'Object.getOwnPropertyDescriptor called on non-object')
-        return self.own.keys()
+        return obj.own.keys()
 
     def create(obj):
-        if not obj.is_object() or obj.is_null():
+        if not (obj.is_object() or obj.is_null()):
             raise MakeError('TypeError', 'Object prototype may only be an Object or null')
         temp = PyJsObject(prototype=(None if obj.is_null() else obj))
         if len(arguments)>1 and not arguments[1].is_undefined():
@@ -135,4 +135,30 @@ Object.define_own_property('prototype', {'value': ObjectPrototype,
 # some utility functions:
 
 def ToPropertyDescriptor(obj):  # page 38 (50 absolute)
-    return {}
+    if obj.TYPE!='Object':
+        raise MakeError('TypeError', 'Can\'t convert non-object to property descriptor')
+    desc = {}
+    if obj.has_property('enumerable'):
+        desc['enumerable'] = obj.get('enumerable').to_boolean().value
+    if obj.has_property('configurable'):
+        desc['configurable'] = obj.get('configurable').to_boolean().value
+    if obj.has_property('value'):
+        desc['value'] = obj.get('value')
+    if obj.has_property('writable'):
+        desc['writable'] = obj.get('writable').to_boolean().value
+    if obj.has_property('get'):
+        cand =  obj.get('get')
+        if not (cand.is_undefined() or cand.is_callable()):
+            raise MakeError('TypeError', 'Invalid getter (it has to be a function or undefined)')
+        desc['get'] = cand
+    if obj.has_property('set'):
+        cand =  obj.get('set')
+        if not (cand.is_undefined() or cand.is_callable()):
+            raise MakeError('TypeError', 'Invalid setter (it has to be a function or undefined)')
+        desc['set'] = cand
+    if ('get' in desc or 'set' in desc) and ('value' in desc or 'writable' in desc):
+        raise MakeError('TypeError', 'Invalid property.  A property cannot both have accessors and be writable or have a value.')
+    return desc
+
+
+

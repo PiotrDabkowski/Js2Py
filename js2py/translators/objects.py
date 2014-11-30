@@ -169,7 +169,12 @@ def translate_object(obj, lval, obj_count=1, arr_count=1):
                 print 'Unusual case ' + repr(e)
                 key = spl[0]
                 value = ':'.join(spl[1:])
-            key = key.strip().__repr__()
+            key = key.strip()
+            if is_internal(key):
+                key = '%s.to_string().value' % key
+            else:
+                key = repr(key)
+
             value = exp_translator(value)
             if not value:
                 raise SyntaxError('Missing value in Object literal')

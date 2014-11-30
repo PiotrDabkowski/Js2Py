@@ -663,6 +663,11 @@ class PyJs:
         return self.to_string().value
 
     def __repr__(self):
+        if self.Class=='Object':
+            res = {}
+            for e in self:
+                res[e.value.encode('utf-8')] = repr(self.get(e))
+            return repr(res)
         val = self.to_string().value.encode('utf-8')
         if self.Class=='String':
             return repr(val)
@@ -788,7 +793,7 @@ class Scope(PyJs):
         else:
             self.own[prop] = val
 
-    def get(self, prop):
+    def get(self, prop, throw=False):
         #note prop is always a Py String
         if self.prototype is not None:
             # fast local scope
@@ -798,7 +803,9 @@ class Scope(PyJs):
             return cand
         # slow, global scope
         if prop not in self.own:
-            raise MakeError('ReferenceError', '%s is not defined' % prop)
+            if throw:
+                raise MakeError('ReferenceError', '%s is not defined' % prop)
+            return undefined
         return PyJs.get(self, prop)
 
     def delete(self, lval):
@@ -912,6 +919,16 @@ class PyJsFunction(PyJs):
                 return false
             if other is proto:
                 return true
+
+    def create(self, *args):
+        proto = self.get('prototype')
+        if not proto.is_object:
+            proto = ObjectPrototype
+        new = PyJsObject(prototype=proto)
+        res = self.call(new, args)
+        if res.is_object():
+            return res
+        return new
 
 
 def Empty():

@@ -32,3 +32,10 @@ todo
 3. Date
 4. JSON
 5. RegExp
+
+PARSING PROBLEMS:
+1. UNICODE
+2. \ line break in strings and to small number of chars in \1 escape
+2. Further empty object checks!
+3. getters and setters improve detection ( {set:40} is not a setter while {set 40() {}} is )
+4. Repair for-in statement :) it has a lot of bugs!
