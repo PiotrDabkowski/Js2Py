@@ -795,6 +795,8 @@ class Scope(PyJs):
 
     def get(self, prop, throw=False):
         #note prop is always a Py String
+        if not isinstance(prop, basestring):
+            prop = prop.to_string().value
         if self.prototype is not None:
             # fast local scope
             cand = self.own.get(prop)

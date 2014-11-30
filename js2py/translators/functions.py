@@ -45,7 +45,6 @@ def remove_functions(source, all_inline=False):
             if name and not all_inline:
                 hoisted[name] = block, args
                 res += ' %s;' % name  # todo remove it after implementing hoisted-inline functions
-                print name
             else:
                 INLINE_COUNT += 1
                 name = INLINE_NAME%INLINE_COUNT

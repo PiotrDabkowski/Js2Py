@@ -4,7 +4,7 @@ from objects import remove_objects, remove_arrays, translate_object, translate_a
 from functions import remove_functions, reset_inline_count
 from jsparser import inject_before_lval, indent, dbg
 
-TOP_GLOBAL = '''from js2py.pyjs import *\nvar = Scope( JS_BUILTINS )\nset_global_object(var)\n'''
+TOP_GLOBAL = '''from js2py.pyjs import *\nvar = Scope( JS_BUILTINS )\nset_global_object(var)\nvar.put('this', var)\n'''
 
 
 
@@ -31,7 +31,7 @@ def translate_js(js, top=TOP_GLOBAL):
 
     # register variables and hoisted functions
     #top += '# register variables\n'
-    top += 'var.registers(%s)\n' % str(to_register + hoisted.keys())
+    top += 'var.registers(%s)\n' % str(to_register + hoisted.keys()+['this'])
 
     #Recover functions
     # hoisted functions recovery
