@@ -627,7 +627,7 @@ class PyJs:
     
     def instanceof(self, other):
         '''checks if self is instance of other'''
-        if not other.hasattr('has_instance'):
+        if not hasattr(other, 'has_instance'):
             return false
         return other.has_instance(self)
         
@@ -793,7 +793,7 @@ class Scope(PyJs):
         else:
             self.own[prop] = val
 
-    def get(self, prop, throw=False):
+    def get(self, prop, throw=True):
         #note prop is always a Py String
         if not isinstance(prop, basestring):
             prop = prop.to_string().value
@@ -1362,6 +1362,7 @@ def boolean_constructor(value):
     return temp
 
 Boolean.create = boolean_constructor
+
 
 ##############################################################################
 

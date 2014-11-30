@@ -1,7 +1,6 @@
 TODO
 1. Fix these inline-hoisted functions
 2. Fix if-elif by removing elif and replacing it with nested if-else
-3. Support for errors!
 4. Fix regexp literals
 5. Fix string/regexp to regexp transformation
 6. Fix ?:
@@ -18,17 +17,8 @@ TODO Maybe
 
 
 BUILTINS
-DONE
-1. Math
-2. Errors
-3. Object
-4. String
-5. Boolean
-6. Number
-
 todo
 1. Array
-2. Function
 3. Date
 4. JSON
 5. RegExp

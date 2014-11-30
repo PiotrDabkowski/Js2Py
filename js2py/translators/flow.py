@@ -305,7 +305,7 @@ def do_try(source, start):
         bra_end = pass_white(bra, bra_end)
         if bra_end<len(bra):
             raise SyntaxError('Invalid content of catch statement')
-        result += 'except:\n'
+        result += 'except PyJsException as PyJsTempException:\n'
         block, catch = do_block(source, catch)
         # fill in except ( catch ) block and remember to recover holder variable to its previous state
         result += indent(TRY_CATCH.replace('HOLDER', holder).replace('NAME', identifier).replace('BLOCK', indent(block)))

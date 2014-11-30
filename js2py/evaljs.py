@@ -34,10 +34,10 @@ class EvalJs(object):
 
 
 x = ur'''
-console.log(Function('return function f() {return 10};'))
+console.log(Array(1,2,3))
 '''.replace('\n','\n').decode('utf-8')
 
 
-
-e = EvalJs()
-e.execute(x)
+if __name__=='__main__':
+    e = EvalJs()
+    e.execute(x)

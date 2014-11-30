@@ -3,6 +3,11 @@ from constructors.jsmath import Math
 from constructors.jsdate import Date
 from constructors.jsobject import Object
 from constructors.jsfunction import Function
+from constructors.jsstring import String
+from constructors.jsnumber import Number
+from constructors.jsboolean import Boolean
+from constructors.jsregexp import RegExp
+from constructors.jsarray import Array
 from host.console import console
 
 
@@ -15,7 +20,7 @@ __all__ = ['Js', 'PyJsComma', 'PyJsStrictEq', 'PyJsStrictNeq',
 # these were defined in base.py
 builtins = ('true','false','null','undefined','Infinity',
             'NaN', 'console', 'String', 'Number', 'Boolean', 'RegExp',
-            'Math', 'Date', 'Object', 'Function')
+            'Math', 'Date', 'Object', 'Function', 'Array')
             #Array, Function, JSON,   Error is done later :)
             # also some built in functions like eval...
 
@@ -24,7 +29,7 @@ def set_global_object(obj):
 
 
 
-scope = dict(zip(builtins, [eval(e) for e in builtins]))
+scope = dict(zip(builtins, [globals()[e] for e in builtins]))
 # Now add errors:
 for name, error in ERRORS.iteritems():
     scope[name] = error

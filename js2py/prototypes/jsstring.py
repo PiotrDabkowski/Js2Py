@@ -59,14 +59,6 @@ class StringPrototype:
             raise this.Js(TypeError)('String.prototype.valueOf is not generic')
         return this.value
 
-    # todo this should be in constructor
-    def fromCharCode():
-        args = arguments.to_list()
-        res = u''
-        for e in args:
-            res +=unichr(e.to_uint16())
-        return this.Js(res)
-
     def charAt(pos):
         this.cok()
         pos = pos.to_int()
