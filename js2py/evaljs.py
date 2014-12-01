@@ -19,7 +19,7 @@ class EvalJs(object):
         else:
             code = translate_js(js, '')
         dbg(code)
-        print code
+        #print code
         exec code in self.context
 
     def __getattr__(self, var):
@@ -34,10 +34,14 @@ class EvalJs(object):
 
 
 x = ur'''
-function f() {}+9
+switch (8) {case 8: 30 ; default: 20}
 '''.replace('\n','\n').decode('utf-8')
+
+with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:
+    x2 = f.read()
 
 
 if __name__=='__main__':
     e = EvalJs()
     e.execute(x)
+

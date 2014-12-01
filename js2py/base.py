@@ -402,7 +402,7 @@ class PyJs:
             return 0
         elif num.is_infinity():
             return 10**20
-        return int(num)
+        return int(num.value)
 
     def to_uint32(self):
         num = self.to_number()
@@ -801,7 +801,7 @@ class Scope(PyJs):
             # fast local scope
             cand = self.own.get(prop)
             if cand is None:
-                return self.prototype.get(prop)
+                return self.prototype.get(prop, throw)
             return cand
         # slow, global scope
         if prop not in self.own:

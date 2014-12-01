@@ -104,7 +104,8 @@ def translate_func(name, block, args):
         nested_block, nested_args = info
         new_code = translate_func(nested_name, nested_block, nested_args)
         # Inject definitions of inline functions just before usage
-        py_code = inject_before_lval(py_code, nested_name, new_code)
+        # nested inline names have this format : LVAL_NAME@REAL_NAME
+        py_code = inject_before_lval(py_code, nested_name.split('@')[0], new_code)
     if py_code.strip():
         code += indent(py_code)
     return code

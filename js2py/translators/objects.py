@@ -29,6 +29,7 @@ def is_empty_object(n, last):
         return False
     return True
 
+# todo refine this function
 def is_object(n, last):
     """n may be the inside of block or object.
        last is the code before object"""
@@ -72,7 +73,7 @@ def is_object(n, last):
 def is_array(last):
     #it can be prop getter
     last = last.strip()
-    if endswith_keyword(last, 'return') or endswith_keyword(last, 'in'):
+    if any(endswith_keyword(last, e) for e in {'return', 'new', 'void', 'throw', 'typeof', 'in',  'instanceof'}):
         return True
     markers = {')', ']'}
     return not last or  not (last[-1] in markers or last[-1] in IDENTIFIER_PART)

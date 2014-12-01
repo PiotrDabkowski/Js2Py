@@ -36,22 +36,6 @@ def pass_until(source, start, tokens=(';',)):
     return start+1
 
 
-def except_keyword(source, start, keyword):
-    """ Returns position after keyword if found else None
-        Note: skips white space"""
-    start = pass_white(source, start)
-    kl = len(keyword)  #keyword len
-    if kl+start >= len(source):
-        return None
-    if source[start:start+kl] != keyword:
-        return None
-    if source[start+kl] in IDENTIFIER_PART:
-        return None
-    return start + kl
-
-
-
-
 def do_bracket_exp(source, start, throw=True):
     bra, cand = pass_bracket(source, start, '()')
     if throw and not bra:
@@ -96,6 +80,8 @@ def do_statement(source, start):
     # start is the fist position after initial start that is not a white space or \n
     if not start < len(source): #if finished parsing return None
         return None, start
+    if any(startswith_keyword(source[start:], e) for e in {'case', 'default'}):
+        return None, start
     rest = source[start:]
     for key, meth in KEYWORD_METHODS.iteritems():  # check for statements that are uniquely defined by their keywords
         if rest.startswith(key):
@@ -105,6 +91,12 @@ def do_statement(source, start):
     if rest[0] == '{': #Block
         return do_block(source, start)
     # Now only label and expression left
+    cand = parse_identifier(source, start, False)
+    if cand is not None: # it can mean that its a label
+        label, cand_start = cand
+        cand_start = pass_white(source, cand_start)
+        if source[cand_start]==':':
+            return do_label(source, start)
     return do_expression(source, start)
 
 
@@ -241,7 +233,7 @@ def do_for(source, start):
         TO_REGISTER.append(name)
     end = pass_white(bra, end)
     if bra[end:end+2]!='in' or bra[end+2] in IDENTIFIER_PART:
-        print source[entered-10:entered+50]
+        #print source[entered-10:entered+50]
         raise SyntaxError('Invalid "for x in y" statement')
     end+=2 # pass in
     exp = exp_translator(bra[end:])
@@ -331,11 +323,66 @@ def do_debugger(source, start):
 
 # Least important
 
-def do_with(source, start):
-    raise NotImplementedError('With statement is not implemented yet')
-
 def do_switch(source, start):
-    raise NotImplementedError('Switch statement is not implemented yet :(')
+    start += 6 # pass switch
+    code = 'while 1:\n' + indent('SWITCHED = False\nCONDITION = (%s)\n')
+    # parse value of check
+    val, start = pass_bracket(source, start, '()')
+    if val is None:
+        raise SyntaxError('Missing () after switch statement')
+    if not val.strip():
+        raise SyntaxError('Missing content inside () after switch statement')
+    code = code % exp_translator(val)
+    bra, start = pass_bracket(source, start, '{}')
+    if bra is None:
+        raise SyntaxError('Missing block {} after switch statement')
+    bra_pos = 0
+    bra = bra[1:-1] + ';'
+    while True:
+        case = except_keyword(bra, bra_pos, 'case')
+        default = except_keyword(bra, bra_pos, 'default')
+        assert not (case and default)
+        if case or default:  # this ?: expression makes things much harder....
+            case_code = None
+            if case:
+                case_code = 'if SWITCHED or PyJsStrictEq(CONDITION, %s):\n'
+                # we are looking for a first : with count 1. ? gives -1 and : gives +1.
+                count = 0
+                for pos, e in enumerate(bra[case:], case):
+                    if e=='?':
+                        count -= 1
+                    elif e==':':
+                        count += 1
+                        if count==1:
+                            break
+                else:
+                    raise SyntaxError('Missing : token after case in switch statement')
+                case_condition = exp_translator(bra[case:pos])  # switch {case CONDITION: statements}
+                case_code = case_code % case_condition
+                case = pos + 1
+            if default:
+                case = except_token(bra, default, ':')
+                case_code = 'if True:\n'
+            # now parse case statements (things after ':' )
+            cand, case = do_statement(bra, case)
+            while cand:
+                case_code += indent(cand)
+                cand, case = do_statement(bra, case)
+            case_code += indent('SWITCHED = True\n')
+            code += indent(case_code)
+            bra_pos = case
+        else:
+            break
+    # prevent infinite loop :)
+    code += indent('break\n')
+    return code, start
+
+
+
+
+def do_with(source, start):
+    raise NotImplementedError('With statement is not implemented yet :(')
+
 
 KEYWORD_METHODS = {'do': do_dowhile,
                   'while': do_while,

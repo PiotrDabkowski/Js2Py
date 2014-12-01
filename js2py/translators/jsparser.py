@@ -167,6 +167,30 @@ def pass_white(source, start):
             break
     return n
 
+def except_token(source, start, token, throw=True):
+    """Token can be only a single char. Returns position after token if found. Otherwise raises syntax error if throw
+    otherwise returns None"""
+    start = pass_white(source, start)
+    if start<len(source) and source[start]==token:
+        return start+1
+    if throw:
+        raise SyntaxError('Missing token. Expected %s'%token)
+    return None
+
+def except_keyword(source, start, keyword):
+    """ Returns position after keyword if found else None
+        Note: skips white space"""
+    start = pass_white(source, start)
+    kl = len(keyword)  #keyword len
+    if kl+start > len(source):
+        return None
+    if source[start:start+kl] != keyword:
+        return None
+    if kl+start<len(source) and source[start+kl] in IDENTIFIER_PART:
+        return None
+    return start + kl
+
+
 def parse_identifier(source, start, throw=True):
     """passes white space from start and returns first identifier,
        if identifier invalid and throw raises SyntaxError otherwise returns None"""
