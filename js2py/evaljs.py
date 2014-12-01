@@ -34,7 +34,7 @@ class EvalJs(object):
 
 
 x = ur'''
-console.log(Array(1,2,3))
+function f() {}+9
 '''.replace('\n','\n').decode('utf-8')
 
 

@@ -2,8 +2,12 @@
 from jsparser import *
 from utils import *
 
+
 INLINE_NAME = 'PyJsLvalInline%d_'
 INLINE_COUNT = 0
+PRE_EXP_STARTS = {'return', 'new', 'void', 'throw', 'typeof', 'in',  'instanceof'}
+PRE_ALLOWED = IDENTIFIER_PART.union({';', '{','}' ']' ')', ':'})
+INCREMENTS = {'++', '--'}
 
 def reset_inline_count():
     global INLINE_COUNT
@@ -26,7 +30,7 @@ def remove_functions(source, all_inline=False):
         if source[n:n+8] == 'function' and source[n+8] not in IDENTIFIER_PART:
             entered = n
             res += source[last:n]
-            name = False
+            name = ''
             n = pass_white(source, n+8)
             if source[n] in IDENTIFIER_START: # hoisted function
                 name, n= parse_identifier(source, n)
@@ -42,14 +46,24 @@ def remove_functions(source, all_inline=False):
             block, n =  pass_bracket(source, n, '{}')
             if not block:
                 raise SyntaxError('Function does not have any code block to execute')
+            mixed = False # named function expression flag
             if name and not all_inline:
-                hoisted[name] = block, args
-                res += ' %s;' % name  # todo remove it after implementing hoisted-inline functions
-            else:
+                # Here I will distinguish between named function expression (mixed) and a function statement
+                before = source[:entered].rstrip()
+                if any(endswith_keyword(before, e) for e in PRE_EXP_STARTS):
+                    mixed = True
+                elif before and before[-1] not in PRE_ALLOWED and not before[-2:] in INCREMENTS:
+                    mixed = True
+                else:
+                    print 'FUNCTION STATEMENT'
+                    #its a function statement.
+                    hoisted[name] = block, args
+            if not name or mixed: # its a function expression (can be both named and not named)
+                print 'FUNCTION EXPRESSION'
                 INLINE_COUNT += 1
-                name = INLINE_NAME%INLINE_COUNT
-                res += ' '+ name
-                inline[name] = block, args
+                iname = INLINE_NAME%INLINE_COUNT  # inline name
+                res += ' '+ iname
+                inline['%s@%s' %(iname, name)] = block, args #here added real name at the end because it has to be added to the func scope
             last = n
         else:
             n+=1

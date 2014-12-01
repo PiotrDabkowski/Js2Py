@@ -139,7 +139,17 @@ def pass_bracket(source, start, bracket='()'):
         return None, None
 
 
+def startswith_keyword(start, keyword):
+    start = start.lstrip()
+    if start.startswith(keyword):
+        if len(keyword)<len(start):
+            if start[len(keyword)] in IDENTIFIER_PART:
+                return False
+        return True
+    return False
+
 def endswith_keyword(ending, keyword):
+    ending = ending.rstrip()
     if ending.endswith(keyword):
         if len(keyword)<len(ending):
             if ending[len(ending)-len(keyword)-1] in IDENTIFIER_PART:

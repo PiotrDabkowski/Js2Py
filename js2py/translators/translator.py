@@ -48,7 +48,7 @@ def translate_js(js, top=TOP_GLOBAL):
     for nested_name, nested_info in inline.iteritems():
         nested_block, nested_args = nested_info
         new_code = translate_func(nested_name, nested_block, nested_args)
-        py_seed = inject_before_lval(py_seed, nested_name, new_code)
+        py_seed = inject_before_lval(py_seed, nested_name.split('@')[0], new_code)
     # add hoisted definitiond - they have literals that have to be recovered
     py_seed = defs + py_seed
 
@@ -75,12 +75,17 @@ def translate_func(name, block, args):
        block - code of the function (*with* brackets {} )
        args - arguments that this function takes"""
     inline = name.startswith('PyJsLvalInline')
+    real_name = ''
+    if inline:
+        name, real_name = name.split('@')
     arglist = ', '.join(args) +', ' if args else ''
     code = '@Js\ndef %s(%sthis, arguments, var=var):\n' % (name, arglist)
     # register local variables
     scope = "'this':this, 'arguments':arguments" #it will be a simple dictionary
     for arg in args:
         scope += ', %s:%s' %(repr(arg), arg)
+    if real_name:
+        scope += ', %s:%s' % (repr(real_name), name)
     code += indent('var = Scope({%s}, var)\n' % scope)
     block, nested_hoisted, nested_inline = remove_functions(block)
     py_code, to_register = translate_flow(block)
