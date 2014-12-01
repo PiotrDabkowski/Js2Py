@@ -53,7 +53,6 @@ def is_generic_descriptor(desc):
     return desc and not (is_data_descriptor(desc) or is_accessor_descriptor(desc))
 
 
-this = globals()  # this should be a global object...
 
 ##############################################################################
 

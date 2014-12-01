@@ -34,11 +34,13 @@ class EvalJs(object):
 
 
 x = ur'''
-switch (8) {case 8: 30 ; default: 20}
+var p = 50;
+eval(x = 10);
+console.log(x);
 '''.replace('\n','\n').decode('utf-8')
 
-with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:
-    x2 = f.read()
+#with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:
+#    x2 = f.read()
 
 
 if __name__=='__main__':

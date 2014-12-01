@@ -9,6 +9,7 @@ from constructors.jsboolean import Boolean
 from constructors.jsregexp import RegExp
 from constructors.jsarray import Array
 from host.console import console
+from host.jseval import Eval
 
 
 # Now we have all the necessary items to create global environment for script
@@ -33,6 +34,6 @@ scope = dict(zip(builtins, [globals()[e] for e in builtins]))
 # Now add errors:
 for name, error in ERRORS.iteritems():
     scope[name] = error
-
-
+#add eval
+scope['eval'] = Eval
 JS_BUILTINS = {k:v for k,v in scope.iteritems()}
