@@ -51,18 +51,18 @@ def remove_functions(source, all_inline=False):
                 # Here I will distinguish between named function expression (mixed) and a function statement
                 before = source[:entered].rstrip()
                 if any(endswith_keyword(before, e) for e in PRE_EXP_STARTS):
-                    print 'Ended ith keyword'
+                    #print 'Ended ith keyword'
                     mixed = True
                 elif before and before[-1] not in PRE_ALLOWED and not before[-2:] in INCREMENTS:
-                    print 'Ended with'+repr(before[-1]), before[-1]=='}'
+                    #print 'Ended with'+repr(before[-1]), before[-1]=='}'
                     mixed = True
                 else:
-                    print 'FUNCTION STATEMENT'
+                    #print 'FUNCTION STATEMENT'
                     #its a function statement.
                     # todo remove fucking label if present!
                     hoisted[name] = block, args
             if not name or mixed or all_inline: # its a function expression (can be both named and not named)
-                print 'FUNCTION EXPRESSION'
+                #print 'FUNCTION EXPRESSION'
                 INLINE_COUNT += 1
                 iname = INLINE_NAME%INLINE_COUNT  # inline name
                 res += ' '+ iname

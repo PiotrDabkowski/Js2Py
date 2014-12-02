@@ -1,5 +1,5 @@
 from js2py.base import *
-from translators.translator import translate_js
+from js2py.translators.translator import translate_js
 import inspect
 
 
@@ -11,7 +11,29 @@ def Eval(code):
     # we will use local scope (default)
     globals()['var'] = local_scope
     py_code = translate_js(code.to_string().value, '')
+    lines = py_code.split('\n')
+    # a simple way to return value from eval. Will not work in complex cases.
+    has_return = False
+    for n in xrange(len(lines)):
+        line = lines[len(lines)-n-1]
+        if line.strip():
+            if line.startswith(' '):
+                break
+            elif line.strip()=='pass':
+                continue
+            elif any(line.startswith(e) for e in ['return ', 'continue ', 'break', 'raise ']):
+                break
+            elif '=' in line:
+                break
+            else:
+                has_return = True
+                lines[len(lines)-n-1] = 'EVAL_RESULT = (%s)\n'%line
+                py_code = '\n'.join(lines)
+                break
     executor(py_code)
+    if has_return:
+        return globals()['EVAL_RESULT']
+
 
 
 def executor(code):

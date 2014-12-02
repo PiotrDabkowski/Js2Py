@@ -22,6 +22,13 @@ class EvalJs(object):
         #print code
         exec code in self.context
 
+    def eval(self, expression):
+        """evaluates expression in current context and returns its value"""
+        code = 'PyJsEvalResult = eval(%s)'%repr(expression)
+        self.execute(code)
+        return self['PyJsEvalResult']
+
+
     def __getattr__(self, var):
         return self.get_variable(var)
 
@@ -32,11 +39,23 @@ class EvalJs(object):
     def __getitem__(self, var):
         return self.get_variable(var)
 
+    def console(self):
+        """starts to interact (starts interactive console) Something like code.InteractiveConsole"""
+        while True:
+            code = raw_input('>>> ')
+            try:
+                print self.eval(code)
+            except KeyboardInterrupt:
+                break
+            except Exception as e:
+                print 'EXCEPTION: '+str(e)
+
+
 
 x = ur'''
 var p = 50;
-eval(x = 10);
-console.log(x);
+console.log(eval('if (1) 5;'));
+
 '''.replace('\n','\n').decode('utf-8')
 
 #with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:
@@ -45,5 +64,5 @@ console.log(x);
 
 if __name__=='__main__':
     e = EvalJs()
-    e.execute(x)
+    #e.interact()
 
