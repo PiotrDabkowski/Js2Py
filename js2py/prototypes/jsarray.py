@@ -8,16 +8,16 @@ class ArrayPrototype:
         return unicode(to_arr(this))
 
     def toLocaleString():
-        pass
+        raise NotImplementedError()
 
     def concat():
-        pass
+        raise NotImplementedError()
 
     def join(separator):
-        pass
+        raise NotImplementedError()
 
     def pop():
-        pass
+        raise NotImplementedError()
 
     def push():
         n = this.get('length').to_uint32()
@@ -26,46 +26,46 @@ class ArrayPrototype:
         this.own['length']['value'] = this.Js(n+len(arguments))
 
     def reverse():
-        pass
+        raise NotImplementedError()
 
     def shift():
-        pass
+        raise NotImplementedError()
 
     def slice(start, end):
-        pass
+        raise NotImplementedError()
 
     def sort(cmpfn):
-        pass
+        raise NotImplementedError()
 
     def splice(start, deleteCount):
-        pass
+        raise NotImplementedError()
 
     def unshift():
-        pass
+        raise NotImplementedError()
 
     def indexOf(searchElement):
-        pass
+        raise NotImplementedError()
 
     def lastIndexOf(searchElement):
-        pass
+        raise NotImplementedError()
 
     def every(callbackfn):
-        pass
+        raise NotImplementedError()
 
     def some(callbackfn):
-        pass
+        raise NotImplementedError()
 
     def forEach(callbackfn):
-        pass
+        raise NotImplementedError()
 
     def map(callbackfn):
-        pass
+        raise NotImplementedError()
 
     def filter(callbackfn):
-        pass
+        raise NotImplementedError()
 
     def reduce(callbackfn):
-        pass
+        raise NotImplementedError()
 
     def reduceRight(callbackfn):
-        pass
+        raise NotImplementedError()

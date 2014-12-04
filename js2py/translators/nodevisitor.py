@@ -10,6 +10,7 @@ REPL = {}
 #PROBLEMS
 # <<=, >>=, >>>=
 # they are unusual so I will not fix that now. a++ +b works fine and a+++++b  (a++ + ++b) does not work even in V8
+ASSIGNMENT_MATCH = '(?<!=|!|<|>)=(?!=)'
 
 def unary_validitator(keyword, before, after):
     if keyword[-1] in IDENTIFIER_PART:
@@ -84,8 +85,19 @@ class NodeVisitor:
         # maybe I will change my mind later
         # Find this crappy ?:
         if '?' in new:
-            res  = ''.join(split_at_any(new, [':', '?'], translate=trans))
-            return transform_crap(res)
+            cond_ind = new.find('?')
+            tenary_start = 0
+            for ass in re.finditer(ASSIGNMENT_MATCH, new):
+                cand = ass.span()[1]
+                if cand < cond_ind:
+                    tenary_start = cand
+                else:
+                    break
+            actual_tenary = new[tenary_start:]
+            spl  = ''.join(split_at_any(new, [':', '?'], translate=trans))
+            tenary_translation = transform_crap(spl)
+            assignment = new[:tenary_start] + ' PyJsConstantTENARY'
+            return trans(assignment).replace('PyJsConstantTENARY', tenary_translation)
         cand = list(split_at_single(new, '=', ['!', '=','<','>'], ['=']))
         if len(cand)>1: # RL
             it = reversed(cand)
@@ -196,9 +208,11 @@ class NodeVisitor:
             out = res[0]
         elif res[0][0] in {'#', '@'}:
             out = '('+trans(REPL[res[0]][1:-1])+')'
-        elif is_lval(res[0]):
+        elif is_valid_lval(res[0]) or res[0] in {'this', 'false', 'true', 'null'}:
             out = 'var.get('+res[0].__repr__()+')'
         else:
+            if is_reserved(res[0]):
+                 raise SyntaxError('Unexpected reserved word: "%s"'%res[0])
             raise SyntaxError('Invalid identifier: "%s"'%res[0])
         if len(res)==1:
             return out

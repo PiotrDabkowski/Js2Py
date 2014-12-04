@@ -329,7 +329,7 @@ class PyJs:
                     num = int(s, 16)
                 except ValueError: # could not convert > NaN
                     return NaN
-                return num
+                return Js(num)
             sign = 1 #get sign
             if s[0] in '+-':
                 if s[0]=='-': 
@@ -771,6 +771,8 @@ class Scope(PyJs):
             self.register(lval)
 
     def put(self, lval, val, op=None):
+        if lval=='index' and val.is_undefined():
+            raise ValueError("FUCK")
         if self.prototype is None:
             # global scope put, simple
             return PyJs.put(self, lval, val, op)
@@ -823,6 +825,9 @@ class Scope(PyJs):
             return true
         # not configurable, cant delete
         return false
+
+    def __repr__(self):
+        return u'[Object Global]'
 
 
 
@@ -979,12 +984,12 @@ class PyJsString(PyJs):
     def get(self, prop):
         try:
             if not isinstance(prop, basestring):
-                prop = prop.value
-            char = self.value[int(prop)]
+                p = prop.value
+            char = self.value[int(p)]
             if char not in CHAR_BANK:
                 Js(char) # this will add char to CHAR BANK
             return CHAR_BANK[char]
-        except ValueError:
+        except Exception:
             pass
         return PyJs.get(self, prop)
 

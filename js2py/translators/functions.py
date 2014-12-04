@@ -28,6 +28,12 @@ def remove_functions(source, all_inline=False):
             n+=1
             continue
         if source[n:n+8] == 'function' and source[n+8] not in IDENTIFIER_PART:
+            if source[:n].rstrip().endswith('.'):  # allow function as a property name :)
+                n+=1
+                continue
+            if source[n+8:].lstrip().startswith(':'): # allow functions inside objects...
+                n+=1
+                continue
             entered = n
             res += source[last:n]
             name = ''

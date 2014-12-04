@@ -105,7 +105,7 @@ class MathFunctions:
         b = y.to_number().value
         if a!=a or b!=b: # it must be a nan
             return NaN
-        return x**y
+        return a**b
 
     def sqrt(x):
         a = x.to_number().value

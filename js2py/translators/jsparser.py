@@ -161,7 +161,7 @@ def endswith_keyword(ending, keyword):
 def pass_white(source, start):
     n = start
     while n<len(source):
-        if source[n] in {' ', '\n'}:
+        if source[n] in SPACE:
             n += 1
         else:
             break

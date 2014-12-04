@@ -1,9 +1,8 @@
 TODO
-1. Fix these inline-hoisted functions
 2. Fix if-elif by removing elif and replacing it with nested if-else
 4. Fix regexp literals
 5. Fix string/regexp to regexp transformation
-6. Fix ?:
+6. Fix ?: < worst shit ever. Code runs but has unexpected output :(
 7. Fix array elision ( handle None elements in array passed to Js function )
 8. Fix increments. Again...
 

@@ -89,7 +89,7 @@ class StringPrototype:
     def indexOf(searchString, position):
         this.cok()
         s = this.to_string().value
-        search = searchString.to_stirng().value
+        search = searchString.to_string().value
         pos = position.to_int()
         return this.Js(s.find(search, min(max(pos, 0), len(s))) )
 
@@ -257,6 +257,18 @@ class StringPrototype:
         fstart = min(max(start, 0), len)
         fend = min(max(end, 0), len)
         return this.Js(s[min(ftart, fend):max(fstart, fend)])
+
+    def substr(start, length):
+        #I hate this function and its description in specification
+        s = this.to_string().value
+        start = start.to_int()
+        length = 10**20 if  length.is_undefined() else length.to_int()
+        s_len = len(s)
+        length2 = start if start>=0 else max(0, start+s_len)
+        res6 = min(max(length ,0), s_len - length2)
+        if res6<=0:
+            return ''
+        return s[length2:length2+res6]
 
     def toLowerCase():
         this.cok()

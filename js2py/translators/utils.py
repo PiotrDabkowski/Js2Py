@@ -31,11 +31,26 @@ def is_internal(t):
 def is_property_accessor(t):
     return '[' in t or '.' in t
 
+def is_reserved(t):
+    return t in RESERVED_NAMES
 
 
 
 
 #http://stackoverflow.com/questions/14245893/efficiently-list-all-characters-in-a-given-unicode-category
+BOM = u'\uFEFF'
+ZWJ = u'\u200D'
+ZWNJ = u'\u200C'
+TAB = u'\u0009'
+VT = u'\u000B'
+FF = u'\u000C'
+SP = u'\u0020'
+NBSP = u'\u00A0'
+LF = u'\u000A'
+CR = u'\u000D'
+LS = u'\u2028'
+PS = u'\u2029'
+
 U_CATEGORIES = defaultdict(list)  # Thank you Martijn Pieters!
 for c in map(unichr, range(sys.maxunicode + 1)):
     U_CATEGORIES[unicodedata.category(c)].append(c)
@@ -47,8 +62,18 @@ UNICODE_COMBINING_MARK = set(U_CATEGORIES['Mn']+U_CATEGORIES['Mc'])
 UNICODE_DIGIT = set(U_CATEGORIES['Nd'])
 UNICODE_CONNECTOR_PUNCTUATION = set(U_CATEGORIES['Pc'])
 IDENTIFIER_START = UNICODE_LETTER.union({'$','_'}) # and some fucking unicode escape sequence
-IDENTIFIER_PART = IDENTIFIER_START.union(UNICODE_COMBINING_MARK).union(UNICODE_DIGIT).union(UNICODE_CONNECTOR_PUNCTUATION)
+IDENTIFIER_PART = IDENTIFIER_START.union(UNICODE_COMBINING_MARK).union(UNICODE_DIGIT).union(UNICODE_CONNECTOR_PUNCTUATION).union({ZWJ, ZWNJ})
+USP = U_CATEGORIES['Zs']
+KEYWORD = {'break', 'do', 'instanceof', 'typeof', 'case', 'else', 'new',
+           'var', 'catch', 'finally', 'return', 'void', 'continue', 'for',
+           'switch', 'while', 'debugger', 'function', 'this', 'with', 'default',
+           'if', 'throw', 'delete', 'in', 'try'}
 
-RESERVED_NAMES = {'var', 'function', 'if', 'this', 'for', 'in'} #todo complete this list
-WHITE = {u' ', u'\n'}
-NEW_LINE = {u'\n'}
+FUTURE_RESERVED_WORD = {'class', 'enum', 'extends', 'super', 'const', 'export', 'import'}
+RESERVED_NAMES = KEYWORD.union(FUTURE_RESERVED_WORD).union({'null', 'false', 'true'})
+
+WHITE = {TAB, VT, FF, SP, NBSP, BOM}.union(USP)
+LINE_TERMINATOR = {LF, CR, LS, PS}
+x = ''.join(WHITE)+''.join(LINE_TERMINATOR)
+SPACE = WHITE.union(LINE_TERMINATOR)
+LINE_TERMINATOR_SEQUENCE = LINE_TERMINATOR.union({CR+LF})

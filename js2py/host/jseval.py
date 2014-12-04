@@ -10,7 +10,10 @@ def Eval(code):
     # todo fix scope - we have to behave differently if called through variable other than eval
     # we will use local scope (default)
     globals()['var'] = local_scope
-    py_code = translate_js(code.to_string().value, '')
+    try:
+        py_code = translate_js(code.to_string().value, '')
+    except SyntaxError as syn_err:
+        raise MakeError('SyntaxError', str(syn_err))
     lines = py_code.split('\n')
     # a simple way to return value from eval. Will not work in complex cases.
     has_return = False
@@ -23,13 +26,17 @@ def Eval(code):
                 continue
             elif any(line.startswith(e) for e in ['return ', 'continue ', 'break', 'raise ']):
                 break
-            elif '=' in line:
-                break
             else:
                 has_return = True
-                lines[len(lines)-n-1] = 'EVAL_RESULT = (%s)\n'%line
+                cand = 'EVAL_RESULT = (%s)\n'%line
+                try:
+                    compile(cand, '', 'exec')
+                except SyntaxError:
+                    break
+                lines[len(lines)-n-1] = cand
                 py_code = '\n'.join(lines)
                 break
+    #print py_code
     executor(py_code)
     if has_return:
         return globals()['EVAL_RESULT']

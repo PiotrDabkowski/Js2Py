@@ -10,7 +10,7 @@ from constructors.jsregexp import RegExp
 from constructors.jsarray import Array
 from host.console import console
 from host.jseval import Eval
-
+from host.jsfunctions import parseFloat, parseInt, isFinite, isNaN
 
 # Now we have all the necessary items to create global environment for script
 __all__ = ['Js', 'PyJsComma', 'PyJsStrictEq', 'PyJsStrictNeq',
@@ -21,7 +21,8 @@ __all__ = ['Js', 'PyJsComma', 'PyJsStrictEq', 'PyJsStrictNeq',
 # these were defined in base.py
 builtins = ('true','false','null','undefined','Infinity',
             'NaN', 'console', 'String', 'Number', 'Boolean', 'RegExp',
-            'Math', 'Date', 'Object', 'Function', 'Array')
+            'Math', 'Date', 'Object', 'Function', 'Array',
+            'parseFloat', 'parseInt', 'isFinite', 'isNaN')
             #Array, Function, JSON,   Error is done later :)
             # also some built in functions like eval...
 

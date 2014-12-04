@@ -1,8 +1,8 @@
 from string import ascii_lowercase, digits
 ##################################
-StringName = 'PyJsConstantString%d_'
-NumberName = 'PyJsConstantNumber%d_'
-RegExpName = 'PyJsConstantRegExp%d_'
+StringName = u'PyJsConstantString%d_'
+NumberName = u'PyJsConstantNumber%d_'
+RegExpName = u'PyJsConstantRegExp%d_'
 ##################################
 ALPHAS = set(ascii_lowercase+ ascii_lowercase.upper())
 NUMS = set(digits)
@@ -10,7 +10,7 @@ IDENTIFIER_START = ALPHAS.union(NUMS)
 ESCAPE_CHARS = {'n', '0', 'b', 'f', 'r', 't', 'v', '"', "'", '\\'}
 OCTAL = {'0', '1', '2', '3', '4', '5', '6', '7'}
 HEX = set('0123456789abcdefABCDEF')
-from utils import IDENTIFIER_PART
+from utils import *
 IDENTIFIER_PART  = IDENTIFIER_PART.union({'.'})
 
 
@@ -104,10 +104,19 @@ def remove_constants(source):
                     inside_single = False
                 else:
                     inside_single = [n, None, 0]
-        elif not (inside_single or inside_double):
+        elif  (inside_single or inside_double):
+            if char in LINE_TERMINATOR:
+                if _is_cancelled(source, n):
+                    if char==CR and source[n+1]==LF:
+                        n+=1
+                    n+=1
+                    continue
+                else:
+                    raise SyntaxError('Invalid string literal. Line terminators must be escaped!')
+        else:
             if inside_comment:
                 if single_comment:
-                    if char=='\n':
+                    if char in LINE_TERMINATOR:
                         inside_comment[1] = n
                         comments.append(inside_comment)
                         inside_comment = False
@@ -119,6 +128,8 @@ def remove_constants(source):
                         inside_comment = False
             elif inside_regexp:
                 if not quiting_regexp:
+                    if char in LINE_TERMINATOR:
+                        raise SyntaxError('Invalid regexp literal. Line terminators cant appear!')
                     if _is_cancelled(source, n):
                         n+=1
                         continue
@@ -186,6 +197,12 @@ def remove_constants(source):
           constants[name % count] = source[end: next_start]
           count += 1
     res+=source[start:]
+    # remove this stupid white space
+    for e in WHITE:
+        res = res.replace(e, ' ')
+    res = res.replace(CR+LF, '\n')
+    for e in LINE_TERMINATOR:
+        res = res.replace(e, '\n')
     return res.strip(), constants
 
     
@@ -229,6 +246,10 @@ def do_escape(source, n):
        http://www.javascriptkit.com/jsref/escapesequence.shtml"""
     if not n+1 < len(source):
         return '' # not possible here but can be possible in general case.
+    if source[n+1] in LINE_TERMINATOR:
+        if source[n+1]==CR and n+2<len(source) and source[n+2]==LF:
+            return source[n:n+3], n+3
+        return source[n:n+2], n+2
     if source[n+1] in ESCAPE_CHARS:
         return source[n:n+2], n+2
     if source[n+1]in {'x', 'u'}:
@@ -266,13 +287,8 @@ def do_escape(source, n):
 #####TEST######
 
 if __name__=='__main__':
-    test = (' 0X07 regexp_test = /fkf*dsj[/df[[d/*d]/]d*s/*ds]fdf\/fdf*/test;'
-            '//some comment"some pseudo string" as \'another pseudo string\' \n'
-            'string_test .8778e-7 = "fd\'fds[]44343fdsf\\"fs\\"df" //fdfd\n'
-            'num_test = 404395493.323e9 //Num to const not supported yet \n'
-            '/* another comment 434 /pseudo regex/ ddf .322k */'
-            'another_pseudo_regex = 49/4443/323/t[3/5/22+53/23]+f09990(5/3+r[4/k.434])+f(/fdd[/]fdf\[/)'
-            )
+    test = ('''
+    ''')
             
-    t, d = remove_constants('  /rree/   " ss" ')
+    t, d = remove_constants(test)
     print t, d

@@ -1,8 +1,9 @@
 # coding=utf-8
 """ This module is still experimental! It has a lot of bugs and host/constructor objects are not implemented yet.
 """
-
 from translators.translator import translate_js, dbg
+import sys
+import time
 
 
 class EvalJs(object):
@@ -12,12 +13,15 @@ class EvalJs(object):
 
     def execute(self, js):
         """executes javascript js in current context"""
-        js = js.replace('\t', '\n')  # have to remove tabs in parser 
-        if not self.__started:
-            code = translate_js(js)
-            self.__started = True
-        else:
-            code = translate_js(js, '')
+        try:
+            if not self.__started:
+                code = translate_js(js)
+                self.__started = True
+            else:
+                code = translate_js(js, '')
+        except:
+            dbg(js)
+            raise
         dbg(code)
         #print code
         exec code in self.context
@@ -48,21 +52,23 @@ class EvalJs(object):
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                print 'EXCEPTION: '+str(e)
+                sys.stderr.write('EXCEPTION: '+str(e)+'\n')
+                time.sleep(0.01)
 
 
 
-x = ur'''
-var p = 50;
-console.log(eval('if (1) 5;'));
+x = r'''
 
-'''.replace('\n','\n').decode('utf-8')
 
-#with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:
-#    x2 = f.read()
+'''.replace('\n','\n').decode('unicode-escape')
+
+#print x
+with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:
+    x = f.read()
 
 
 if __name__=='__main__':
     e = EvalJs()
-    #e.interact()
+    #e.execute(x)
+    e.console()
 
