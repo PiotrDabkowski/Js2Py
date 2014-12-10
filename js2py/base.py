@@ -309,7 +309,7 @@ class PyJs:
             return Js(bool(self.value and self.value==self.value)) # test for nan (nan -> flase)
         else: #object -  always true
             return true
-            
+
     def to_number(self):
         typ = Type(self)
         if typ=='Null':  #null is 0
@@ -369,7 +369,7 @@ class PyJs:
             
             
     def to_object(self):
-        typ = Type(self)
+        typ = self.TYPE
         if typ=='Null' or typ=='Undefined':
             raise MakeError('TypeError', 'undefined or null can\'t be converted to object')
         elif typ=='Boolean': # Unsure here... todo repair here
@@ -663,14 +663,20 @@ class PyJs:
 
     def __repr__(self):
         if self.Class=='Object':
-            res = {}
+            res = []
             for e in self:
-                res[e.value.encode('utf-8')] = repr(self.get(e))
-            return repr(res)
-        val = self.to_string().value.encode('utf-8')
-        if self.Class=='String':
-            return repr(val)
-        return val
+                res.append(e.value.encode('utf-8')+': '+repr(self.get(e)))
+            return '{%s}'%', '.join(res)
+        elif self.Class=='String':
+            return repr(self.value.encode('utf-8'))
+        elif self.Class=='Array':
+            res = []
+            for e in self:
+                res.append(repr(self.get(e)))
+            return '[%s]'%', '.join(res)
+        else:
+            val = self.to_string().value.encode('utf-8')
+            return val
     
     def callprop(self, prop, *args):
         '''Call a property prop as a method (this will be self).
@@ -771,8 +777,6 @@ class Scope(PyJs):
             self.register(lval)
 
     def put(self, lval, val, op=None):
-        if lval=='index' and val.is_undefined():
-            raise ValueError("FUCK")
         if self.prototype is None:
             # global scope put, simple
             return PyJs.put(self, lval, val, op)
@@ -928,7 +932,7 @@ class PyJsFunction(PyJs):
 
     def create(self, *args):
         proto = self.get('prototype')
-        if not proto.is_object:
+        if not proto.is_object():
             proto = ObjectPrototype
         new = PyJsObject(prototype=proto)
         res = self.call(new, args)
@@ -1084,13 +1088,13 @@ class PyJsArray(PyJs):
                 self.own['length']['writable'] = False
             return True
         elif prop.isdigit():
-            index = int(prop) % 2**32
+            index = int(int(prop) % 2**32)
             if index>=old_len and not old_len_desc['writable']:
                 return False
             if not PyJs.define_own_property(self, prop, desc):
                 return False
             if index>=old_len:
-                old_len_desc['value'].value = index + 1
+                old_len_desc['value'] = Js(index + 1)
             return True
         else:
             return PyJs.define_own_property(self, prop, desc)
@@ -1114,7 +1118,7 @@ class PyJsArguments(PyJs):
             self.put(str(i), Js(e))
 
     def to_list(self):
-        return [self.get(str(e)) for e in xrange(len(self))]
+        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
 
 
 #We can define function proto after number proto because func uses number in its init
@@ -1150,7 +1154,7 @@ class PyJsRegExp(PyJs):
             # also this will speed up matching later
             self.pat = re.compile(self.value, self.ignore_case | self.multiline)
         except:
-            raise PySyntaxError('Invalid RegExp pattern: %s'% repr(self.value))
+            raise MakeError('SyntaxError', 'Invalid RegExp pattern: %s'% repr(self.value))
         # now set own properties:
         self.own = {'source' : {'value': Js(self.value), 'enumerable': False, 'writable': False, 'configurable': False},
                     'global' : {'value': Js(self.glob), 'enumerable': False, 'writable': False, 'configurable': False},
@@ -1372,7 +1376,7 @@ Boolean.create = boolean_constructor
 
 def appengine(code):
     try:
-        return translator.translate_js(code)
+        return translator.translate_js(code.decode('utf-8'))
     except:
         return traceback.format_exc()
         

@@ -156,7 +156,7 @@ class StringPrototype:
                     # prepare arguments for custom func (replaceValue)
                     args = (e.group(),) +  e.groups() + (e.span()[1], string)
                     # convert all types to JS
-                    args = tuple(this.Js(x) for x in args)
+                    args = map(this.Js, args)
                     res += replaceValue(*args).to_string().value
                 else:
                     res += replacement_template(replaceValue, s, e.span(), e.groups())

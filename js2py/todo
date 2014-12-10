@@ -5,7 +5,7 @@ TODO
 6. Fix ?: < worst shit ever. Code runs but has unexpected output :(
 7. Fix array elision ( handle None elements in array passed to Js function )
 8. Fix increments. Again...
-
+9. Repair stringo objects  and their get_own_property internal method
 !!!. Run 262 test! I cant run it now because errors and constructors are not implemented yet.
      90% of tests fail because of that.
 

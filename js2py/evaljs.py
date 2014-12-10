@@ -5,6 +5,17 @@ from translators.translator import translate_js, dbg
 import sys
 import time
 
+def import_js(path, globals):
+    with open(path, 'rb') as f:
+        js = f.read()
+    e = EvalJs()
+    e.execute(js)
+    var = e.context['var']
+    for name in var:
+        globals[name] = var.get(name)
+
+def to_module(js):
+    pass
 
 class EvalJs(object):
     def __init__(self, context=None):
@@ -52,23 +63,27 @@ class EvalJs(object):
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                sys.stderr.write('EXCEPTION: '+str(e)+'\n')
+                import traceback
+                if DEBUG:
+                    sys.stderr.write(traceback.format_exc())
+                else:
+                    sys.stderr.write('EXCEPTION: '+str(e)+'\n')
                 time.sleep(0.01)
 
 
 
 x = r'''
-
-
+var return;
 '''.replace('\n','\n').decode('unicode-escape')
 
 #print x
-with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:
-    x = f.read()
 
+DEBUG = True
 
 if __name__=='__main__':
+    with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:
+        x = f.read()
     e = EvalJs()
-    #e.execute(x)
+    e.execute(x)
     e.console()
 
