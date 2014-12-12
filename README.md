@@ -1,12 +1,13 @@
-<h1><b>Pure Python JavaScript Translator/Interpreter</b></h1>
+####Pure Python JavaScript Translator/Interpreter
 
 Translates any valid JavaScript (ECMA Script 5.1) to Python. Translation is fully automatic. Does not have any 
 dependencies - uses only standard python library. Still under development. 
-<br>
-Managed to fully automatically translate esprima to Python - Available <a href="https://github.com/PiotrDabkowski/Js2Py/blob/master/js2py/examples/pyesprima.py"> Here </a>
+<hr>
+
+Managed to fully automatically translate esprima to Python! - Available <a href=https://github.com/PiotrDabkowski/Js2Py/blob/master/examples/pyesprima.py"> Here </a>
 
 <hr>
-<h1><b>Functionality</b></h1>
+####Functionality
 Of course translates and evaluates JavaScript code in pure Python:
 
     >>> from js2py.evaljs import *
@@ -36,7 +37,7 @@ It has few limitations which will be solved in the future:
 </ul>
 
 <hr>
-<h1><b>Demo </b></h1>
+####Demo
 Let's translate this LongestCommonSubstring algorithm:
 
     x = '''function lcs(string1, string2){
