@@ -1,9 +1,11 @@
 # coding=utf-8
-""" This module is still experimental! It has a lot of bugs and host/constructor objects are not implemented yet.
+""" This module is still experimental!
 """
 from translators.translator import translate_js, dbg
 import sys
 import time
+
+__all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js']
 
 def import_js(path, globals):
     with open(path, 'rb') as f:
@@ -14,8 +16,11 @@ def import_js(path, globals):
     for name in var:
         globals[name] = var.get(name)
 
-def to_module(js):
-    pass
+def eval_js(js):
+    e = EvalJs()
+    return e.eval(js)
+
+
 
 class EvalJs(object):
     def __init__(self, context=None):
@@ -78,12 +83,12 @@ var return;
 
 #print x
 
-DEBUG = True
+DEBUG = False
 
 if __name__=='__main__':
     with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:
         x = f.read()
     e = EvalJs()
-    e.execute(x)
+    #e.execute(x)
     e.console()
 

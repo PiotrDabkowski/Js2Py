@@ -28,6 +28,10 @@ builtins = ('true','false','null','undefined','Infinity',
 
 def set_global_object(obj):
     PyJs.GlobalObject = obj
+    # make this available
+    obj.put('this', obj)
+    # register this ( to make it not configurable)
+    obj.register('this')
 
 
 

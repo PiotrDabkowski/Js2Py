@@ -1,6 +1,41 @@
 ###Pure Python JavaScript Translator/Interpreter. 
 
-Still under development prototypes are not fully finished and constructors are not implemented at all. But it can do basic translations. For example let's translate this LongestCommonSubstring algorithm:
+Translates any valid JavaScript (ECMA Script 5.1) to Python. Translation is fully automatic. Does not have any 
+dependencies - uses only standard python library. Still under development.
+
+<hr>
+<h1><b>Functionality</b><h1>
+Of course translates and evaluates JavaScript code in pure Python:
+
+    >>> from js2py.evaljs import *
+    >>> print translate_js('1 + " and 2 is 3"')
+    from js2py.pyjs import *
+    var = Scope( JS_BUILTINS )
+    set_global_object(var)
+    (Js(1)+Js(u" and 2 is 3"))
+    >>> eval_js('1 + " and 2 is 3"')  
+    '1 and 2 is 3'
+    >>> f = eval_js('function (a) {return eval(arguments[0]+"*3")}')
+    >>> f
+    function (a) { [python code] }
+    >>> f(10)
+    30
+
+It has few limitations which will be solved in the future:
+<ul>
+<li>Date and JSON objects are not implemented</li>
+<li>Automatic semicolon insertion is not fully implemented yet</li>
+<li>RegExp has few bugs</li>
+<li>Array prototype is not fully finished</li>
+<li>Bitwise operations are not implemented yet</li>
+<li>with statement is not supported</li>
+<li>Indirect call to eval will is treated as direct call to eval (hence allways evals in local scope)</li>
+<li>Invalid JavaScript code may not cause SyntaxError and hence can exhibit unexpected behaviour</li>
+</ul>
+
+<hr>
+<h1><b>Demo </b><h1>
+Let's translate this LongestCommonSubstring algorithm:
 
     x = '''function lcs(string1, string2){
         	// init max value
