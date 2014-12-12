@@ -4,7 +4,7 @@ Translates any valid JavaScript (ECMA Script 5.1) to Python. Translation is full
 dependencies - uses only standard python library. Still under development.
 
 <hr>
-<h1><b>Functionality</b><h1>
+<h1><b>Functionality</b></h1>
 Of course translates and evaluates JavaScript code in pure Python:
 
     >>> from js2py.evaljs import *
