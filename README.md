@@ -1,4 +1,4 @@
-###Pure Python JavaScript Translator/Interpreter. 
+<h1><b>Pure Python JavaScript Translator/Interpreter</b></h1>
 
 Translates any valid JavaScript (ECMA Script 5.1) to Python. Translation is fully automatic. Does not have any 
 dependencies - uses only standard python library. Still under development.
@@ -34,7 +34,7 @@ It has few limitations which will be solved in the future:
 </ul>
 
 <hr>
-<h1><b>Demo </b><h1>
+<h1><b>Demo </b></h1>
 Let's translate this LongestCommonSubstring algorithm:
 
     x = '''function lcs(string1, string2){
