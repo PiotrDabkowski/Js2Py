@@ -1,7 +1,9 @@
 <h1><b>Pure Python JavaScript Translator/Interpreter</b></h1>
 
 Translates any valid JavaScript (ECMA Script 5.1) to Python. Translation is fully automatic. Does not have any 
-dependencies - uses only standard python library. Still under development.
+dependencies - uses only standard python library. Still under development. 
+<br>
+Managed to fully automatically translate esprima to Python - Available <a href="https://github.com/PiotrDabkowski/Js2Py/blob/master/js2py/constructors/jsboolean.py"> Here </a>
 
 <hr>
 <h1><b>Functionality</b></h1>
@@ -18,7 +20,7 @@ Of course translates and evaluates JavaScript code in pure Python:
     >>> f = eval_js('function (a) {return eval(arguments[0]+"*3")}')
     >>> f
     function (a) { [python code] }
-    >>> f(10)
+    >>> f(10, 100, 1000)
     30
 
 It has few limitations which will be solved in the future:
