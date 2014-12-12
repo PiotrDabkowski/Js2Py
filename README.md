@@ -3,7 +3,7 @@
 Translates any valid JavaScript (ECMA Script 5.1) to Python. Translation is fully automatic. Does not have any 
 dependencies - uses only standard python library. Still under development. 
 <br>
-Managed to fully automatically translate esprima to Python - Available <a href="https://github.com/PiotrDabkowski/Js2Py/blob/master/js2py/constructors/jsboolean.py"> Here </a>
+Managed to fully automatically translate esprima to Python - Available <a href="https://github.com/PiotrDabkowski/Js2Py/blob/master/js2py/examples/pyesprima.py"> Here </a>
 
 <hr>
 <h1><b>Functionality</b></h1>
