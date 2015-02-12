@@ -8,6 +8,8 @@ import time
 __all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js']
 
 def import_js(path, globals):
+    """Imports from javascript source file. Note may cause name conflicts.
+      globals is your globals()"""
     with open(path, 'rb') as f:
         js = f.read()
     e = EvalJs()
@@ -17,12 +19,18 @@ def import_js(path, globals):
         globals[name] = var.get(name)
 
 def eval_js(js):
+    """Just like javascript eval. Translates javascript to python,
+       executes and returns python object.
+       js is javascript source code"""
     e = EvalJs()
     return e.eval(js)
 
 
 
 class EvalJs(object):
+    """This class supports continuous execution of javascript under same context.
+
+       You can run interactive javascript console with console method!"""
     def __init__(self, context=None):
         self.context = {}
         self.__started = False

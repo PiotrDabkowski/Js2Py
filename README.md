@@ -10,19 +10,12 @@ Managed to fully automatically translate esprima to Python! - Available <a href=
 ####Functionality
 Of course translates and evaluates JavaScript code in pure Python:
 
-    >>> from js2py.evaljs import *
-    >>> print translate_js('1 + " and 2 is 3"')
-    from js2py.pyjs import *
-    var = Scope( JS_BUILTINS )
-    set_global_object(var)
-    (Js(1)+Js(u" and 2 is 3"))
-    >>> eval_js('1 + " and 2 is 3"')  
-    '1 and 2 is 3'
-    >>> f = eval_js('function (a) {return eval(arguments[0]+"*3")}')
+    >>> import js2py
+    >>> f = js2py.eval_js( "function (a) {return a + arguments[1]}" )
     >>> f
     function (a) { [python code] }
-    >>> f(10, 100, 1000)
-    30
+    >>> f(1, 2, 3)
+    3
 
 It has few limitations which will be solved in the future:
 <ul>
@@ -38,117 +31,93 @@ It has few limitations which will be solved in the future:
 
 <hr>
 ####Demo
-Let's translate this LongestCommonSubstring algorithm:
+Let's translate this Longest Common Substring algorithm:
 
-    x = '''function lcs(string1, string2){
-        	// init max value
-        	var longestCommonSubstring = 0;
-        	// init 2D array with 0
-        	var table = [],
-                    len1 = string1.length,
-                    len2 = string2.length,
-                    row, col;
-        	for(row = 0; row <= len1; row++){
-        		table[row] = [];
-        		for(col = 0; col <= len2; col++){
-        			table[row][col] = 0;
-        		}
-        	}
-        	// fill table
-                var i, j;
-        	for(i = 0; i < len1; i++){
-        		for(j = 0; j < len2; j++){
-        			if(string1[i]==string2[j]){
-        				if(table[i][j] == 0){
-        					table[i+1][j+1] = 1;
-        				} else {
-        					table[i+1][j+1] = table[i][j] + 1;
-        				}
-        				if(table[i+1][j+1] > longestCommonSubstring){
-        					longestCommonSubstring = table[i+1][j+1];
-        				}
-        			} else {
-        				table[i+1][j+1] = 0;
-        			}
-        		}
-        	}
-        	return longestCommonSubstring;
-        }'''
+    x = """function lcs(a, b) {
+        var m = a.length, n = b.length,
+            C = [], i, j;
+        for (i = 0; i <= m; i++) C.push([0]);
+        for (j = 0; j < n; j++) C[0].push(0);
+        for (i = 0; i < m; i++)
+            for (j = 0; j < n; j++)
+                C[i+1][j+1] = a[i] === b[j] ? C[i][j]+1 : Math.max(C[i+1][j], C[i][j+1]);
+        return (function bt(i, j) {
+            if (i*j === 0) { return ""; }
+            if (a[i-1] === b[j-1]) { return bt(i-1, j-1) + a[i-1]; }
+            return (C[i][j-1] > C[i-1][j]) ? bt(i, j-1) : bt(i-1, j);
+        }(m, n));
+        }"""
+        
 Here is how to do that:
 
-    >>> from js2py.evaljs import EvalJs
-    >>> e = EvalJs()
-    >>> e.execute(x) # where x is our longest common subsequence algoritm in JavaScript
-    >>> e['lcs']
+    >>> from js2py import EvalJs
+    >>> j = EvalJs()
+    >>> j.execute(x) # where x is our longest common subsequence algoritm in JavaScript above
+    >>> j.lcs        # accessing translated function
     function lcs(string1, string2) { [python code] }
-    >>> e['lcs']('js2py','pyjs')
-    2 
-js2py and pyjs have longest common subsequence 'py' which has length 2 so the answer is correct. 
+    >>> j.lcs('website','webmaster')
+    'webste'
+As you can see js2py can fully automatically translate advanced javascript code. 
 
 <hr>
 <br>
 If you are curious this is how the translated code looks like:
 
+    >>> print js2py.translate_js(x)
     from js2py.pyjs import *
-    var = Scope({k:v for k,v in JS_BUILTINS.iteritems()})
+    var = Scope( JS_BUILTINS )
     set_global_object(var)
-    var.registers(['lcs'])
+    var.registers([u'lcs'])
     @Js
-    def PyJsLvalTempHoisted(string1, string2, this, arguments, var=var):
-        var = Scope({'this':this, 'arguments':arguments, 'string1':string1, 'string2':string2}, var)
-        var.registers(['longestCommonSubstring', 'table', 'len1', 'len2', 'row', 'col', 'i', 'j'])
-        var.put('longestCommonSubstring', Js(0))
+    def PyJsLvalTempHoisted(a, b, this, arguments, var=var):
+        var = Scope({'this':this, 'arguments':arguments, u'a':a, u'b':b}, var)
+        var.registers([u'm', u'n', u'C', u'i', u'j'])
+        var.put(u'm', var.get(u'a').get(u'length'))
+        var.put(u'n', var.get(u'b').get(u'length'))
         PyJsLvalArray1_ = Js([None])
-        var.put('table', PyJsLvalArray1_)
-        var.put('len1', var.get('string1').get('length'))
-        var.put('len2', var.get('string2').get('length'))
+        var.put(u'C', PyJsLvalArray1_)
         #for JS loop
-        var.put('row', Js(0))
-        while (var.get('row')<=var.get('len1')):
-            PyJsLvalArray2_ = Js([None])
-            var.get('table').put(var.get('row'), PyJsLvalArray2_)
-            #for JS loop
-            var.put('col', Js(0))
-            while (var.get('col')<=var.get('len2')):
-                var.get('table').get(var.get('row')).put(var.get('col'), Js(0))
-                pass
-                var.get('col').PostInc()
-            
-            pass
-            var.get('row').PostInc()
+        var.put(u'i', Js(0))
+        while (var.get(u'i')<=var.get(u'm')):
+            PyJsLvalArray2_ = Js([Js(0)])
+            var.get(u'C').callprop(u'push',PyJsLvalArray2_)
+            var.get(u'i').PostInc()
         
-        pass
         #for JS loop
-        var.put('i', Js(0))
-        while (var.get('i')<var.get('len1')):
-            #for JS loop
-            var.put('j', Js(0))
-            while (var.get('j')<var.get('len2')):
-                if (var.get('string1').get(var.get('i'))==var.get('string2').get(var.get('j'))):
-                    if (var.get('table').get(var.get('i')).get(var.get('j'))==Js(0)):
-                        var.get('table').get((var.get('i')+Js(1))).put((var.get('j')+Js(1)), Js(1))
-                        pass
-                    else:
-                        var.get('table').get((var.get('i')+Js(1))).put((var.get('j')+Js(1)), (var.get('table').get(var.get('i')).get(var.get('j'))+Js(1)))
-                        pass
-                    if (var.get('table').get((var.get('i')+Js(1))).get((var.get('j')+Js(1)))>var.get('longestCommonSubstring')):
-                        var.put('longestCommonSubstring', var.get('table').get((var.get('i')+Js(1))).get((var.get('j')+Js(1))))
-                        pass
-                    pass
-                else:
-                    var.get('table').get((var.get('i')+Js(1))).put((var.get('j')+Js(1)), Js(0))
-                    pass
-                pass
-                var.get('j').PostInc()
-            
-            pass
-            var.get('i').PostInc()
+        var.put(u'j', Js(0))
+        while (var.get(u'j')<var.get(u'n')):
+            var.get(u'C').get(Js(0)).callprop(u'push',Js(0))
+            var.get(u'j').PostInc()
         
-        return var.get('longestCommonSubstring')
+        #for JS loop
+        var.put(u'i', Js(0))
+        while (var.get(u'i')<var.get(u'm')):
+            #for JS loop
+            var.put(u'j', Js(0))
+            while (var.get(u'j')<var.get(u'n')):
+                var.get(u'C').get((var.get(u'i')+Js(1))).put((var.get(u'j')+Js(1)), ((var.get(u'C').get(var.get(u'i')).get(var.get(u'j'))+Js(1)) if var.get(u'C').get((var.get(u'i')+Js(1))).put((var.get(u'j')+Js(1)), PyJsStrictEq(var.get(u'a').get(var.get(u'i')),var.get(u'b').get(var.get(u'j')))) else var.get(u'Math').callprop(u'max',var.get(u'C').get((var.get(u'i')+Js(1))).get(var.get(u'j')),var.get(u'C').get(var.get(u'i')).get((var.get(u'j')+Js(1))))))
+                var.get(u'j').PostInc()
+            
+            var.get(u'i').PostInc()
+        
+        @Js
+        def PyJsLvalInline1_(i, j, this, arguments, var=var):
+            var = Scope({'this':this, 'arguments':arguments, u'i':i, u'j':j, u'bt':PyJsLvalInline1_}, var)
+            if PyJsStrictEq((var.get(u'i')*var.get(u'j')),Js(0)):
+                return Js(u"")
+                pass
+            if PyJsStrictEq(var.get(u'a').get((var.get(u'i')-Js(1))),var.get(u'b').get((var.get(u'j')-Js(1)))):
+                return (var.get(u'bt')((var.get(u'i')-Js(1)),(var.get(u'j')-Js(1)))+var.get(u'a').get((var.get(u'i')-Js(1))))
+                pass
+            return (var.get(u'bt')(var.get(u'i'),(var.get(u'j')-Js(1))) if ((var.get(u'C').get(var.get(u'i')).get((var.get(u'j')-Js(1)))>var.get(u'C').get((var.get(u'i')-Js(1))).get(var.get(u'j')))) else var.get(u'bt')((var.get(u'i')-Js(1)),var.get(u'j')))
+            pass
+            pass
+        return (PyJsLvalInline1_(var.get(u'm'),var.get(u'n')))
         pass
         pass
-    PyJsLvalTempHoisted.func_name = 'lcs'
-    var.put('lcs', PyJsLvalTempHoisted)
+    PyJsLvalTempHoisted.func_name = u'lcs'
+    
+    var.put(u'lcs', PyJsLvalTempHoisted)
     pass
 
 

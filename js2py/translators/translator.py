@@ -9,10 +9,8 @@ TOP_GLOBAL = '''from js2py.pyjs import *\nvar = Scope( JS_BUILTINS )\nset_global
 
 
 def translate_js(js, top=TOP_GLOBAL):
-    """Js has to be a javascript code. Functions and getters/ setters are not supported yet but will be very soon.
-        It cant contain with or switch statements.
-        Also most of the built in global objects like Number Object RegExp, Math etc
-        are not implemented yet"""
+    """js has to be a javascript source code.
+       returns equivalent python code."""
     # Remove constant literals
     no_const, constants = remove_constants(js)
     #print 'const count', len(constants)
