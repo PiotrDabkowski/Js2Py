@@ -373,17 +373,27 @@ def js_inv(a):
 def js_not(a):
     return a+'.neg()'
 
+def postfix(a, inc, post):
+    bra = list(bracket_split(a, ('()',)))
+    meth = bra[-2]
+    if not meth.endswith('get'):
+        raise SyntaxError('Invalid ++ or -- operation.')
+    bra[-2] = bra[-2][:-3] + 'put'
+    bra[-1] = '(%s,%s%sJs(1))' % (bra[-1][1:-1], a, '+' if inc else '-')
+    res = ''.join(bra)
+    return res if not post else '(%s%sJs(1))' % (res, '-' if inc else '+')
+
 def js_pre_inc(a):
-    return a+'.PreInc()'
+    return postfix(a, True, False)
 
 def js_post_inc(a):
-    return a+'.PostInc()'
+    return postfix(a, True, True)
 
 def js_pre_dec(a):
-    return a+'.PreDec()'
+    return postfix(a, False, False)
 
 def js_post_dec(a):
-    return a+'.PostDec()'
+    return postfix(a, False, True)
 
 
 OR = {'||': js_or}
