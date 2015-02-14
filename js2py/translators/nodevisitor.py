@@ -486,7 +486,7 @@ def exp_translator(code):
     try:
         return trans(code)
     except:
-        print '\n\ntrans failed on \n\n' + code
+        #print '\n\ntrans failed on \n\n' + code
         #raw_input('\n\npress enter')
         raise
 

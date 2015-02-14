@@ -20,7 +20,6 @@ Of course translates and evaluates JavaScript code in pure Python:
 It has few limitations which will be solved in the future:
 <ul>
 <li>Date and JSON objects are not implemented</li>
-<li>Automatic semicolon insertion is not fully implemented yet</li>
 <li>RegExp has few bugs</li>
 <li>Array prototype is not fully finished</li>
 <li>Bitwise operations are not implemented yet</li>
@@ -28,6 +27,8 @@ It has few limitations which will be solved in the future:
 <li>Indirect call to eval will is treated as direct call to eval (hence allways evals in local scope)</li>
 <li>Invalid JavaScript code may not cause SyntaxError and hence can exhibit unexpected behaviour</li>
 </ul>
+
+<b> Automatic semicolon insertion is now supported! </b>
 
 <hr>
 ####Demo

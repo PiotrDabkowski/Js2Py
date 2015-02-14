@@ -7,7 +7,6 @@
     variable from the context! Also you can use its console method to play with interactive javascript console!
 
     NOTE: This module is still not fully finished:
-          Automatic semicolon insertion is not implemented
           Date and JSON builtin objects are not implemented
           Array prototype is not fully finished
           Bitwise operations are not implemented (eh)

@@ -46,9 +46,6 @@ def do_bracket_exp(source, start, throw=True):
     return bra, cand if bra else start
 
 
-
-
-
 def do_if(source, start):
     start += 2 # pass this if
     bra, start = do_bracket_exp(source, start, throw=True)
@@ -145,12 +142,35 @@ def do_empty(source, start):
     return 'pass\n', start + 1
 
 def do_expression(source, start):
+    start = pass_white(source, start)
     end = pass_until(source, start, tokens=(';',))
     if end==start+1: #empty statement
         return 'pass\n', end
-    # Here I should add automatic semicolon insertion
-    #todo auto ; insertion
-    return exp_translator(source[start:end].rstrip(';'))+'\n', end
+    # AUTOMATIC SEMICOLON INSERTION FOLLOWS
+    # Without ASI this function would end with: return exp_translator(source[start:end].rstrip(';'))+'\n', end
+    # ASI makes things a bit more complicated:
+    # we will try to parse as much as possible, inserting ; in place of last new line in case of error
+    rev = False
+    rpos = 0
+    while True:
+        try:
+            code = source[start:end].rstrip(';')
+            cand = exp_translator(code)+'\n', end
+            just_to_test = compile(cand[0], '', 'exec')
+            return cand
+        except Exception as e:
+            if not rev:
+                rev = source[start:end][::-1]
+        lpos = rpos
+        while True:
+            rpos = pass_until(rev, rpos, LINE_TERMINATOR)
+            if rpos>=len(rev):
+                raise
+            if filter(lambda x: x not in SPACE, rev[lpos:rpos]):
+               break
+        end = start + len(rev) - rpos + 1
+
+
 
 def do_var(source, start):
     #todo auto ; insertion
@@ -416,5 +436,5 @@ def translate_flow(source):
 if __name__=='__main__':
     #print do_dowhile('do {} while(k+f)', 0)[0]
     #print 'e: "%s"'%do_expression('++(c?g:h);   mj', 0)[0]
-    print do_statement('try {throw a;debugger;} catch (g) {console.log(a);console.log(g);}', 0)[0]
+    print do_statement('{chuj\n[j,k]}', 0)[0]
     print TO_REGISTER
