@@ -398,6 +398,21 @@ def do_switch(source, start):
     return code, start
 
 
+def do_pyimport(source, start):
+    start += 8
+    lib, start = parse_identifier(source, start)
+    jlib = 'PyImport_%s' % lib
+    code = 'import %s as %s\n' % (lib, jlib)
+    #check whether valid lib name...
+    try:
+        compile(code, '', 'exec')
+    except:
+        raise SyntaxError('Invalid Python module name (%s) in pyimport statement'%lib)
+    # var.pyimport will handle module conversion to PyJs object
+    code += 'var.pyimport(%s, %s)\n' % (repr(lib), jlib)
+    return code, start
+
+
 
 
 def do_with(source, start):
@@ -416,7 +431,8 @@ KEYWORD_METHODS = {'do': do_dowhile,
                   'switch': do_switch,
                   'var': do_var,
                   'debugger': do_debugger, # this one does not do anything
-                  'with': do_with
+                  'with': do_with,
+                  'pyimport': do_pyimport
                   }
 #Also not specific statements (harder to detect)
 # Block {}
@@ -436,5 +452,5 @@ def translate_flow(source):
 if __name__=='__main__':
     #print do_dowhile('do {} while(k+f)', 0)[0]
     #print 'e: "%s"'%do_expression('++(c?g:h);   mj', 0)[0]
-    print do_statement('{chuj\n[j,k]}', 0)[0]
-    print TO_REGISTER
+    print translate_flow('a; yimport test')[0]
+

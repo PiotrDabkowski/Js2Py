@@ -22,7 +22,7 @@ class ArrayPrototype:
                 cand = element.to_object()
                 str_func = element.get('toLocaleString')
                 if not str_func.is_callable():
-                    this.MakeError('TypeError', 'toLocaleString method of item at index %d is not callable'%i)
+                    raise this.MakeError('TypeError', 'toLocaleString method of item at index %d is not callable'%i)
                 res.append(element.callprop('toLocaleString'))
         return ', '.join(res)
 

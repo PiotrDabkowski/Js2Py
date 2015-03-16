@@ -91,11 +91,11 @@ var return;
 
 #print x
 
-DEBUG = False
+DEBUG = True
 
 if __name__=='__main__':
-    with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:
-        x = f.read()
+    #with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:
+    #    x = f.read()
     e = EvalJs()
     #e.execute(x)
     e.console()

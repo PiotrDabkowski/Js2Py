@@ -17,6 +17,18 @@ Of course translates and evaluates JavaScript code in pure Python:
     >>> f(1, 2, 3)
     3
 
+<hr>
+
+What's more Js2Py also supports importing any Python code from JavaScript using 'pyimport' statement:
+
+    >>> x = """pyimport urllib;
+               var result = urllib.urlopen('https://www.google.com/').read();
+               console.log(result.length)
+            """
+    >>> js2py.eval_js(x)
+    18211
+    undefined
+    
 It has few limitations which will be solved in the future:
 <ul>
 <li>Date and JSON objects are not implemented</li>
@@ -24,11 +36,14 @@ It has few limitations which will be solved in the future:
 <li>Array prototype is not fully finished</li>
 <li>Bitwise operations are not implemented yet</li>
 <li>with statement is not supported</li>
-<li>Indirect call to eval will is treated as direct call to eval (hence allways evals in local scope)</li>
+<li>Indirect call to eval will is treated as direct call to eval (hence always evals in local scope)</li>
 <li>Invalid JavaScript code may not cause SyntaxError and hence can exhibit unexpected behaviour</li>
 </ul>
 
-<b> Automatic semicolon insertion is now supported! </b>
+You can help me to fix these problems if you want since I don't have time to do that. Js2Py would be complete :)
+In the future I will maybe replace my home made JS parser with Esprima because Esprima is much more reliable (but also slower). 
+
+<b> Automatic semicolon insertion is supported! </b>
 
 <hr>
 ####Demo
@@ -60,6 +75,8 @@ Here is how to do that:
     'webste'
 As you can see js2py can fully automatically translate advanced javascript code. 
 
+
+    
 <hr>
 <br>
 If you are curious this is how the translated code looks like:

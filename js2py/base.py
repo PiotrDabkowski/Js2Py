@@ -4,12 +4,48 @@ import re
 from translators import translator
 from utils.injector import fix_js_args
 from translators.jsparser import OP_METHODS
-from types import FunctionType
+from types import FunctionType, ModuleType, GeneratorType, ClassType, BuiltinFunctionType, MethodType, BuiltinMethodType, NoneType
 import traceback
 
 def MakeError(name, message):
     """Returns PyJsException with PyJsError inside"""
     return JsToPyException(ERRORS[name](Js(message)))
+
+
+def to_python(val):
+    if not isinstance(val, PyJs):
+        return val
+    if isinstance(val, PyJsUndefined) or isinstance(val, PyJsNull):
+        return None
+    elif isinstance(val, PyJsNumber):
+        # this can be either float or long/int better to assume its int/long when a whole number...
+        v = val.value
+        i = int(v)
+        return v if i!=v else i
+    elif isinstance(val, (PyJsString, PyJsBoolean)):
+        return val.value
+    elif isinstance(val, PyJsFunction):
+        return val.code
+    # in rare cases it will give recursion error (self referencing arrays or objects) I could fix that but I am lazy
+    elif isinstance(val, (PyJsArray, PyJsArguments)):
+        return [to_python(e) for e in val.to_list()]
+    return {k.value:to_python(val.get(k)) for k in val}
+
+
+
+def HJs(val):
+    if hasattr(val, '__call__'): #
+        @Js
+        def PyWrapper(this, arguments, var=None):
+            return py_wrap(val.__call__(*tuple(to_python(e) for e in arguments.to_list())))
+        try:
+            PyWrapper.func_name = val.__name__
+        except:
+            pass
+        return PyWrapper
+    if isinstance(val, tuple):
+        val = list(val)
+    return Js(val)
 
 def Js(val):
     '''Converts Py type to PyJs type'''
@@ -27,6 +63,21 @@ def Js(val):
         return val # todo later
     elif isinstance(val, FunctionType):
         return PyJsFunction(val, FunctionPrototype)
+    #elif isinstance(val, ModuleType):
+    #    mod = {}
+    #    for name in dir(val):
+    #        value = getattr(val, name)
+    #        if isinstance(value, ModuleType):
+    #            continue  # prevent recursive module conversion
+    #        try:
+    #            jsval = HJs(value)
+    #        except RuntimeError:
+    #            print 'Could not convert %s to PyJs object!' % name
+    #            continue
+    #        mod[name] = jsval
+    #    return Js(mod)
+    #elif isintance(val, ClassType):
+
     elif isinstance(val, dict): # convert to object
          temp = PyJsObject({}, ObjectPrototype)
          for k, v in val.iteritems():
@@ -34,8 +85,22 @@ def Js(val):
          return temp
     elif isinstance(val, list): #Convert to array
         return PyJsArray(val, ArrayPrototype)
-    else:
-        raise RuntimeError('Cant convert python type to js')
+    else: # try to convert to js object
+        raise RuntimeError('Cant convert python type to js (%s)' % repr(val))
+        #try:
+        #    obj = {}
+        #    for name in dir(val):
+        #        if name.startswith('_'):  #dont wrap attrs that start with _
+        #            continue
+        #        value = getattr(val, name)
+        #        import types
+        #        if not isinstance(value, (FunctionType, BuiltinFunctionType, MethodType, BuiltinMethodType,
+        #                                  dict, int, basestring, bool, float, long, list, tuple)):
+        #            continue
+        #        obj[name] = HJs(value)
+        #    return Js(obj)
+        #except:
+        #    raise RuntimeError('Cant convert python type to js (%s)' % repr(val))
 
 def Type(val):
     try:
@@ -830,12 +895,70 @@ class Scope(PyJs):
         # not configurable, cant delete
         return false
 
+    def pyimport(self, name, module):
+        self.register(name)
+        self.put(name, py_wrap(module))
+
     def __repr__(self):
         return u'[Object Global]'
 
 
 
+class PyObjectWrapper(PyJs):
+    Class = 'PyObjectWrapper'
+    def __init__(self, obj):
+        self.obj = obj
 
+    def get(self, prop):
+        if not isinstance(prop, basestring):
+            prop = prop.to_string().value
+        try:
+            if prop.isdigit():
+                return py_wrap(self.obj[int(prop)])
+            return py_wrap(getattr(self.obj, prop))
+        except:
+            return undefined
+
+    def put(self, prop, val, throw=False):
+        if not isinstance(prop, basestring):
+            prop = prop.to_string().value
+        try:
+            setattr(self.obj, prop, to_python(val))
+        except AttributeError:
+            raise MakeError('TypeError', 'Read only object probably...')
+        return val
+
+    def __call__(self, *args):
+        py_args = tuple(to_python(e) for e in args)
+        return py_wrap(self.obj.__call__(*py_args))
+
+    def callprop(self, prop, *args):
+        py_args = tuple(to_python(e) for e in args)
+        if not isinstance(prop, basestring):
+            prop = prop.to_string().value
+        return self.get(prop)(*py_args)
+
+    def delete(self, prop):
+        if not isinstance(prop, basestring):
+            prop = prop.to_string().value
+        try:
+            if prop.isdigit():
+                del self.obj[int(prop)]
+            else:
+                delattr(self.obj, prop)
+            return true
+        except:
+            return false
+
+    def __repr__(self):
+        return 'PyObjectWrapper(%s)' % str(self.obj)
+
+
+def py_wrap(py):
+    if isinstance(py, (FunctionType, BuiltinFunctionType, MethodType, BuiltinMethodType,
+                       dict, int, basestring, bool, float, long, list, tuple, NoneType)):
+        return HJs(py)
+    return PyObjectWrapper(py)
 
 
 
