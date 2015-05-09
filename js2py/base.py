@@ -1222,6 +1222,10 @@ class PyJsArray(PyJs):
         else:
             return PyJs.define_own_property(self, prop, desc)
 
+    def to_list(self):
+        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
+
 
 
 
