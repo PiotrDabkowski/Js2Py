@@ -4016,3 +4016,4 @@ def PyJsLvalInline2_(exports, this, arguments, var=var):
 pass
 esprima = var.get('esprima')
 parse = esprima['parse']
+parse(r'var j = 490 \n; a=4;(;')

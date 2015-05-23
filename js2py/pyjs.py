@@ -42,3 +42,4 @@ for name, error in ERRORS.iteritems():
 #add eval
 scope['eval'] = Eval
 JS_BUILTINS = {k:v for k,v in scope.iteritems()}
+

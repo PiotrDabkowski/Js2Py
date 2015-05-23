@@ -755,6 +755,16 @@ class PyJs:
             raise  MakeError('TypeError','%s is not a function'%cand.typeof())
         return cand.call(self, args)
 
+    def to_python(self):
+        """returns equivalent python object.
+         for example if this object is javascript array then this method will return equivalent python array"""
+        return to_python(self)
+
+    def to_py(self):
+        """returns equivalent python object.
+         for example if this object is javascript array then this method will return equivalent python array"""
+        return to_python(self)
+
 
 #Define some more classes representing operators:
 
