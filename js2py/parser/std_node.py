@@ -512,7 +512,11 @@ class WrappingNode(BaseNode):
 
 
 def node_to_dict(node):
-    if not isinstance(node, BaseNode):
+    if isinstance(node, list):
+        return [node_to_dict(e) for e in node]
+    elif isinstance(node, dict):
+        return {k:node_to_dict(v) for k,v in node.iteritems()}
+    elif not isinstance(node, BaseNode):
         return node
     dic = {}
     for e in dir(node):

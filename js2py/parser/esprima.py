@@ -15,6 +15,12 @@ null = None
 
 class EspParser:
     def __init__(self, self_test=False):
+        self.clean()
+        # test
+        if self_test:
+            print self.parse('')
+
+    def clean(self):
         self.strict = None
         self.sourceType = None
         self.index = 0
@@ -34,9 +40,7 @@ class EspParser:
         self.isBindingElement = None
         self.isAssignmentTarget = None
         self.firstCoverInitializedNameError = None
-        # test
-        if self_test:
-            self.parse('9  ')
+
     # 7.4 Comments
 
     def skipSingleLineComment(self, offset):
@@ -128,6 +132,7 @@ class EspParser:
                 return ''
         return unichr(code)
 
+
     def scanUnicodeCodePointEscape(self):
         ch = self.source[self.index]
         code = 0
@@ -151,6 +156,9 @@ class EspParser:
 
     def ccode(self, offset=0):
         return ord(self.source[self.index+offset])
+
+    def at(self, loc):
+        return None if loc>=self.length else self.source[loc]
 
     def substr(self, le, offset=0):
         return self.source[self.index+offset:self.index+offset+le]
@@ -489,7 +497,7 @@ class EspParser:
                         if isOctalDigit(ch):
                             octToDec = self.octalToDecimal(ch)
                             octal = octToDec['octal'] or octal
-                            st += unichr(octToDec.code)
+                            st += unichr(octToDec['code'])
                         else:
                             st += ch
                 else:
@@ -710,7 +718,7 @@ class EspParser:
         return self.scanRegExp()
 
     def isIdentifierName(self, token):
-        return token[type] in {1,3,4,5}
+        return token['type'] in {1,3,4,5}
 
     #def advanceSlash(self): ???
 
@@ -753,7 +761,7 @@ class EspParser:
 
         # Template literals start with ` (U+0060) for template head
         # or } (U+007D) for template middle or template tail.
-        if (ch == 0x60 or (ch == 0x7D and self.state['curlyStack'][self.state['curlyStack'].length - 1] == '${')):
+        if (ch == 0x60 or (ch == 0x7D and self.state['curlyStack'][len(self.state['curlyStack']) - 1] == '${')):
             return self.scanTemplate()
         return self.scanPunctuator();
 
@@ -820,7 +828,7 @@ class EspParser:
 
 
     def createError(self, line, pos, description):
-        error = JsSyntaxError('Line ' + line + ': ' + description);
+        error = JsSyntaxError('Line ' + unicode(line) + ': ' + unicode(description));
         error.index = pos
         error.lineNumber = line
         error.column = pos - (self.lineStart if self.scanning else self.lastLineStart) + 1
@@ -835,7 +843,7 @@ class EspParser:
         raise self.createError(self.lastLineNumber, self.lastIndex, msg);
 
     def tolerateError(self, messageFormat, *args):
-        return self.throwError(self, messageFormat, *args)
+        return self.throwError(messageFormat, *args)
 
     # Throw an exception because of the token.
 
@@ -858,7 +866,7 @@ class EspParser:
             value = token['value']['raw'] if (typ == Token.Template)  else token['value']
         else:
             value = 'ILLEGAL'
-        msg = msg.replace('%0', value)
+        msg = msg.replace('%0', unicode(value))
 
         return (self.createError(token['lineNumber'], token['start'], msg) if (token and token.get('lineNumber')) else
                self.createError(self.lineNumber if self.scanning else self.lastLineNumber, self.index if self.scanning else self.lastIndex, msg))
@@ -923,7 +931,8 @@ class EspParser:
 
     def consumeSemicolon(self):
         # Catch the very common case first: immediately a semicolon (U+003B).
-        if (self.source[self.startIndex] == ';' or self.match(';')):
+
+        if (self.at(self.startIndex) == ';' or self.match(';')):
             self.lex()
             return
 
@@ -1385,7 +1394,7 @@ class EspParser:
         node =  Node();
 
         if (typ == Token.Identifier):
-            expr = node.finishIdentifier(self.lex().value);
+            expr = node.finishIdentifier(self.lex()['value']);
         elif (typ == Token.StringLiteral or typ == Token.NumericLiteral):
             self.isAssignmentTarget = self.isBindingElement = false
             if (self.strict and self.lookahead.get('octal')):
@@ -2502,7 +2511,8 @@ class EspParser:
         options['paramSet'][key] = true
 
     def parseParam(self, options):
-        token = self.lookahead;
+        token = self.lookahead
+        de = None
         if (token['value'] == '...'):
             param = self.parseRestElement();
             self.validateParam(options, param.argument, param.argument.name);
@@ -2543,12 +2553,12 @@ class EspParser:
         return {
             'params': options['params'],
             'defaults': options['defaults'],
-            'stricted': options['stricted'],
-            'firstRestricted': options['firstRestricted'],
+            'stricted': options.get('stricted'),
+            'firstRestricted': options.get('firstRestricted'),
             'message': options.get('message')}
 
 
-    def parseFunctionDeclaration(self, node, identifierIsOptional):
+    def parseFunctionDeclaration(self, node, identifierIsOptional=None):
         d = null
         params = []
         defaults = []
@@ -2682,8 +2692,8 @@ class EspParser:
         if options:
             raise NotImplementedError('Options not implemented! You can only use default settings.')
 
-
-        self.source = unicode(code)
+        self.clean()
+        self.source = unicode(code) + '// END' # I have to add it in order not to check for EOF every time
         self.index = 0
         self.lineNumber = 1 if len(self.source) > 0 else 0
         self.lineStart = 0
@@ -2699,13 +2709,15 @@ class EspParser:
             'inIteration': false,
             'inSwitch': false,
             'lastCommentStart': -1,
-            'curlyStack': []}
+            'curlyStack': [],
+            'parenthesizedCount': None
+            }
         self.sourceType = 'script';
         self.strict = false;
 
         program = self.parseProgram();
-        return program
+        return node_to_dict(program)
 
 
 a = EspParser('"kk\\nnkkkm"')
-a.parseExpression()
+
