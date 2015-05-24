@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from espdata import *
 from std_node import *
+from pprint import pprint
 
 ESPRIMA_VERSION = '2.2.0'
 
@@ -14,11 +15,12 @@ false = False
 null = None
 
 class EspParser:
-    def __init__(self, self_test=False):
+    def __init__(self):
         self.clean()
-        # test
-        if self_test:
-            print self.parse('')
+
+    def test(self, code):
+        pprint(self.parse(code))
+
 
     def clean(self):
         self.strict = None
@@ -838,8 +840,7 @@ class EspParser:
     # Throw an exception
 
     def throwError(self, messageFormat, *args):
-        msg = messageFormat # todo replace appriopriate fields with args
-        print 'TODO ERROR MSG:   ', msg, args
+        msg = messageFormat % tuple(unicode(e) for e in args)
         raise self.createError(self.lastLineNumber, self.lastIndex, msg);
 
     def tolerateError(self, messageFormat, *args):
@@ -866,7 +867,7 @@ class EspParser:
             value = token['value']['raw'] if (typ == Token.Template)  else token['value']
         else:
             value = 'ILLEGAL'
-        msg = msg.replace('%0', unicode(value))
+        msg = msg.replace('%s', unicode(value))
 
         return (self.createError(token['lineNumber'], token['start'], msg) if (token and token.get('lineNumber')) else
                self.createError(self.lineNumber if self.scanning else self.lastLineNumber, self.index if self.scanning else self.lastIndex, msg))
@@ -2032,111 +2033,112 @@ class EspParser:
 
     def parseWhileStatement(self, node):
 
-        self.expectKeyword('while');
+        self.expectKeyword('while')
 
-        self.expect('(');
+        self.expect('(')
 
-        test = self.parseExpression();
+        test = self.parseExpression()
 
-        self.expect(')');
+        self.expect(')')
 
-        oldInIteration = self.state['inIteration'];
-        self.state['inIteration'] = true;
+        oldInIteration = self.state['inIteration']
+        self.state['inIteration'] = true
 
-        body = self.parseStatement();
+        body = self.parseStatement()
 
-        self.state['inIteration'] = oldInIteration;
+        self.state['inIteration'] = oldInIteration
 
-        return node.finishWhileStatement(test, body);
-
+        return node.finishWhileStatement(test, body)
 
     def parseForStatement(self, node):
-        previousAllowIn = self.state['allowIn'];
+        previousAllowIn = self.state['allowIn']
 
         init = test = update = null
 
-        self.expectKeyword('for');
+        self.expectKeyword('for')
 
-        self.expect('(');
+        self.expect('(')
 
         if (self.match(';')):
-            self.lex();
+            self.lex()
         else:
             if (self.matchKeyword('var')):
-                init = Node();
-                self.lex();
+                init =  Node()
+                self.lex()
 
                 self.state['allowIn'] = false;
                 init = init.finishVariableDeclaration(self.parseVariableDeclarationList())
                 self.state['allowIn'] = previousAllowIn
 
                 if (len(init.declarations) == 1 and self.matchKeyword('in')):
-                    self.lex();
-                    left = init;
-                    right = self.parseExpression();
-                    init = null;
-                else:
-                    self.expect(';');
-            elif (self.matchKeyword('const') or self.matchKeyword('let')):
-                init = Node();
-                kind = self.lex()['value']
-
-                self.state['allowIn'] = false;
-                declarations = self.parseBindingList(kind, {'inFor': true});
-                self.state['allowIn'] = previousAllowIn;
-
-                if (len(declarations) == 1 and declarations[0].init == null and self.matchKeyword('in')):
-                    init = init.finishLexicalDeclaration(declarations, kind);
                     self.lex()
                     left = init
                     right = self.parseExpression()
                     init = null
                 else:
+                    self.expect(';')
+            elif (self.matchKeyword('const') or self.matchKeyword('let')):
+                init = Node()
+                kind = self.lex()['value']
+
+                self.state['allowIn'] = false
+                declarations = self.parseBindingList(kind, {'inFor': true})
+                self.state['allowIn'] = previousAllowIn
+
+                if (len(declarations) == 1 and declarations[0].init == null and self.matchKeyword('in')):
+                    init = init.finishLexicalDeclaration(declarations, kind);
+                    self.lex();
+                    left = init;
+                    right = self.parseExpression();
+                    init = null;
+                else:
                     self.consumeSemicolon();
                     init = init.finishLexicalDeclaration(declarations, kind);
             else:
-                initStartToken = self.lookahead;
-                self.state['allowIn'] = false;
+                initStartToken = self.lookahead
+                self.state['allowIn'] = false
                 init = self.inheritCoverGrammar(self.parseAssignmentExpression);
                 self.state['allowIn'] = previousAllowIn;
 
                 if (self.matchKeyword('in')):
                     if (not self.isAssignmentTarget):
-                        self.tolerateError(Messages.InvalidLHSInForIn);
+                        self.tolerateError(Messages.InvalidLHSInForIn)
                     self.lex();
-                    self.reinterpretExpressionAsPattern(init);
+                    self.reinterpretExpressionAsPattern(self.init);
                     left = init;
                     right = self.parseExpression();
-                    init = null
+                    init = null;
                 else:
                     if (self.match(',')):
-                        initSeq = [init]
+                        initSeq = [init];
                         while (self.match(',')):
                             self.lex();
-                            initSeq.append(self.isolateCoverGrammar(self.parseAssignmentExpression));
-                        init = WrappingNode(initStartToken).finishSequenceExpression(initSeq);  # todo fix this !!!
+                            initSeq.append(self.isolateCoverGrammar(self.parseAssignmentExpression))
+                        init = WrappingNode(initStartToken).finishSequenceExpression(initSeq)
                     self.expect(';');
 
-
-        if ('left' in locals() and left!=null):
+        if ('left' not in locals()):
 
             if (not self.match(';')):
-                test = self.parseExpression()
+                test = self.parseExpression();
+
             self.expect(';');
 
             if (not self.match(')')):
                 update = self.parseExpression();
 
-        self.expect(')')
 
-        oldInIteration = self.state['inIteration'];
-        self.state['inIteration'] = true
+        self.expect(')');
 
-        body = self.isolateCoverGrammar(self.parseStatement);
+        oldInIteration = self.state['inIteration']
+        self.state['inIteration'] = true;
+
+        body = self.isolateCoverGrammar(self.parseStatement)
 
         self.state['inIteration'] = oldInIteration;
 
-        return node.finishForStatement(init, test, update, body) if ('left' in locals() and left!=null) else node.finishForInStatement(left, right, body)
+        return node.finishForStatement(init, test, update, body)  if ('left' not in locals()) else node.finishForInStatement(left, right, body);
+
 
     # 12.7 The continue statement
 
@@ -2373,7 +2375,7 @@ class EspParser:
     # 12 Statements
 
     def parseStatement(self):
-        typ = self.lookahead['type'],
+        typ = self.lookahead['type']
 
         if (typ == Token.EOF):
             self.throwUnexpectedToken(self.lookahead)
@@ -2384,6 +2386,7 @@ class EspParser:
         self.isAssignmentTarget = self.isBindingElement = true;
         node = Node();
         val = self.lookahead['value']
+
         if (typ == Token.Punctuator):
             if val == ';':
                 return self.parseEmptyStatement(node);
@@ -2719,5 +2722,22 @@ class EspParser:
         return node_to_dict(program)
 
 
-a = EspParser('"kk\\nnkkkm"')
+if __name__=='__main__':
+    x = '''function lcs(a, b) {
+        var m = a.length, n = b.length,
+            C = [], i, j;
+        for (i = 0; i <= m; i++) C.push([0]);
+        for (j = 0; j < n; j++) C[0].push(0);
+        for (i = 0; i < m; i++)
+            for (j = 0; j < n; j++)
+                C[i+1][j+1] = a[i] === b[j] ? C[i][j]+1 : Math.max(C[i+1][j], C[i][j+1]);
+        return (function bt(i, j) {
+            if (i*j === 0) { return ""; }
+            if (a[i-1] === b[j-1]) { return bt(i-1, j-1) + a[i-1]; }
+            return (C[i][j-1] > C[i-1][j]) ? bt(i, j-1) : bt(i-1, j);
+        }(m, n));
+        }'''
+    p = EspParser()
+    p.test(x)
+
 
