@@ -499,6 +499,9 @@ class BaseNode:
             self.finish()
             return self
 
+        def __getitem__(self, item):
+            return getattr(self, item)
+
 
 class Node(BaseNode):
     pass

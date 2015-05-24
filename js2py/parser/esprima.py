@@ -2,6 +2,9 @@ from __future__ import unicode_literals
 from espdata import *
 from std_node import *
 
+ESPRIMA_VERSION = '2.2.0'
+
+# Small naming converntion changes
 # len -> leng
 # id -> d
 # type -> typ
@@ -249,11 +252,11 @@ class EspParser:
         # Check for most common single-character punctuators.
         st = self.source[self.index]
         if st == '{':
-            self.state.curlyStack.push('{')
+            self.state['curlyStack'].append('{')
             self.index += 1
         elif st == '}':
             self.index += 1
-            self.state.curlyStack.pop()
+            self.state['curlyStack'].pop()
         elif st in  {'.', '(', ')', ';', ',', '[', ']', ':', '?', '~'}:
             self.index += 1
         else:
@@ -538,7 +541,7 @@ class EspParser:
                 break
             elif (ch == '$'):
                 if (self.source[self.index] == '{'):
-                    self.state.curlyStack.push('${')
+                    self.state['curlyStack'].append('${')
                     self.index += 1
                     terminated = True
                     break;
@@ -599,7 +602,7 @@ class EspParser:
             self.throwUnexpectedToken()
 
         if (not head):
-            self.state.curlyStack.pop();
+            self.state['curlyStack'].pop();
 
         return {
             'type': Token.Template,
@@ -754,12 +757,12 @@ class EspParser:
             return self.scanNumericLiteral()
 
         # Slash (/) U+002F can also start a regex.
-        #if (extra.tokenize && ch === 0x2F) {
+        #if (extra.tokenize && ch == 0x2F):
         #    return advanceSlash();
 
         # Template literals start with ` (U+0060) for template head
         # or } (U+007D) for template middle or template tail.
-        if (ch == 0x60 or (ch == 0x7D and self.state.curlyStack[self.state.curlyStack.length - 1] == '${')):
+        if (ch == 0x60 or (ch == 0x7D and self.state['curlyStack'][self.state['curlyStack'].length - 1] == '${')):
             return self.scanTemplate()
         return self.scanPunctuator();
 
@@ -917,12 +920,12 @@ class EspParser:
     # (where an identifier is sometimes a keyword depending on the context)
 
     def matchContextualKeyword(self, keyword):
-        return self.lookahead.type == Token.Identifier and self.lookahead['value'] == keyword
+        return self.lookahead['type'] == Token.Identifier and self.lookahead['value'] == keyword
 
     # Return true if the next token is an assignment operator
 
     def matchAssign(self):
-        if (self.lookahead.type != Token.Punctuator):
+        if (self.lookahead['type'] != Token.Punctuator):
             return False;
         op = self.lookahead['value']
         return op in {'=','*=', '/=','%=', '+=', '-=', '<<=', '>>=', '>>>=', '&=' , '^=' , '|='}
@@ -1030,7 +1033,7 @@ class EspParser:
     def parsePropertyPattern(self):
         node = Node()
         computed = self.match('[')
-        if (self.lookahead.type == Token.Identifier):
+        if (self.lookahead['type'] == Token.Identifier):
             key = self.parseVariableIdentifier()
             if (self.match('=')):
                 self.lex();
@@ -1057,7 +1060,7 @@ class EspParser:
         return node.finishObjectPattern(properties)
 
     def parsePattern(self):
-        if (self.lookahead.type == Token.Identifier):
+        if (self.lookahead['type'] == Token.Identifier):
             return self.parseVariableIdentifier()
         elif (self.match('[')):
             return self.parseArrayPattern()
@@ -1142,7 +1145,7 @@ class EspParser:
                 self.tolerateUnexpectedToken(token, Messages.StrictOctalLiteral);
             return node.finishLiteral(token);
         elif typ in  {Token.Identifier, Token.BooleanLiteral, Token.NullLiteral, Token.Keyword}:
-            return node.finishIdentifier(token.value);
+            return node.finishIdentifier(token['value']);
         elif typ==Token.Punctuator:
             if (token['value'] == '['):
                 expr = self.isolateCoverGrammar(self.parseAssignmentExpression)
@@ -1155,7 +1158,7 @@ class EspParser:
         if typ in  {Token.Identifier, Token.StringLiteral, Token.BooleanLiteral, Token.NullLiteral, Token.NumericLiteral, Token.Keyword}:
             return true
         if typ == Token.Punctuator:
-            return self.lookahead.value == '['
+            return self.lookahead['value'] == '['
         return false
 
     # // This function is to try to parse a MethodDefinition as defined in 14.3. But in the case of object literals,
@@ -1394,7 +1397,7 @@ class EspParser:
             expr = node.finishIdentifier(self.lex().value);
         elif (typ == Token.StringLiteral or typ == Token.NumericLiteral):
             self.isAssignmentTarget = self.isBindingElement = false
-            if (self.strict and self.lookahead.octal):
+            if (self.strict and self.lookahead.get('octal')):
                 self.tolerateUnexpectedToken(self.lookahead, Messages.StrictOctalLiteral)
             expr = node.finishLiteral(self.lex())
         elif (typ == Token.Keyword):
@@ -1410,7 +1413,7 @@ class EspParser:
         elif (typ == Token.BooleanLiteral):
             isAssignmentTarget = self.isBindingElement = false
             token = self.lex();
-            token['value'] = (token.value == 'true')
+            token['value'] = (token['value'] == 'true')
             expr = node.finishLiteral(token)
         elif (typ == Token.NullLiteral):
             self.isAssignmentTarget = self.isBindingElement = false
@@ -1505,7 +1508,7 @@ class EspParser:
                 self.isAssignmentTarget = true;
                 property = self.parseComputedMember();
                 expr = WrappingNode(startToken).finishMemberExpression('[', expr, property)
-            elif (self.lookahead.type == Token.Template and self.lookahead['head']):
+            elif (self.lookahead['type'] == Token.Template and self.lookahead['head']):
                 quasi = self.parseTemplateLiteral()
                 expr = WrappingNode(startToken).finishTaggedTemplateExpression(expr, quasi)
             else:
@@ -1553,7 +1556,7 @@ class EspParser:
 
         expr = self.inheritCoverGrammar(self.parseLeftHandSideExpressionAllowCall)
 
-        if (not self.hasLineTerminator and self.lookahead.type == Token.Punctuator):
+        if (not self.hasLineTerminator and self.lookahead['type'] == Token.Punctuator):
             if (self.match('++') or self.match('--')):
                 # 11.3.1, 11.3.2
                 if (self.strict and expr.type == Syntax.Identifier and isRestrictedWord(expr.name)):
@@ -1570,7 +1573,7 @@ class EspParser:
 
     def parseUnaryExpression(self):
 
-        if (self.lookahead.type != Token.Punctuator and self.lookahead.type != Token.Keyword):
+        if (self.lookahead['type'] != Token.Punctuator and self.lookahead['type'] != Token.Keyword):
             expr = self.parsePostfixExpression();
         elif (self.match('++') or self.match('--')):
             startToken = self.lookahead;
@@ -1818,502 +1821,408 @@ class EspParser:
                 expressions.append(self.isolateCoverGrammar(self.parseAssignmentExpression))
             expr = WrappingNode(startToken).finishSequenceExpression(expressions);
         return expr
-    // 12.1 Block
 
-    function parseStatementListItem() {
-        if (lookahead.type === Token.Keyword) {
-            switch (lookahead.value) {
-            case 'export':
-                if (sourceType !== 'module') {
-                    tolerateUnexpectedToken(lookahead, Messages.IllegalExportDeclaration);
-                }
-                return parseExportDeclaration();
-            case 'import':
-                if (sourceType !== 'module') {
-                    tolerateUnexpectedToken(lookahead, Messages.IllegalImportDeclaration);
-                }
-                return parseImportDeclaration();
-            case 'const':
-            case 'let':
-                return parseLexicalDeclaration({inFor: false});
-            case 'function':
-                return parseFunctionDeclaration(new Node());
-            case 'class':
-                return parseClassDeclaration();
-            }
-        }
+    # 12.1 Block
 
-        return parseStatement();
-    }
+    def parseStatementListItem(self):
+        if (self.lookahead['type'] == Token.Keyword):
+            val = (self.lookahead['value'])
+            if val=='export':
+                if (self.sourceType != 'module'):
+                    self.tolerateUnexpectedToken(self.lookahead, Messages.IllegalExportDeclaration)
+                return self.parseExportDeclaration();
+            elif val == 'import':
+                if (self.sourceType != 'module'):
+                    self.tolerateUnexpectedToken(self.lookahead, Messages.IllegalImportDeclaration);
+                return self.parseImportDeclaration();
+            elif val == 'const' or val == 'let':
+                return self.parseLexicalDeclaration({'inFor': false});
+            elif val == 'function':
+                return self.parseFunctionDeclaration(Node());
+            elif val == 'class':
+                return self.parseClassDeclaration();
+        return self.parseStatement();
+    
+    
+    def parseStatementList(self):
+        list = [];
+        while (self.startIndex < self.length):
+            if (self.match('}')):
+                break
+            list.append(self.parseStatementListItem())
+        return list
 
-    function parseStatementList() {
-        var list = [];
-        while (startIndex < length) {
-            if (match('}')) {
-                break;
-            }
-            list.push(parseStatementListItem());
-        }
+    def parseBlock(self):
+        node =  Node();
 
-        return list;
-    }
+        self.expect('{');
 
-    function parseBlock() {
-        var block, node = new Node();
+        block = self.parseStatementList()
 
-        expect('{');
-
-        block = parseStatementList();
-
-        expect('}');
+        self.expect('}');
 
         return node.finishBlockStatement(block);
-    }
 
-    // 12.2 Variable Statement
+    # 12.2 Variable Statement
 
-    function parseVariableIdentifier() {
-        var token, node = new Node();
+    def parseVariableIdentifier(self):
+        node = Node()
 
-        token = lex();
+        token = self.lex()
 
-        if (token.type !== Token.Identifier) {
-            if (strict && token.type === Token.Keyword && isStrictModeReservedWord(token.value)) {
-                tolerateUnexpectedToken(token, Messages.StrictReservedWord);
-            } else {
-                throwUnexpectedToken(token);
-            }
-        }
+        if (token['type'] != Token.Identifier):
+            if (self.strict and token['type'] == Token.Keyword and isStrictModeReservedWord(token['value'])):
+                self.tolerateUnexpectedToken(token, Messages.StrictReservedWord);
+            else:
+                self.throwUnexpectedToken(token)
+        return node.finishIdentifier(token['value'])
 
-        return node.finishIdentifier(token.value);
-    }
+    def parseVariableDeclaration(self):
+        init = null
+        node = Node();
 
-    function parseVariableDeclaration() {
-        var init = null, id, node = new Node();
+        d = self.parsePattern();
 
-        id = parsePattern();
+        # 12.2.1
+        if (self.strict and isRestrictedWord(d.name)):
+            self.tolerateError(Messages.StrictVarName);
 
-        // 12.2.1
-        if (strict && isRestrictedWord(id.name)) {
-            tolerateError(Messages.StrictVarName);
-        }
+        if (self.match('=')):
+            self.lex();
+            init = self.isolateCoverGrammar(self.parseAssignmentExpression);
+        elif (d.type != Syntax.Identifier):
+            self.expect('=')
+        return node.finishVariableDeclarator(d, init)
 
-        if (match('=')) {
-            lex();
-            init = isolateCoverGrammar(parseAssignmentExpression);
-        } else if (id.type !== Syntax.Identifier) {
-            expect('=');
-        }
+    def parseVariableDeclarationList(self):
+        lis = []
 
-        return node.finishVariableDeclarator(id, init);
-    }
+        while True:
+            lis.append(self.parseVariableDeclaration())
+            if (not self.match(',')):
+                break
+            self.lex();
+            if not (self.startIndex < self.length):
+                break
 
-    function parseVariableDeclarationList() {
-        var list = [];
+        return lis;
 
-        do {
-            list.push(parseVariableDeclaration());
-            if (!match(',')) {
-                break;
-            }
-            lex();
-        } while (startIndex < length);
+    def parseVariableStatement(self, node):
+        self.expectKeyword('var')
 
+        declarations = self.parseVariableDeclarationList()
+
+        self.consumeSemicolon()
+
+        return node.finishVariableDeclaration(declarations)
+
+
+    def parseLexicalBinding(self, kind, options):
+        init = null
+        node = Node()
+
+        d = self.parsePattern();
+
+        # 12.2.1
+        if (self.strict and d.type == Syntax.Identifier and isRestrictedWord(d.name)):
+            self.tolerateError(Messages.StrictVarName);
+
+        if (kind == 'const'):
+            if (not self.matchKeyword('in')):
+                self.expect('=')
+                init = self.isolateCoverGrammar(self.parseAssignmentExpression)
+        elif ((not options['inFor'] and d.type != Syntax.Identifier) or self.match('=')):
+            self.expect('=');
+            init = self.isolateCoverGrammar(self.parseAssignmentExpression);
+        return node.finishVariableDeclarator(id, init)
+
+    def parseBindingList(self, kind, options):
+        list = [];
+
+        while True:
+            list.append(self.parseLexicalBinding(kind, options));
+            if (not self.match(',')):
+                break
+            self.lex();
+            if not (self.startIndex < self.length):
+                break
         return list;
-    }
 
-    function parseVariableStatement(node) {
-        var declarations;
+    def parseLexicalDeclaration(self, options):
+        node = Node();
 
-        expectKeyword('var');
-
-        declarations = parseVariableDeclarationList();
-
-        consumeSemicolon();
-
-        return node.finishVariableDeclaration(declarations);
-    }
-
-    function parseLexicalBinding(kind, options) {
-        var init = null, id, node = new Node();
-
-        id = parsePattern();
-
-        // 12.2.1
-        if (strict && id.type === Syntax.Identifier && isRestrictedWord(id.name)) {
-            tolerateError(Messages.StrictVarName);
-        }
-
-        if (kind === 'const') {
-            if (!matchKeyword('in')) {
-                expect('=');
-                init = isolateCoverGrammar(parseAssignmentExpression);
-            }
-        } else if ((!options.inFor && id.type !== Syntax.Identifier) || match('=')) {
-            expect('=');
-            init = isolateCoverGrammar(parseAssignmentExpression);
-        }
-
-        return node.finishVariableDeclarator(id, init);
-    }
-
-    function parseBindingList(kind, options) {
-        var list = [];
-
-        do {
-            list.push(parseLexicalBinding(kind, options));
-            if (!match(',')) {
-                break;
-            }
-            lex();
-        } while (startIndex < length);
-
-        return list;
-    }
-
-    function parseLexicalDeclaration(options) {
-        var kind, declarations, node = new Node();
-
-        kind = lex().value;
-        assert(kind === 'let' || kind === 'const', 'Lexical declaration must be either let or const');
-
-        declarations = parseBindingList(kind, options);
-
-        consumeSemicolon();
-
+        kind = self.lex()['value']
+        assert kind == 'let' or kind == 'const', 'Lexical declaration must be either let or const'
+        declarations = self.parseBindingList(kind, options);
+        self.consumeSemicolon();
         return node.finishLexicalDeclaration(declarations, kind);
-    }
 
-    function parseRestElement() {
-        var param, node = new Node();
+    def parseRestElement(self):
+        node = Node();
 
-        lex();
+        self.lex();
 
-        if (match('{')) {
-            throwError(Messages.ObjectPatternAsRestParameter);
-        }
+        if (self.match('{')):
+            self.throwError(Messages.ObjectPatternAsRestParameter)
+        param = self.parseVariableIdentifier();
+        if (self.match('=')):
+            self.throwError(Messages.DefaultRestParameter);
 
-        param = parseVariableIdentifier();
-
-        if (match('=')) {
-            throwError(Messages.DefaultRestParameter);
-        }
-
-        if (!match(')')) {
-            throwError(Messages.ParameterAfterRestParameter);
-        }
-
+        if (not self.match(')')):
+            self.throwError(Messages.ParameterAfterRestParameter);
         return node.finishRestElement(param);
     }
 
-    // 12.3 Empty Statement
+    # 12.3 Empty Statement
 
-    function parseEmptyStatement(node) {
-        expect(';');
-        return node.finishEmptyStatement();
-    }
+    def parseEmptyStatement(self, node):
+        self.expect(';');
+        return node.finishEmptyStatement()
 
-    // 12.4 Expression Statement
+    # 12.4 Expression Statement
 
-    function parseExpressionStatement(node) {
-        var expr = parseExpression();
-        consumeSemicolon();
+    def parseExpressionStatement(self, node):
+        expr = self.parseExpression();
+        self.consumeSemicolon();
         return node.finishExpressionStatement(expr);
-    }
 
-    // 12.5 If statement
+    # 12.5 If statement
 
-    function parseIfStatement(node) {
-        var test, consequent, alternate;
+    def parseIfStatement(self, node):
+        self.expectKeyword('if');
 
-        expectKeyword('if');
+        self.expect('(');
 
-        expect('(');
+        test = self.parseExpression();
 
-        test = parseExpression();
+        self.expect(')');
 
-        expect(')');
+        consequent = self.parseStatement();
 
-        consequent = parseStatement();
-
-        if (matchKeyword('else')) {
-            lex();
-            alternate = parseStatement();
-        } else {
+        if (self.matchKeyword('else')):
+            self.lex();
+            alternate = self.parseStatement();
+        else:
             alternate = null;
-        }
+        return node.finishIfStatement(test, consequent, alternate)
 
-        return node.finishIfStatement(test, consequent, alternate);
-    }
+    # 12.6 Iteration Statements
 
-    // 12.6 Iteration Statements
+    def parseDoWhileStatement(self, node):
 
-    function parseDoWhileStatement(node) {
-        var body, test, oldInIteration;
+        self.expectKeyword('do')
 
-        expectKeyword('do');
+        oldInIteration = self.state['inIteration']
+        self.state['inIteration'] = true
 
-        oldInIteration = state.inIteration;
-        state.inIteration = true;
+        body = self.parseStatement();
 
-        body = parseStatement();
+        self.state['inIteration'] = oldInIteration;
 
-        state.inIteration = oldInIteration;
+        self.expectKeyword('while');
 
-        expectKeyword('while');
+        self.expect('(');
 
-        expect('(');
+        test = self.parseExpression();
 
-        test = parseExpression();
+        self.expect(')')
 
-        expect(')');
+        if (self.match(';')):
+            self.lex()
+        return node.finishDoWhileStatement(body, test)
 
-        if (match(';')) {
-            lex();
-        }
+    def parseWhileStatement(self, node):
 
-        return node.finishDoWhileStatement(body, test);
-    }
+        self.expectKeyword('while');
 
-    function parseWhileStatement(node) {
-        var test, body, oldInIteration;
+        self.expect('(');
 
-        expectKeyword('while');
+        test = self.parseExpression();
 
-        expect('(');
+        self.expect(')');
 
-        test = parseExpression();
+        oldInIteration = self.state['inIteration'];
+        self.state['inIteration'] = true;
 
-        expect(')');
+        body = self.parseStatement();
 
-        oldInIteration = state.inIteration;
-        state.inIteration = true;
-
-        body = parseStatement();
-
-        state.inIteration = oldInIteration;
+        self.state['inIteration'] = oldInIteration;
 
         return node.finishWhileStatement(test, body);
-    }
 
-    function parseForStatement(node) {
-        var init, initSeq, initStartToken, test, update, left, right, kind, declarations,
-            body, oldInIteration, previousAllowIn = state.allowIn;
 
-        init = test = update = null;
+    def parseForStatement(self, node):
+        previousAllowIn = self.state['allowIn'];
 
-        expectKeyword('for');
+        init = test = update = null
 
-        expect('(');
+        self.expectKeyword('for');
 
-        if (match(';')) {
-            lex();
-        } else {
-            if (matchKeyword('var')) {
-                init = new Node();
-                lex();
+        self.expect('(');
 
-                state.allowIn = false;
-                init = init.finishVariableDeclaration(parseVariableDeclarationList());
-                state.allowIn = previousAllowIn;
+        if (self.match(';')):
+            self.lex();
+        else:
+            if (self.matchKeyword('var')):
+                init = Node();
+                self.lex();
 
-                if (init.declarations.length === 1 && matchKeyword('in')) {
-                    lex();
+                self.state['allowIn'] = false;
+                init = init.finishVariableDeclaration(self.parseVariableDeclarationList())
+                self.state['allowIn'] = previousAllowIn
+
+                if (len(init.declarations) == 1 and self.matchKeyword('in')):
+                    self.lex();
                     left = init;
-                    right = parseExpression();
+                    right = self.parseExpression();
                     init = null;
-                } else {
-                    expect(';');
-                }
-            } else if (matchKeyword('const') || matchKeyword('let')) {
-                init = new Node();
-                kind = lex().value;
+                else:
+                    self.expect(';');
+            elif (self.matchKeyword('const') or self.matchKeyword('let')):
+                init = Node();
+                kind = self.lex()['value']
 
-                state.allowIn = false;
-                declarations = parseBindingList(kind, {inFor: true});
-                state.allowIn = previousAllowIn;
+                self.state['allowIn'] = false;
+                declarations = self.parseBindingList(kind, {'inFor': true});
+                self.state['allowIn'] = previousAllowIn;
 
-                if (declarations.length === 1 && declarations[0].init === null && matchKeyword('in')) {
+                if (len(declarations) == 1 and declarations[0].init == null and self.matchKeyword('in')):
+                    init = init.finishLexicalDeclaration(declarations, kind);\
+                    self.lex()
+                    left = init
+                    right = self.parseExpression()
+                    init = null
+                else:
+                    self.consumeSemicolon();
                     init = init.finishLexicalDeclaration(declarations, kind);
-                    lex();
+            else:
+                initStartToken = self.lookahead;
+                self.state['allowIn'] = false;
+                init = self.inheritCoverGrammar(self.parseAssignmentExpression);
+                self.state['allowIn'] = previousAllowIn;
+
+                if (self.matchKeyword('in')):
+                    if (not self.isAssignmentTarget):
+                        self.tolerateError(Messages.InvalidLHSInForIn);
+                    self.lex();
+                    self.reinterpretExpressionAsPattern(init);
                     left = init;
-                    right = parseExpression();
-                    init = null;
-                } else {
-                    consumeSemicolon();
-                    init = init.finishLexicalDeclaration(declarations, kind);
-                }
-            } else {
-                initStartToken = lookahead;
-                state.allowIn = false;
-                init = inheritCoverGrammar(parseAssignmentExpression);
-                state.allowIn = previousAllowIn;
+                    right = self.parseExpression();
+                    init = null
+                else:
+                    if (self.match(',')):
+                        initSeq = [init]
+                        while (self.match(',')):
+                            self.lex();
+                            initSeq.append(self.isolateCoverGrammar(self.parseAssignmentExpression));
+                        init = WrappingNode(initStartToken).finishSequenceExpression(initSeq);  # todo fix this !!!
+                    self.expect(';');
 
-                if (matchKeyword('in')) {
-                    if (!isAssignmentTarget) {
-                        tolerateError(Messages.InvalidLHSInForIn);
-                    }
 
-                    lex();
-                    reinterpretExpressionAsPattern(init);
-                    left = init;
-                    right = parseExpression();
-                    init = null;
-                } else {
-                    if (match(',')) {
-                        initSeq = [init];
-                        while (match(',')) {
-                            lex();
-                            initSeq.push(isolateCoverGrammar(parseAssignmentExpression));
-                        }
-                        init = new WrappingNode(initStartToken).finishSequenceExpression(initSeq);
-                    }
-                    expect(';');
-                }
-            }
-        }
+        if ('left' in locals() and left!=null):
 
-        if (typeof left === 'undefined') {
+            if (not self.match(';')):
+                test = self.parseExpression()
+            self.expect(';');
 
-            if (!match(';')) {
-                test = parseExpression();
-            }
-            expect(';');
+            if (not self.match(')')):
+                update = self.parseExpression();
 
-            if (!match(')')) {
-                update = parseExpression();
-            }
-        }
+        self.expect(')')
 
-        expect(')');
+        oldInIteration = self.state['inIteration'];
+        self.state['inIteration'] = true
 
-        oldInIteration = state.inIteration;
-        state.inIteration = true;
+        body = self.isolateCoverGrammar(self.parseStatement);
 
-        body = isolateCoverGrammar(parseStatement);
+        self.state['inIteration'] = oldInIteration;
 
-        state.inIteration = oldInIteration;
+        return node.finishForStatement(init, test, update, body) if ('left' in locals() and left!=null) else node.finishForInStatement(left, right, body)
 
-        return (typeof left === 'undefined') ?
-                node.finishForStatement(init, test, update, body) :
-                node.finishForInStatement(left, right, body);
-    }
+    # 12.7 The continue statement
 
-    // 12.7 The continue statement
+    def parseContinueStatement(self, node):
+        label = null
 
-    function parseContinueStatement(node) {
-        var label = null, key;
+        self.expectKeyword('continue');
 
-        expectKeyword('continue');
-
-        // Optimize the most common form: 'continue;'.
-        if (source.charCodeAt(startIndex) === 0x3B) {
-            lex();
-
-            if (!state.inIteration) {
-                throwError(Messages.IllegalContinue);
-            }
-
+        # Optimize the most common form: 'continue;'.
+        if ord(self.source[self.startIndex]) == 0x3B:
+            self.lex();
+            if (not self.self.state['inIteration']):
+                self.throwError(Messages.IllegalContinue)
+            return node.finishContinueStatement(null)
+        if (self.hasLineTerminator):
+            if (not self.state['inIteration']):
+                self.throwError(Messages.IllegalContinue);
             return node.finishContinueStatement(null);
-        }
 
-        if (hasLineTerminator) {
-            if (!state.inIteration) {
-                throwError(Messages.IllegalContinue);
-            }
-
-            return node.finishContinueStatement(null);
-        }
-
-        if (lookahead.type === Token.Identifier) {
-            label = parseVariableIdentifier();
+        if (self.lookahead['type'] == Token.Identifier):
+            label = self.parseVariableIdentifier();
 
             key = '$' + label.name;
-            if (!Object.prototype.hasOwnProperty.call(state.labelSet, key)) {
-                throwError(Messages.UnknownLabel, label.name);
-            }
-        }
+            if not key in self.state['labelSet']:    # todo make sure its correct!
+                self.throwError(Messages.UnknownLabel, label.name);
+        self.consumeSemicolon()
 
-        consumeSemicolon();
+        if (label == null and not self.state['inIteration']):
+            self.throwError(Messages.IllegalContinue)
+        return node.finishContinueStatement(label)
 
-        if (label === null && !state.inIteration) {
-            throwError(Messages.IllegalContinue);
-        }
 
-        return node.finishContinueStatement(label);
-    }
+    # 12.8 The break statement
 
-    // 12.8 The break statement
+    def parseBreakStatement(self, node):
+        label = null
 
-    function parseBreakStatement(node) {
-        var label = null, key;
+        self.expectKeyword('break');
 
-        expectKeyword('break');
+        # Catch the very common case first: immediately a semicolon (U+003B).
+        if (ord(self.source[self.lastIndex]) == 0x3B):
+            self.lex();
 
-        // Catch the very common case first: immediately a semicolon (U+003B).
-        if (source.charCodeAt(lastIndex) === 0x3B) {
-            lex();
-
-            if (!(state.inIteration || state.inSwitch)) {
-                throwError(Messages.IllegalBreak);
-            }
-
+            if (not (self.state['inIteration'] or self.state['inSwitch'])):
+                self.throwError(Messages.IllegalBreak)
+            return node.finishBreakStatement(null)
+        if (self.hasLineTerminator):
+            if (not (self.state['inIteration'] or self.state['inSwitch'])):
+                self.throwError(Messages.IllegalBreak);
             return node.finishBreakStatement(null);
-        }
-
-        if (hasLineTerminator) {
-            if (!(state.inIteration || state.inSwitch)) {
-                throwError(Messages.IllegalBreak);
-            }
-
-            return node.finishBreakStatement(null);
-        }
-
-        if (lookahead.type === Token.Identifier) {
-            label = parseVariableIdentifier();
+        if (self.lookahead['type'] == Token.Identifier):
+            label = self.parseVariableIdentifier();
 
             key = '$' + label.name;
-            if (!Object.prototype.hasOwnProperty.call(state.labelSet, key)) {
-                throwError(Messages.UnknownLabel, label.name);
-            }
-        }
+            if not (key in self.state['labelSet']):
+                self.throwError(Messages.UnknownLabel, label.name);
+        self.consumeSemicolon();
 
-        consumeSemicolon();
-
-        if (label === null && !(state.inIteration || state.inSwitch)) {
-            throwError(Messages.IllegalBreak);
-        }
-
+        if (label == null and not (self.state['inIteration'] or self.state['inSwitch'])):
+            self.throwError(Messages.IllegalBreak)
         return node.finishBreakStatement(label);
-    }
 
-    // 12.9 The return statement
+    # 12.9 The return statement
 
-    function parseReturnStatement(node) {
-        var argument = null;
+    def parseReturnStatement(self, node):
+        argument = null;
 
-        expectKeyword('return');
+        self.expectKeyword('return');
 
-        if (!state.inFunctionBody) {
-            tolerateError(Messages.IllegalReturn);
-        }
+        if (not self.state['inFunctionBody']):
+            self.tolerateError(Messages.IllegalReturn);
 
-        // 'return' followed by a space and an identifier is very common.
-        if (source.charCodeAt(lastIndex) === 0x20) {
-            if (isIdentifierStart(source.charCodeAt(lastIndex + 1))) {
-                argument = parseExpression();
-                consumeSemicolon();
-                return node.finishReturnStatement(argument);
-            }
-        }
-
-        if (hasLineTerminator) {
+        # 'return' followed by a space and an identifier is very common.
+        if (ord(self.source[self.lastIndex]) == 0x20):
+            if (isIdentifierStart(self.source[self.lastIndex + 1])):
+                argument = self.parseExpression();
+                self.consumeSemicolon();
+                return node.finishReturnStatement(argument)
+        if (hasLineTerminator):
             // HACK
             return node.finishReturnStatement(null);
         }
 
-        if (!match(';')) {
-            if (!match('}') && lookahead.type !== Token.EOF) {
+        if (!match(';')):
+            if (!match('}') && lookahead['type'] != Token.EOF):
                 argument = parseExpression();
             }
         }
@@ -2325,10 +2234,10 @@ class EspParser:
 
     // 12.10 The with statement
 
-    function parseWithStatement(node) {
+    def parseWithStatement(node):
         var object, body;
 
-        if (strict) {
+        if (strict):
             tolerateError(Messages.StrictModeWith);
         }
 
@@ -2347,10 +2256,10 @@ class EspParser:
 
     // 12.10 The swith statement
 
-    function parseSwitchCase() {
+    def parseSwitchCase():
         var test, consequent = [], statement, node = new Node();
 
-        if (matchKeyword('default')) {
+        if (matchKeyword('default')):
             lex();
             test = null;
         } else {
@@ -2359,8 +2268,8 @@ class EspParser:
         }
         expect(':');
 
-        while (startIndex < length) {
-            if (match('}') || matchKeyword('default') || matchKeyword('case')) {
+        while (startIndex < length):
+            if (match('}') || matchKeyword('default') || matchKeyword('case')):
                 break;
             }
             statement = parseStatementListItem();
@@ -2370,7 +2279,7 @@ class EspParser:
         return node.finishSwitchCase(test, consequent);
     }
 
-    function parseSwitchStatement(node) {
+    def parseSwitchStatement(node):
         var discriminant, cases, clause, oldInSwitch, defaultFound;
 
         expectKeyword('switch');
@@ -2385,22 +2294,22 @@ class EspParser:
 
         cases = [];
 
-        if (match('}')) {
+        if (match('}')):
             lex();
             return node.finishSwitchStatement(discriminant, cases);
         }
 
-        oldInSwitch = state.inSwitch;
-        state.inSwitch = true;
+        oldInSwitch = self.state['inSwitch'];
+        self.state['inSwitch'] = true;
         defaultFound = false;
 
-        while (startIndex < length) {
-            if (match('}')) {
+        while (startIndex < length):
+            if (match('}')):
                 break;
             }
             clause = parseSwitchCase();
-            if (clause.test === null) {
-                if (defaultFound) {
+            if (clause.test == null):
+                if (defaultFound):
                     throwError(Messages.MultipleDefaultsInSwitch);
                 }
                 defaultFound = true;
@@ -2408,7 +2317,7 @@ class EspParser:
             cases.push(clause);
         }
 
-        state.inSwitch = oldInSwitch;
+        self.state['inSwitch'] = oldInSwitch;
 
         expect('}');
 
@@ -2417,12 +2326,12 @@ class EspParser:
 
     // 12.13 The throw statement
 
-    function parseThrowStatement(node) {
+    def parseThrowStatement(node):
         var argument;
 
         expectKeyword('throw');
 
-        if (hasLineTerminator) {
+        if (hasLineTerminator):
             throwError(Messages.NewlineAfterThrow);
         }
 
@@ -2435,20 +2344,20 @@ class EspParser:
 
     // 12.14 The try statement
 
-    function parseCatchClause() {
+    def parseCatchClause():
         var param, body, node = new Node();
 
         expectKeyword('catch');
 
         expect('(');
-        if (match(')')) {
+        if (match(')')):
             throwUnexpectedToken(lookahead);
         }
 
         param = parsePattern();
 
         // 12.14.1
-        if (strict && isRestrictedWord(param.name)) {
+        if (strict && isRestrictedWord(param.name)):
             tolerateError(Messages.StrictCatchVariable);
         }
 
@@ -2457,23 +2366,23 @@ class EspParser:
         return node.finishCatchClause(param, body);
     }
 
-    function parseTryStatement(node) {
+    def parseTryStatement(node):
         var block, handler = null, finalizer = null;
 
         expectKeyword('try');
 
         block = parseBlock();
 
-        if (matchKeyword('catch')) {
+        if (matchKeyword('catch')):
             handler = parseCatchClause();
         }
 
-        if (matchKeyword('finally')) {
+        if (matchKeyword('finally')):
             lex();
             finalizer = parseBlock();
         }
 
-        if (!handler && !finalizer) {
+        if (!handler && !finalizer):
             throwError(Messages.NoCatchOrFinally);
         }
 
@@ -2482,7 +2391,7 @@ class EspParser:
 
     // 12.15 The debugger statement
 
-    function parseDebuggerStatement(node) {
+    def parseDebuggerStatement(node):
         expectKeyword('debugger');
 
         consumeSemicolon();
@@ -2492,25 +2401,25 @@ class EspParser:
 
     // 12 Statements
 
-    function parseStatement() {
-        var type = lookahead.type,
+    def parseStatement():
+        var type = lookahead['type'],
             expr,
             labeledBody,
             key,
             node;
 
-        if (type === Token.EOF) {
+        if (type == Token.EOF):
             throwUnexpectedToken(lookahead);
         }
 
-        if (type === Token.Punctuator && lookahead.value === '{') {
+        if (type == Token.Punctuator && lookahead['value'] == '{'):
             return parseBlock();
         }
         isAssignmentTarget = isBindingElement = true;
         node = new Node();
 
-        if (type === Token.Punctuator) {
-            switch (lookahead.value) {
+        if (type == Token.Punctuator):
+            switch (lookahead['value']):
             case ';':
                 return parseEmptyStatement(node);
             case '(':
@@ -2518,8 +2427,8 @@ class EspParser:
             default:
                 break;
             }
-        } else if (type === Token.Keyword) {
-            switch (lookahead.value) {
+        } else if (type == Token.Keyword):
+            switch (lookahead['value']):
             case 'break':
                 return parseBreakStatement(node);
             case 'continue':
@@ -2556,17 +2465,17 @@ class EspParser:
         expr = parseExpression();
 
         // 12.12 Labelled Statements
-        if ((expr.type === Syntax.Identifier) && match(':')) {
+        if ((expr.type == Syntax.Identifier) && match(':')):
             lex();
 
             key = '$' + expr.name;
-            if (Object.prototype.hasOwnProperty.call(state.labelSet, key)) {
+            if (Object.prototype.hasOwnProperty.call(self.state['labelSet'], key)):
                 throwError(Messages.Redeclaration, 'Label', expr.name);
             }
 
-            state.labelSet[key] = true;
+            self.state['labelSet'][key] = true;
             labeledBody = parseStatement();
-            delete state.labelSet[key];
+            delete self.state['labelSet'][key];
             return node.finishLabeledStatement(expr, labeledBody);
         }
 
@@ -2577,52 +2486,52 @@ class EspParser:
 
     // 13 Function Definition
 
-    function parseFunctionSourceElements() {
+    def parseFunctionSourceElements():
         var statement, body = [], token, directive, firstRestricted,
             oldLabelSet, oldInIteration, oldInSwitch, oldInFunctionBody, oldParenthesisCount,
             node = new Node();
 
         expect('{');
 
-        while (startIndex < length) {
-            if (lookahead.type !== Token.StringLiteral) {
+        while (startIndex < length):
+            if (lookahead['type'] != Token.StringLiteral):
                 break;
             }
             token = lookahead;
 
             statement = parseStatementListItem();
             body.push(statement);
-            if (statement.expression.type !== Syntax.Literal) {
+            if (statement.expression.type != Syntax.Literal):
                 // this is not directive
                 break;
             }
             directive = source.slice(token.start + 1, token.end - 1);
-            if (directive === 'use strict') {
+            if (directive == 'use strict'):
                 strict = true;
-                if (firstRestricted) {
+                if (firstRestricted):
                     tolerateUnexpectedToken(firstRestricted, Messages.StrictOctalLiteral);
                 }
             } else {
-                if (!firstRestricted && token.octal) {
+                if (!firstRestricted && token.get('octal')):
                     firstRestricted = token;
                 }
             }
         }
 
-        oldLabelSet = state.labelSet;
-        oldInIteration = state.inIteration;
-        oldInSwitch = state.inSwitch;
-        oldInFunctionBody = state.inFunctionBody;
-        oldParenthesisCount = state.parenthesizedCount;
+        oldLabelSet = self.state['labelSet'];
+        oldInIteration = self.state['inIteration'];
+        oldInSwitch = self.state['inSwitch'];
+        oldInFunctionBody = self.state['inFunctionBody'];
+        oldParenthesisCount = self.state['parenthesizedCount'];
 
-        state.labelSet = {};
-        state.inIteration = false;
-        state.inSwitch = false;
-        state.inFunctionBody = true;
-        state.parenthesizedCount = 0;
+        self.state['labelSet'] = {};
+        self.state['inIteration'] = false;
+        self.state['inSwitch'] = false;
+        self.state['inFunctionBody'] = true;
+        self.state['parenthesizedCount'] = 0;
 
-        while (startIndex < length) {
-            if (match('}')) {
+        while (startIndex < length):
+            if (match('}')):
                 break;
             }
             body.push(parseStatementListItem());
@@ -2630,34 +2539,34 @@ class EspParser:
 
         expect('}');
 
-        state.labelSet = oldLabelSet;
-        state.inIteration = oldInIteration;
-        state.inSwitch = oldInSwitch;
-        state.inFunctionBody = oldInFunctionBody;
-        state.parenthesizedCount = oldParenthesisCount;
+        self.state['labelSet'] = oldLabelSet;
+        self.state['inIteration'] = oldInIteration;
+        self.state['inSwitch'] = oldInSwitch;
+        self.state['inFunctionBody'] = oldInFunctionBody;
+        self.state['parenthesizedCount'] = oldParenthesisCount;
 
         return node.finishBlockStatement(body);
     }
 
-    function validateParam(options, param, name) {
+    function validateParam(options, param, name):
         var key = '$' + name;
-        if (strict) {
-            if (isRestrictedWord(name)) {
+        if (strict):
+            if (isRestrictedWord(name)):
                 options.stricted = param;
                 options.message = Messages.StrictParamName;
             }
-            if (Object.prototype.hasOwnProperty.call(options.paramSet, key)) {
+            if (Object.prototype.hasOwnProperty.call(options.paramSet, key)):
                 options.stricted = param;
                 options.message = Messages.StrictParamDupe;
             }
-        } else if (!options.firstRestricted) {
-            if (isRestrictedWord(name)) {
+        } else if (!options.firstRestricted):
+            if (isRestrictedWord(name)):
                 options.firstRestricted = param;
                 options.message = Messages.StrictParamName;
-            } else if (isStrictModeReservedWord(name)) {
+            } else if (isStrictModeReservedWord(name)):
                 options.firstRestricted = param;
                 options.message = Messages.StrictReservedWord;
-            } else if (Object.prototype.hasOwnProperty.call(options.paramSet, key)) {
+            } else if (Object.prototype.hasOwnProperty.call(options.paramSet, key)):
                 options.firstRestricted = param;
                 options.message = Messages.StrictParamDupe;
             }
@@ -2665,11 +2574,11 @@ class EspParser:
         options.paramSet[key] = true;
     }
 
-    function parseParam(options) {
+    def parseParam(options):
         var token, param, def;
 
         token = lookahead;
-        if (token.value === '...') {
+        if (token['value'] == '...'):
             param = parseRestElement();
             validateParam(options, param.argument, param.argument.name);
             options.params.push(param);
@@ -2678,9 +2587,9 @@ class EspParser:
         }
 
         param = parsePatternWithDefault();
-        validateParam(options, token, token.value);
+        validateParam(options, token, token['value']);
 
-        if (param.type === Syntax.AssignmentPattern) {
+        if (param.type == Syntax.AssignmentPattern):
             def = param.right;
             param = param.left;
             ++options.defaultCount;
@@ -2692,7 +2601,7 @@ class EspParser:
         return !match(')');
     }
 
-    function parseParams(firstRestricted) {
+    def parseParams(firstRestricted):
         var options;
 
         options = {
@@ -2704,10 +2613,10 @@ class EspParser:
 
         expect('(');
 
-        if (!match(')')) {
+        if (!match(')')):
             options.paramSet = {};
-            while (startIndex < length) {
-                if (!parseParam(options)) {
+            while (startIndex < length):
+                if (!parseParam(options)):
                     break;
                 }
                 expect(',');
@@ -2716,7 +2625,7 @@ class EspParser:
 
         expect(')');
 
-        if (options.defaultCount === 0) {
+        if (options.defaultCount == 0):
             options.defaults = [];
         }
 
@@ -2729,22 +2638,22 @@ class EspParser:
         };
     }
 
-    function parseFunctionDeclaration(node, identifierIsOptional) {
+    def parseFunctionDeclaration(node, identifierIsOptional):
         var id = null, params = [], defaults = [], body, token, stricted, tmp, firstRestricted, message, previousStrict;
 
         expectKeyword('function');
-        if (!identifierIsOptional || !match('(')) {
+        if (!identifierIsOptional || !match('(')):
             token = lookahead;
             id = parseVariableIdentifier();
-            if (strict) {
-                if (isRestrictedWord(token.value)) {
+            if (strict):
+                if (isRestrictedWord(token['value'])):
                     tolerateUnexpectedToken(token, Messages.StrictFunctionName);
                 }
             } else {
-                if (isRestrictedWord(token.value)) {
+                if (isRestrictedWord(token['value'])):
                     firstRestricted = token;
                     message = Messages.StrictFunctionName;
-                } else if (isStrictModeReservedWord(token.value)) {
+                } else if (isStrictModeReservedWord(token['value'])):
                     firstRestricted = token;
                     message = Messages.StrictReservedWord;
                 }
@@ -2756,16 +2665,16 @@ class EspParser:
         defaults = tmp.defaults;
         stricted = tmp.stricted;
         firstRestricted = tmp.firstRestricted;
-        if (tmp.message) {
+        if (tmp.message):
             message = tmp.message;
         }
 
         previousStrict = strict;
         body = parseFunctionSourceElements();
-        if (strict && firstRestricted) {
+        if (strict && firstRestricted):
             throwUnexpectedToken(firstRestricted, message);
         }
-        if (strict && stricted) {
+        if (strict && stricted):
             tolerateUnexpectedToken(stricted, message);
         }
         strict = previousStrict;
@@ -2773,24 +2682,24 @@ class EspParser:
         return node.finishFunctionDeclaration(id, params, defaults, body);
     }
 
-    function parseFunctionExpression() {
+    def parseFunctionExpression():
         var token, id = null, stricted, firstRestricted, message, tmp,
             params = [], defaults = [], body, previousStrict, node = new Node();
 
         expectKeyword('function');
 
-        if (!match('(')) {
+        if (!match('(')):
             token = lookahead;
             id = parseVariableIdentifier();
-            if (strict) {
-                if (isRestrictedWord(token.value)) {
+            if (strict):
+                if (isRestrictedWord(token['value'])):
                     tolerateUnexpectedToken(token, Messages.StrictFunctionName);
                 }
             } else {
-                if (isRestrictedWord(token.value)) {
+                if (isRestrictedWord(token['value'])):
                     firstRestricted = token;
                     message = Messages.StrictFunctionName;
-                } else if (isStrictModeReservedWord(token.value)) {
+                } else if (isStrictModeReservedWord(token['value'])):
                     firstRestricted = token;
                     message = Messages.StrictReservedWord;
                 }
@@ -2802,16 +2711,16 @@ class EspParser:
         defaults = tmp.defaults;
         stricted = tmp.stricted;
         firstRestricted = tmp.firstRestricted;
-        if (tmp.message) {
+        if (tmp.message):
             message = tmp.message;
         }
 
         previousStrict = strict;
         body = parseFunctionSourceElements();
-        if (strict && firstRestricted) {
+        if (strict && firstRestricted):
             throwUnexpectedToken(firstRestricted, message);
         }
-        if (strict && stricted) {
+        if (strict && stricted):
             tolerateUnexpectedToken(stricted, message);
         }
         strict = previousStrict;
@@ -2819,103 +2728,14 @@ class EspParser:
         return node.finishFunctionExpression(id, params, defaults, body);
     }
 
+    # todo Translate parse class functions!
 
-    function parseClassBody() {
-        var classBody, token, isStatic, hasConstructor = false, body, method, computed, key;
+    def parseClassExpression(self):
+        raise NotImplementedError()
 
-        classBody = new Node();
+    def parseClassDeclaration(self):
+        raise NotImplementedError()
 
-        expect('{');
-        body = [];
-        while (!match('}')) {
-            if (match(';')) {
-                lex();
-            } else {
-                method = new Node();
-                token = lookahead;
-                isStatic = false;
-                computed = match('[');
-                key = parseObjectPropertyKey();
-                if (key.name === 'static' && lookaheadPropertyName()) {
-                    token = lookahead;
-                    isStatic = true;
-                    computed = match('[');
-                    key = parseObjectPropertyKey();
-                }
-                method = tryParseMethodDefinition(token, key, computed, method);
-                if (method) {
-                    method['static'] = isStatic;
-                    if (method.kind === 'init') {
-                        method.kind = 'method';
-                    }
-                    if (!isStatic) {
-                        if (!method.computed && (method.key.name || method.key.value.toString()) === 'constructor') {
-                            if (method.kind !== 'method' || !method.method || method.value.generator) {
-                                throwUnexpectedToken(token, Messages.ConstructorSpecialMethod);
-                            }
-                            if (hasConstructor) {
-                                throwUnexpectedToken(token, Messages.DuplicateConstructor);
-                            } else {
-                                hasConstructor = true;
-                            }
-                            method.kind = 'constructor';
-                        }
-                    } else {
-                        if (!method.computed && (method.key.name || method.key.value.toString()) === 'prototype') {
-                            throwUnexpectedToken(token, Messages.StaticPrototype);
-                        }
-                    }
-                    method.type = Syntax.MethodDefinition;
-                    delete method.method;
-                    delete method.shorthand;
-                    body.push(method);
-                } else {
-                    throwUnexpectedToken(lookahead);
-                }
-            }
-        }
-        lex();
-        return classBody.finishClassBody(body);
-    }
-
-    function parseClassDeclaration(identifierIsOptional) {
-        var id = null, superClass = null, classNode = new Node(), classBody, previousStrict = strict;
-        strict = true;
-
-        expectKeyword('class');
-
-        if (!identifierIsOptional || lookahead.type === Token.Identifier) {
-            id = parseVariableIdentifier();
-        }
-
-        if (matchKeyword('extends')) {
-            lex();
-            superClass = isolateCoverGrammar(parseLeftHandSideExpressionAllowCall);
-        }
-        classBody = parseClassBody();
-        strict = previousStrict;
-
-        return classNode.finishClassDeclaration(id, superClass, classBody);
-    }
-
-    function parseClassExpression() {
-        var id = null, superClass = null, classNode = new Node(), classBody, previousStrict = strict;
-        strict = true;
-
-        expectKeyword('class');
-
-        if (lookahead.type === Token.Identifier) {
-            id = parseVariableIdentifier();
-        }
-
-        if (matchKeyword('extends')) {
-            lex();
-            superClass = isolateCoverGrammar(parseLeftHandSideExpressionAllowCall);
-        }
-        classBody = parseClassBody();
-        strict = previousStrict;
-
-        return classNode.finishClassExpression(id, superClass, classBody);
 
 
 a = EspParser('"kk\\nnkkkm"')
