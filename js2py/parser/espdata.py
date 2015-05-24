@@ -93,7 +93,6 @@ syntax= {'AssignmentExpression',
          'WhileStatement',
          'WithStatement'}
 
-PlaceHolders = {'ArrowParameterPlaceHolder'}
 
 # Error messages should be identical to V8.
 messages = {
@@ -169,6 +168,8 @@ PRECEDENCE = {'||':1,
 class Token: pass
 class Syntax: pass
 class Messages: pass
+class PlaceHolders:
+    ArrowParameterPlaceHolder = 'ArrowParameterPlaceHolder'
 
 for k,v in token.items():
     setattr(Token, k, v)

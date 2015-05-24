@@ -14,9 +14,7 @@ false = False
 null = None
 
 class EspParser:
-    def __init__(self, source):
-        source += ' ; ' # so that we dont have to care about index error in scanners anymore :)
-        self.source = unicode(source)
+    def __init__(self, self_test=False):
         self.strict = None
         self.sourceType = None
         self.index = 0
@@ -30,22 +28,15 @@ class EspParser:
         self.startLineNumber = None
         self.startLineStart = None
         self.scanning = None
-        self.length = len(source)
         self.lookahead = None
         self.state = None
-        self.extra = {'tokens':[]}
+        self.extra = None
         self.isBindingElement = None
         self.isAssignmentTarget = None
         self.firstCoverInitializedNameError = None
-
-    def parse(self, source):
-        self.source = source
-        self.index = 0
-        self.lineNumber = 0
-        self.lineStart = 0
-        self.length = len(source)
-        self.skipComment()
-
+        # test
+        if self_test:
+            self.parse('9  ')
     # 7.4 Comments
 
     def skipSingleLineComment(self, offset):
@@ -1115,13 +1106,13 @@ class EspParser:
         previousStrict = self.strict;
         body = self.isolateCoverGrammar(self.parseFunctionSourceElements);
 
-        if (self.strict and paramInfo.firstRestricted):
-            self.tolerateUnexpectedToken(paramInfo.firstRestricted, paramInfo.message)
-        if (self.strict and paramInfo.stricted):
-            self.tolerateUnexpectedToken(paramInfo.stricted, paramInfo.message);
+        if (self.strict and paramInfo['firstRestricted']):
+            self.tolerateUnexpectedToken(paramInfo['firstRestricted'], paramInfo.get('message'))
+        if (self.strict and paramInfo['stricted']):
+            self.tolerateUnexpectedToken(paramInfo['stricted'], paramInfo.get('message'));
 
         self.strict = previousStrict;
-        return node.finishFunctionExpression(null, paramInfo.params, paramInfo.defaults, body)
+        return node.finishFunctionExpression(null, paramInfo['params'], paramInfo['defaults'], body)
 
     def parsePropertyMethodFunction(self):
         node = Node();
@@ -1741,9 +1732,9 @@ class EspParser:
                 self.checkPatternParam(options, param);
                 params[i] = param;
                 defaults.append(null);
-        if (options['message'] == Messages.StrictParamDupe):
+        if (options.get('message') == Messages.StrictParamDupe):
             token = options['stricted'] if self.strict else options['firstRestricted']
-            self.throwUnexpectedToken(token, options['message']);
+            self.throwUnexpectedToken(token, options.get('message'));
         if (defaultCount == 0):
             defaults = []
         return {
@@ -1751,7 +1742,7 @@ class EspParser:
             'defaults': defaults,
             'stricted': options['stricted'],
             'firstRestricted': options['firstRestricted'],
-            'message': options['message']}
+            'message': options.get('message')}
 
     def parseArrowFunctionExpression(self, options, node):
         if (self.hasLineTerminator):
@@ -1761,14 +1752,14 @@ class EspParser:
 
         body = self.parseConciseBody();
 
-        if (self.strict and options.firstRestricted):
-            self.throwUnexpectedToken(options.firstRestricted, options.message);
-        if (self.strict and options.stricted):
-            self.tolerateUnexpectedToken(options.stricted, options.message);
+        if (self.strict and options['firstRestricted']):
+            self.throwUnexpectedToken(options['firstRestricted'], options.get('message'));
+        if (self.strict and options['stricted']):
+            self.tolerateUnexpectedToken(options['stricted'], options['message']);
 
         self.strict = previousStrict
 
-        return node.finishArrowFunctionExpression(options.params, options.defaults, body, body.type != Syntax.BlockStatement)
+        return node.finishArrowFunctionExpression(options['params'], options['defaults'], body, body.type != Syntax.BlockStatement)
 
     # 11.13 Assignment Operators
 
@@ -1971,7 +1962,6 @@ class EspParser:
         if (not self.match(')')):
             self.throwError(Messages.ParameterAfterRestParameter);
         return node.finishRestElement(param);
-    }
 
     # 12.3 Empty Statement
 
@@ -2087,7 +2077,7 @@ class EspParser:
                 self.state['allowIn'] = previousAllowIn;
 
                 if (len(declarations) == 1 and declarations[0].init == null and self.matchKeyword('in')):
-                    init = init.finishLexicalDeclaration(declarations, kind);\
+                    init = init.finishLexicalDeclaration(declarations, kind);
                     self.lex()
                     left = init
                     right = self.parseExpression()
@@ -2149,7 +2139,7 @@ class EspParser:
         # Optimize the most common form: 'continue;'.
         if ord(self.source[self.startIndex]) == 0x3B:
             self.lex();
-            if (not self.self.state['inIteration']):
+            if (not self.state['inIteration']):
                 self.throwError(Messages.IllegalContinue)
             return node.finishContinueStatement(null)
         if (self.hasLineTerminator):
@@ -2216,328 +2206,271 @@ class EspParser:
                 argument = self.parseExpression();
                 self.consumeSemicolon();
                 return node.finishReturnStatement(argument)
-        if (hasLineTerminator):
-            // HACK
-            return node.finishReturnStatement(null);
-        }
+        if (self.hasLineTerminator):
+            # HACK
+            return node.finishReturnStatement(null)
 
-        if (!match(';')):
-            if (!match('}') && lookahead['type'] != Token.EOF):
-                argument = parseExpression();
-            }
-        }
-
-        consumeSemicolon();
+        if (not self.match(';')):
+            if (not self.match('}') and self.lookahead['type'] != Token.EOF):
+                argument = self.parseExpression();
+        self.consumeSemicolon();
 
         return node.finishReturnStatement(argument);
-    }
 
-    // 12.10 The with statement
+    # 12.10 The with statement
 
-    def parseWithStatement(node):
-        var object, body;
+    def parseWithStatement(self, node):
+        if (self.strict):
+            self.tolerateError(Messages.StrictModeWith)
 
-        if (strict):
-            tolerateError(Messages.StrictModeWith);
-        }
+        self.expectKeyword('with');
 
-        expectKeyword('with');
+        self.expect('(');
 
-        expect('(');
+        obj = self.parseExpression();
 
-        object = parseExpression();
+        self.expect(')');
 
-        expect(')');
+        body = self.parseStatement();
 
-        body = parseStatement();
+        return node.finishWithStatement(obj, body);
 
-        return node.finishWithStatement(object, body);
-    }
 
-    // 12.10 The swith statement
+    # 12.10 The swith statement
 
-    def parseSwitchCase():
-        var test, consequent = [], statement, node = new Node();
+    def parseSwitchCase(self):
+        consequent = []
+        node = Node();
 
-        if (matchKeyword('default')):
-            lex();
+        if (self.matchKeyword('default')):
+            self.lex();
             test = null;
-        } else {
-            expectKeyword('case');
-            test = parseExpression();
-        }
-        expect(':');
+        else:
+            self.expectKeyword('case');
+            test = self.parseExpression();
 
-        while (startIndex < length):
-            if (match('}') || matchKeyword('default') || matchKeyword('case')):
-                break;
-            }
-            statement = parseStatementListItem();
-            consequent.push(statement);
-        }
+        self.expect(':');
 
-        return node.finishSwitchCase(test, consequent);
-    }
+        while (self.startIndex < self.length):
+            if (self.match('}') or self.matchKeyword('default') or self.matchKeyword('case')):
+                break
+            statement = self.parseStatementListItem()
+            consequent.append(statement)
+        return node.finishSwitchCase(test, consequent)
 
-    def parseSwitchStatement(node):
-        var discriminant, cases, clause, oldInSwitch, defaultFound;
+    def parseSwitchStatement(self, node):
 
-        expectKeyword('switch');
+        self.expectKeyword('switch');
 
-        expect('(');
+        self.expect('(');
 
-        discriminant = parseExpression();
+        discriminant = self.parseExpression();
 
-        expect(')');
+        self.expect(')');
 
-        expect('{');
+        self.expect('{');
 
         cases = [];
 
-        if (match('}')):
-            lex();
+        if (self.match('}')):
+            self.lex();
             return node.finishSwitchStatement(discriminant, cases);
-        }
 
         oldInSwitch = self.state['inSwitch'];
         self.state['inSwitch'] = true;
         defaultFound = false;
 
-        while (startIndex < length):
-            if (match('}')):
+        while (self.startIndex < self.length):
+            if (self.match('}')):
                 break;
-            }
-            clause = parseSwitchCase();
+            clause = self.parseSwitchCase();
             if (clause.test == null):
                 if (defaultFound):
-                    throwError(Messages.MultipleDefaultsInSwitch);
-                }
+                    self.throwError(Messages.MultipleDefaultsInSwitch);
                 defaultFound = true;
-            }
-            cases.push(clause);
-        }
+            cases.append(clause);
 
         self.state['inSwitch'] = oldInSwitch;
 
-        expect('}');
+        self.expect('}');
 
         return node.finishSwitchStatement(discriminant, cases);
-    }
 
-    // 12.13 The throw statement
+    # 12.13 The throw statement
 
-    def parseThrowStatement(node):
-        var argument;
+    def parseThrowStatement(self, node):
 
-        expectKeyword('throw');
+        self.expectKeyword('throw');
 
-        if (hasLineTerminator):
-            throwError(Messages.NewlineAfterThrow);
-        }
+        if (self.hasLineTerminator):
+            self.throwError(Messages.NewlineAfterThrow);
 
-        argument = parseExpression();
+        argument = self.parseExpression();
 
-        consumeSemicolon();
+        self.consumeSemicolon();
 
         return node.finishThrowStatement(argument);
-    }
 
-    // 12.14 The try statement
+    # 12.14 The try statement
 
-    def parseCatchClause():
-        var param, body, node = new Node();
+    def parseCatchClause(self):
+        node = Node();
 
-        expectKeyword('catch');
+        self.expectKeyword('catch');
 
-        expect('(');
-        if (match(')')):
-            throwUnexpectedToken(lookahead);
-        }
+        self.expect('(');
+        if (self.match(')')):
+            self.throwUnexpectedToken(self.lookahead);
+        param = self.parsePattern();
 
-        param = parsePattern();
+        # 12.14.1
+        if (self.strict and isRestrictedWord(param.name)):
+            self.tolerateError(Messages.StrictCatchVariable);
 
-        // 12.14.1
-        if (strict && isRestrictedWord(param.name)):
-            tolerateError(Messages.StrictCatchVariable);
-        }
-
-        expect(')');
-        body = parseBlock();
+        self.expect(')');
+        body = self.parseBlock();
         return node.finishCatchClause(param, body);
-    }
 
-    def parseTryStatement(node):
-        var block, handler = null, finalizer = null;
 
-        expectKeyword('try');
+    def parseTryStatement(self, node):
+        handler = null
+        finalizer = null;
 
-        block = parseBlock();
+        self.expectKeyword('try');
 
-        if (matchKeyword('catch')):
-            handler = parseCatchClause();
-        }
+        block = self.parseBlock();
 
-        if (matchKeyword('finally')):
-            lex();
-            finalizer = parseBlock();
-        }
+        if (self.matchKeyword('catch')):
+            handler = self.parseCatchClause()
 
-        if (!handler && !finalizer):
-            throwError(Messages.NoCatchOrFinally);
-        }
+        if (self.matchKeyword('finally')):
+            self.lex();
+            finalizer = self.parseBlock();
 
-        return node.finishTryStatement(block, handler, finalizer);
-    }
+        if (not handler and not finalizer):
+            self.throwError(Messages.NoCatchOrFinally)
 
-    // 12.15 The debugger statement
+        return node.finishTryStatement(block, handler, finalizer)
 
-    def parseDebuggerStatement(node):
-        expectKeyword('debugger');
+    # 12.15 The debugger statement
 
-        consumeSemicolon();
+    def parseDebuggerStatement(self, node):
+        self.expectKeyword('debugger');
+
+        self.consumeSemicolon();
 
         return node.finishDebuggerStatement();
-    }
 
-    // 12 Statements
+    # 12 Statements
 
-    def parseStatement():
-        var type = lookahead['type'],
-            expr,
-            labeledBody,
-            key,
-            node;
+    def parseStatement(self):
+        typ = self.lookahead['type'],
 
-        if (type == Token.EOF):
-            throwUnexpectedToken(lookahead);
-        }
+        if (typ == Token.EOF):
+            self.throwUnexpectedToken(self.lookahead)
 
-        if (type == Token.Punctuator && lookahead['value'] == '{'):
-            return parseBlock();
-        }
-        isAssignmentTarget = isBindingElement = true;
-        node = new Node();
+        if (typ == Token.Punctuator and self.lookahead['value'] == '{'):
+            return self.parseBlock()
 
-        if (type == Token.Punctuator):
-            switch (lookahead['value']):
-            case ';':
-                return parseEmptyStatement(node);
-            case '(':
-                return parseExpressionStatement(node);
-            default:
-                break;
-            }
-        } else if (type == Token.Keyword):
-            switch (lookahead['value']):
-            case 'break':
-                return parseBreakStatement(node);
-            case 'continue':
-                return parseContinueStatement(node);
-            case 'debugger':
-                return parseDebuggerStatement(node);
-            case 'do':
-                return parseDoWhileStatement(node);
-            case 'for':
-                return parseForStatement(node);
-            case 'function':
-                return parseFunctionDeclaration(node);
-            case 'if':
-                return parseIfStatement(node);
-            case 'return':
-                return parseReturnStatement(node);
-            case 'switch':
-                return parseSwitchStatement(node);
-            case 'throw':
-                return parseThrowStatement(node);
-            case 'try':
-                return parseTryStatement(node);
-            case 'var':
-                return parseVariableStatement(node);
-            case 'while':
-                return parseWhileStatement(node);
-            case 'with':
-                return parseWithStatement(node);
-            default:
-                break;
-            }
-        }
+        self.isAssignmentTarget = self.isBindingElement = true;
+        node = Node();
+        val = self.lookahead['value']
+        if (typ == Token.Punctuator):
+            if val == ';':
+                return self.parseEmptyStatement(node);
+            elif val == '(':
+                return self.parseExpressionStatement(node);
+        elif (typ == Token.Keyword):
+            if val == 'break':
+                return self.parseBreakStatement(node);
+            elif val == 'continue':
+                return self.parseContinueStatement(node);
+            elif val == 'debugger':
+                return self.parseDebuggerStatement(node);
+            elif val == 'do':
+                return self.parseDoWhileStatement(node);
+            elif val == 'for':
+                return self.parseForStatement(node);
+            elif val == 'function':
+                return self.parseFunctionDeclaration(node);
+            elif val == 'if':
+                return self.parseIfStatement(node);
+            elif val == 'return':
+                return self.parseReturnStatement(node);
+            elif val == 'switch':
+                return self.parseSwitchStatement(node);
+            elif val == 'throw':
+                return self.parseThrowStatement(node);
+            elif val == 'try':
+                return self.parseTryStatement(node);
+            elif val == 'var':
+                return self.parseVariableStatement(node);
+            elif val == 'while':
+                return self.parseWhileStatement(node);
+            elif val == 'with':
+                return self.parseWithStatement(node);
 
-        expr = parseExpression();
+        expr = self.parseExpression();
 
-        // 12.12 Labelled Statements
-        if ((expr.type == Syntax.Identifier) && match(':')):
-            lex();
+        # 12.12 Labelled Statements
+        if ((expr.type == Syntax.Identifier) and self.match(':')):
+            self.lex();
 
-            key = '$' + expr.name;
-            if (Object.prototype.hasOwnProperty.call(self.state['labelSet'], key)):
-                throwError(Messages.Redeclaration, 'Label', expr.name);
-            }
+            key = '$' + expr.name
+            if key in self.state['labelSet']:
+                self.throwError(Messages.Redeclaration, 'Label', expr.name);
+            self.state['labelSet'][key] = true
+            labeledBody = self.parseStatement()
+            del self.state['labelSet'][key]
+            return node.finishLabeledStatement(expr, labeledBody)
+        self.consumeSemicolon();
+        return node.finishExpressionStatement(expr)
 
-            self.state['labelSet'][key] = true;
-            labeledBody = parseStatement();
-            delete self.state['labelSet'][key];
-            return node.finishLabeledStatement(expr, labeledBody);
-        }
+    # 13 Function Definition
 
-        consumeSemicolon();
+    def parseFunctionSourceElements(self):
+        body = []
+        node = Node()
+        firstRestricted = None
 
-        return node.finishExpressionStatement(expr);
-    }
+        self.expect('{')
 
-    // 13 Function Definition
+        while (self.startIndex < self.length):
+            if (self.lookahead['type'] != Token.StringLiteral):
+                break
+            token = self.lookahead;
 
-    def parseFunctionSourceElements():
-        var statement, body = [], token, directive, firstRestricted,
-            oldLabelSet, oldInIteration, oldInSwitch, oldInFunctionBody, oldParenthesisCount,
-            node = new Node();
-
-        expect('{');
-
-        while (startIndex < length):
-            if (lookahead['type'] != Token.StringLiteral):
-                break;
-            }
-            token = lookahead;
-
-            statement = parseStatementListItem();
-            body.push(statement);
+            statement = self.parseStatementListItem()
+            body.append(statement)
             if (statement.expression.type != Syntax.Literal):
-                // this is not directive
-                break;
-            }
-            directive = source.slice(token.start + 1, token.end - 1);
+                # this is not directive
+                break
+            directive = self.source[token['start']+1 : token['end']-1]
             if (directive == 'use strict'):
-                strict = true;
+                self.strict = true;
                 if (firstRestricted):
-                    tolerateUnexpectedToken(firstRestricted, Messages.StrictOctalLiteral);
-                }
-            } else {
-                if (!firstRestricted && token.get('octal')):
+                    self.tolerateUnexpectedToken(firstRestricted, Messages.StrictOctalLiteral);
+            else:
+                if (not firstRestricted and token.get('octal')):
                     firstRestricted = token;
-                }
-            }
-        }
 
-        oldLabelSet = self.state['labelSet'];
-        oldInIteration = self.state['inIteration'];
-        oldInSwitch = self.state['inSwitch'];
-        oldInFunctionBody = self.state['inFunctionBody'];
-        oldParenthesisCount = self.state['parenthesizedCount'];
+        oldLabelSet = self.state['labelSet']
+        oldInIteration = self.state['inIteration']
+        oldInSwitch = self.state['inSwitch']
+        oldInFunctionBody = self.state['inFunctionBody']
+        oldParenthesisCount = self.state['parenthesizedCount']
 
-        self.state['labelSet'] = {};
-        self.state['inIteration'] = false;
-        self.state['inSwitch'] = false;
-        self.state['inFunctionBody'] = true;
-        self.state['parenthesizedCount'] = 0;
+        self.state['labelSet'] = {}
+        self.state['inIteration'] = false
+        self.state['inSwitch'] = false
+        self.state['inFunctionBody'] = true
+        self.state['parenthesizedCount'] = 0
 
-        while (startIndex < length):
-            if (match('}')):
-                break;
-            }
-            body.push(parseStatementListItem());
-        }
-
-        expect('}');
+        while (self.startIndex < self.length):
+            if (self.match('}')):
+                break
+            body.append(self.parseStatementListItem())
+        self.expect('}')
 
         self.state['labelSet'] = oldLabelSet;
         self.state['inIteration'] = oldInIteration;
@@ -2545,188 +2478,157 @@ class EspParser:
         self.state['inFunctionBody'] = oldInFunctionBody;
         self.state['parenthesizedCount'] = oldParenthesisCount;
 
-        return node.finishBlockStatement(body);
-    }
+        return node.finishBlockStatement(body)
 
-    function validateParam(options, param, name):
-        var key = '$' + name;
-        if (strict):
+    def validateParam(self, options, param, name):
+        key = '$' + name
+        if (self.strict):
             if (isRestrictedWord(name)):
-                options.stricted = param;
-                options.message = Messages.StrictParamName;
-            }
-            if (Object.prototype.hasOwnProperty.call(options.paramSet, key)):
-                options.stricted = param;
-                options.message = Messages.StrictParamDupe;
-            }
-        } else if (!options.firstRestricted):
+                options['stricted'] = param;
+                options['message'] = Messages.StrictParamName
+            if key in options['paramSet']:
+                options['stricted'] = param;
+                options['message'] = Messages.StrictParamDupe;
+        elif (not options['firstRestricted']):
             if (isRestrictedWord(name)):
-                options.firstRestricted = param;
-                options.message = Messages.StrictParamName;
-            } else if (isStrictModeReservedWord(name)):
-                options.firstRestricted = param;
-                options.message = Messages.StrictReservedWord;
-            } else if (Object.prototype.hasOwnProperty.call(options.paramSet, key)):
-                options.firstRestricted = param;
-                options.message = Messages.StrictParamDupe;
-            }
-        }
-        options.paramSet[key] = true;
-    }
+                options['firstRestricted'] = param;
+                options['message'] = Messages.StrictParamName;
+            elif (isStrictModeReservedWord(name)):
+                options['firstRestricted'] = param;
+                options['message'] = Messages.StrictReservedWord;
+            elif key in options['paramSet']:
+                options['firstRestricted']= param
+                options['message'] = Messages.StrictParamDupe;
+        options['paramSet'][key] = true
 
-    def parseParam(options):
-        var token, param, def;
-
-        token = lookahead;
+    def parseParam(self, options):
+        token = self.lookahead;
         if (token['value'] == '...'):
-            param = parseRestElement();
-            validateParam(options, param.argument, param.argument.name);
-            options.params.push(param);
-            options.defaults.push(null);
-            return false;
-        }
-
-        param = parsePatternWithDefault();
-        validateParam(options, token, token['value']);
+            param = self.parseRestElement();
+            self.validateParam(options, param.argument, param.argument.name);
+            options['params'].append(param);
+            options['defaults'].append(null);
+            return false
+        param = self.parsePatternWithDefault();
+        self.validateParam(options, token, token['value']);
 
         if (param.type == Syntax.AssignmentPattern):
-            def = param.right;
+            de = param.right;
             param = param.left;
-            ++options.defaultCount;
-        }
+            options['defaultCount'] += 1
+        options['params'].append(param);
+        options['defaults'].append(de)
+        return not self.match(')')
 
-        options.params.push(param);
-        options.defaults.push(def);
-
-        return !match(')');
-    }
-
-    def parseParams(firstRestricted):
-        var options;
-
+    def parseParams(self, firstRestricted):
         options = {
-            params: [],
-            defaultCount: 0,
-            defaults: [],
-            firstRestricted: firstRestricted
-        };
+            'params': [],
+            'defaultCount': 0,
+            'defaults': [],
+            'firstRestricted': firstRestricted}
 
-        expect('(');
+        self.expect('(');
 
-        if (!match(')')):
-            options.paramSet = {};
-            while (startIndex < length):
-                if (!parseParam(options)):
-                    break;
-                }
-                expect(',');
-            }
-        }
+        if (not self.match(')')):
+            options['paramSet'] = {};
+            while (self.startIndex < self.length):
+                if (not self.parseParam(options)):
+                    break
+                self.expect(',');
+        self.expect(')');
 
-        expect(')');
-
-        if (options.defaultCount == 0):
-            options.defaults = [];
-        }
+        if (options['defaultCount'] == 0):
+            options['defaults'] = [];
 
         return {
-            params: options.params,
-            defaults: options.defaults,
-            stricted: options.stricted,
-            firstRestricted: options.firstRestricted,
-            message: options.message
-        };
-    }
+            'params': options['params'],
+            'defaults': options['defaults'],
+            'stricted': options['stricted'],
+            'firstRestricted': options['firstRestricted'],
+            'message': options.get('message')}
 
-    def parseFunctionDeclaration(node, identifierIsOptional):
-        var id = null, params = [], defaults = [], body, token, stricted, tmp, firstRestricted, message, previousStrict;
 
-        expectKeyword('function');
-        if (!identifierIsOptional || !match('(')):
-            token = lookahead;
-            id = parseVariableIdentifier();
-            if (strict):
+    def parseFunctionDeclaration(self, node, identifierIsOptional):
+        d = null
+        params = []
+        defaults = []
+        message = None
+        firstRestricted = None
+
+        self.expectKeyword('function');
+        if (identifierIsOptional or not self.match('(')):
+            token = self.lookahead;
+            d = self.parseVariableIdentifier();
+            if (self.strict):
                 if (isRestrictedWord(token['value'])):
-                    tolerateUnexpectedToken(token, Messages.StrictFunctionName);
-                }
-            } else {
-                if (isRestrictedWord(token['value'])):
-                    firstRestricted = token;
-                    message = Messages.StrictFunctionName;
-                } else if (isStrictModeReservedWord(token['value'])):
-                    firstRestricted = token;
-                    message = Messages.StrictReservedWord;
-                }
-            }
-        }
-
-        tmp = parseParams(firstRestricted);
-        params = tmp.params;
-        defaults = tmp.defaults;
-        stricted = tmp.stricted;
-        firstRestricted = tmp.firstRestricted;
-        if (tmp.message):
-            message = tmp.message;
-        }
-
-        previousStrict = strict;
-        body = parseFunctionSourceElements();
-        if (strict && firstRestricted):
-            throwUnexpectedToken(firstRestricted, message);
-        }
-        if (strict && stricted):
-            tolerateUnexpectedToken(stricted, message);
-        }
-        strict = previousStrict;
-
-        return node.finishFunctionDeclaration(id, params, defaults, body);
-    }
-
-    def parseFunctionExpression():
-        var token, id = null, stricted, firstRestricted, message, tmp,
-            params = [], defaults = [], body, previousStrict, node = new Node();
-
-        expectKeyword('function');
-
-        if (!match('(')):
-            token = lookahead;
-            id = parseVariableIdentifier();
-            if (strict):
-                if (isRestrictedWord(token['value'])):
-                    tolerateUnexpectedToken(token, Messages.StrictFunctionName);
-                }
-            } else {
+                    self.tolerateUnexpectedToken(token, Messages.StrictFunctionName);
+            else:
                 if (isRestrictedWord(token['value'])):
                     firstRestricted = token;
                     message = Messages.StrictFunctionName;
-                } else if (isStrictModeReservedWord(token['value'])):
+                elif (isStrictModeReservedWord(token['value'])):
                     firstRestricted = token;
                     message = Messages.StrictReservedWord;
-                }
-            }
-        }
 
-        tmp = parseParams(firstRestricted);
-        params = tmp.params;
-        defaults = tmp.defaults;
-        stricted = tmp.stricted;
-        firstRestricted = tmp.firstRestricted;
-        if (tmp.message):
-            message = tmp.message;
-        }
+        tmp = self.parseParams(firstRestricted);
+        params = tmp['params']
+        defaults = tmp['defaults']
+        stricted = tmp['stricted']
+        firstRestricted = tmp['firstRestricted']
+        if (tmp.get('message')):
+            message = tmp['message'];
 
-        previousStrict = strict;
-        body = parseFunctionSourceElements();
-        if (strict && firstRestricted):
-            throwUnexpectedToken(firstRestricted, message);
-        }
-        if (strict && stricted):
-            tolerateUnexpectedToken(stricted, message);
-        }
-        strict = previousStrict;
+        previousStrict = self.strict;
+        body = self.parseFunctionSourceElements();
+        if (self.strict and firstRestricted):
+            self.throwUnexpectedToken(firstRestricted, message);
+
+        if (self.strict and stricted):
+            self.tolerateUnexpectedToken(stricted, message);
+        self.strict = previousStrict;
+
+        return node.finishFunctionDeclaration(d, params, defaults, body);
+
+    def parseFunctionExpression(self):
+        id = null
+        params = []
+        defaults = []
+        node = Node();
+        firstRestricted = None
+        message = None
+
+        self.expectKeyword('function');
+
+        if (not self.match('(')):
+            token = self.lookahead;
+            id = self.parseVariableIdentifier();
+            if (self.strict):
+                if (isRestrictedWord(token['value'])):
+                    self.tolerateUnexpectedToken(token, Messages.StrictFunctionName);
+            else:
+                if (isRestrictedWord(token['value'])):
+                    firstRestricted = token;
+                    message = Messages.StrictFunctionName;
+                elif (isStrictModeReservedWord(token['value'])):
+                    firstRestricted = token;
+                    message = Messages.StrictReservedWord;
+        tmp = self.parseParams(firstRestricted);
+        params = tmp['params']
+        defaults = tmp['defaults']
+        stricted = tmp['stricted']
+        firstRestricted = tmp['firstRestricted']
+        if (tmp.get('message')):
+            message = tmp['message']
+
+        previousStrict = self.strict;
+        body = self.parseFunctionSourceElements();
+        if (self.strict and firstRestricted):
+            self.throwUnexpectedToken(firstRestricted, message);
+        if (self.strict and stricted):
+            self.tolerateUnexpectedToken(stricted, message);
+        self.strict = previousStrict;
 
         return node.finishFunctionExpression(id, params, defaults, body);
-    }
 
     # todo Translate parse class functions!
 
@@ -2736,6 +2638,73 @@ class EspParser:
     def parseClassDeclaration(self):
         raise NotImplementedError()
 
+
+    # 14 Program
+
+    def parseScriptBody(self):
+        body = []
+        firstRestricted = None
+
+        while (self.startIndex < self.length):
+            token = self.lookahead;
+            if (token['type'] != Token.StringLiteral):
+                break
+            statement = self.parseStatementListItem();
+            body.append(statement);
+            if (statement.expression.type != Syntax.Literal):
+                # this is not directive
+                break
+            directive = self.source[token['start'] + 1: token['end'] - 1]
+            if (directive == 'use strict'):
+                self.strict = true;
+                if (firstRestricted):
+                    self.tolerateUnexpectedToken(firstRestricted, Messages.StrictOctalLiteral)
+            else:
+                if (not firstRestricted and token.get('octal')):
+                    firstRestricted = token;
+        while (self.startIndex < self.length):
+            statement = self.parseStatementListItem();
+            # istanbul ignore if
+            if (statement is  None):
+                break
+            body.append(statement);
+        return body;
+
+    def parseProgram(self):
+        self.peek()
+        node = Node()
+
+        body = self.parseScriptBody()
+        return node.finishProgram(body)
+
+    # DONE!!!
+    def parse(self, code, options={}):
+        if options:
+            raise NotImplementedError('Options not implemented! You can only use default settings.')
+
+
+        self.source = unicode(code)
+        self.index = 0
+        self.lineNumber = 1 if len(self.source) > 0 else 0
+        self.lineStart = 0
+        self.startIndex = self.index
+        self.startLineNumber = self.lineNumber;
+        self.startLineStart = self.lineStart;
+        self.length = len(self.source)
+        self.lookahead = null;
+        self.state = {
+            'allowIn': true,
+            'labelSet': {},
+            'inFunctionBody': false,
+            'inIteration': false,
+            'inSwitch': false,
+            'lastCommentStart': -1,
+            'curlyStack': []}
+        self.sourceType = 'script';
+        self.strict = false;
+
+        program = self.parseProgram();
+        return program
 
 
 a = EspParser('"kk\\nnkkkm"')

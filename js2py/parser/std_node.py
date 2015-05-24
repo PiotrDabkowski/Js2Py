@@ -225,10 +225,10 @@ class BaseNode:
 
         def finishLiteral(self, token):
             self.type = Syntax.Literal
-            self.value = token.value
+            self.value = token['value']
             self.raw = None # todo fix it?
-            if (self, token.regex):
-                self.regex = token.regex
+            if token.get('regex'):
+                self.regex = token['regex']
             self.finish()
             return self
         
@@ -507,7 +507,9 @@ class Node(BaseNode):
     pass
 
 class WrappingNode(BaseNode):
-    pass
+    def __init__(self, startToken=None):
+        pass
+
 
 def node_to_dict(node):
     if not isinstance(node, BaseNode):
