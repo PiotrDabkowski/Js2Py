@@ -1,11 +1,39 @@
-CONTINUE_LABEL = 'JS_CONTINUE_LABEL_%s'
-BREAK_LABEL = 'JS_BREAK_LABEL_%s'
+
+def indent(lines, ind=4):
+    return ind*' '+lines.replace('\n', '\n'+ind*' ').rstrip(' ')
+
+def inject_before_lval(source, lval, code):
+    if source.count(lval)>1:
+        print
+        print lval
+        raise RuntimeError('To many lvals (%s)' % lval)
+    elif not source.count(lval):
+        print
+        print lval
+        assert lval not in source
+        raise RuntimeError('No lval found "%s"' % lval)
+    end = source.index(lval)
+    inj = source.rfind('\n', 0, end)
+    ind = inj
+    while source[ind+1]==' ':
+        ind+=1
+    ind -= inj
+    return source[:inj+1]+ indent(code, ind) + source[inj+1:]
+
 
 def get_continue_label(label):
     return CONTINUE_LABEL%label.encode('hex')
 
 def get_break_label(label):
     return BREAK_LABEL%label.encode('hex')
+
+
+def is_valid_py_name(name):
+    try:
+        compile(name, 'a','exec')
+    except:
+        return False
+    return True
 
 def indent(lines, ind=4):
     return ind*' '+lines.replace('\n', '\n'+ind*' ').rstrip(' ')
@@ -217,6 +245,12 @@ def js_post_dec(a):
     return js_postfix(a, False, True)
 
 
+
+CONTINUE_LABEL = 'JS_CONTINUE_LABEL_%s'
+BREAK_LABEL = 'JS_BREAK_LABEL_%s'
+PREPARE = '''HOLDER = var.own.get(NAME)\nvar.force_own_put(NAME, PyExceptionToJs(PyJsTempException))\n'''
+RESTORE = '''if HOLDER is not None:\n    var.own[NAME] = HOLDER\nelse:\n    del var.own[NAME]\ndel HOLDER\n'''
+TRY_CATCH = '''%stry:\nBLOCKfinally:\n%s''' % (PREPARE, indent(RESTORE))
 
 
 

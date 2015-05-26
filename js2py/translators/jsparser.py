@@ -76,13 +76,13 @@ def inject_before_lval(source, lval, code):
         dbg(source)
         print
         print lval
-        raise RuntimeError('To many lvals')
+        raise RuntimeError('To many lvals (%s)' % lval)
     elif not source.count(lval):
         dbg(source)
         print
         print lval
         assert lval not in source
-        raise RuntimeError('No lval found   "%s"'%lval)
+        raise RuntimeError('No lval found "%s"' % lval)
     end = source.index(lval)
     inj = source.rfind('\n', 0, end)
     ind = inj

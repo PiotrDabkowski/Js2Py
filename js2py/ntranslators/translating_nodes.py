@@ -1,29 +1,39 @@
 from __future__ import unicode_literals
 from pyjsparserdata import *
+import pyjsparser
 from friendly_nodes import *
+import random
 class self: pass
 
 
-class Stack:
-    NAME = 'UNKNOWN'
+class InlineStack:
+    NAME = 'PyJs_%s_%d_'
     def __init__(self):
-        self.reset()
+        self.reps = {}
+        self.names = []
+
+    def inject_inlines(self, source):
+        for lval in self.names: # first in first out! Its important by the way
+            source = inject_before_lval(source, lval, self.reps[lval])
+        return source
 
     def require(self, typ):
-        name = self.NAME % (typ, len(self.stack))
-        self.stack[name] = None
+        name = self.NAME % (typ, len(self.names))
+        self.names.append(name)
         return name
 
     def define(self, name, val):
-        self.stack[name] = val
+        self.reps[name] = val
 
     def reset(self):
-        self.stack = {}
+        self.rel = {}
+        self.names = []
 
 
 class ContextStack:
     def __init__(self):
-        self.reset()
+        self.to_register = set([])
+        self.to_define = {}
 
     def reset(self):
         self.to_register = set([])
@@ -37,20 +47,15 @@ class ContextStack:
         self.register(name)
 
     def get_code(self):
-        code = 'var.registers([%s])\n' % ', '.join(self.to_register)
+        code = 'var.registers([%s])\n' % ', '.join(repr(e) for e in self.to_register)
         for name, func_code in self.to_define.iteritems():
             code += func_code
-            code += 'PyJsLvalTempHoisted.func_name = %s\n' % name
         return code
 
 
 
 
 Context = ContextStack()
-
-class InlineStack(Stack):
-    NAME = 'PyJsInline%s%d_'
-
 InlineStack = InlineStack()
 
 
@@ -70,7 +75,12 @@ def to_key(literal_or_identifier):
 
 def trans(ele):
     """delegates to appriopriate translating node"""
-    return globals()[ele['type']](**ele)
+    try:
+       # print ele['type']
+        return globals()[ele['type']](**ele)
+    except:
+        #print ele
+        raise
 
 
 
@@ -235,9 +245,8 @@ def ConditionalExpression(type, test, consequent, alternate):
 # ===========  STATEMENTS =============
 
 
-
 def BlockStatement(type, body):
-    return ''.join(trans(e) for e in body)
+    return StatementList(body) # never returns empty string! In the worst case returns pass\n
 
 
 def ExpressionStatement(type, expression):
@@ -246,14 +255,14 @@ def ExpressionStatement(type, expression):
 
 def BreakStatement(type, label):
     if label:
-        return 'raise %s("%s")\n' % (get_break_label(label['name']))
+        return 'raise %s("Breaked")\n' % (get_break_label(label['name']))
     else:
         return 'break\n'
 
 
 def ContinueStatement(type, label):
     if label:
-        return 'raise %s("%s")\n' % (get_continue_label(label['name']))
+        return 'raise %s("Continued")\n' % (get_continue_label(label['name']))
     else:
         return 'continue\n'
 
@@ -275,25 +284,37 @@ def DoWhileStatement(type, body, test):
 
 
 def ForStatement(type, init, test, update, body):
-    self.type = Syntax.ForStatement
-    self.init = init
-    self.test = test
-    self.update = update
-    self.body = body
+    init = trans(init) + '\n' if init else ''
+    test = trans(test) if test else '1'
+    update = indent(trans(update)) if update else ''
+    return '#for JS loop\n%swhile %s:\n%s%s\n' % (init, test, indent(trans(body)), update)
 
 
-def ForInStatement(type, left, right, body):
-    self.type = Syntax.ForInStatement
-    self.left = left
-    self.right = right
-    self.body = body
-    self.each = False
+def ForInStatement(type, left, right, body, each):
+    res =  'for PyJsTemp in %s:\n' % trans(right)
+    if left['type']=="VariableDeclaration":
+        addon = trans(left) # make sure variable is registered
+        if addon != 'pass\n':
+            res = addon + res # we have to execute this expression :(
+        # now extract the name
+        try:
+            name = left['declarations'][0]['id']['name']
+        except:
+            raise RuntimeError('Unusual ForIn loop')
+    elif left['type']=='Identifier':
+        name = left['name']
+    else:
+        raise RuntimeError('Unusual ForIn loop')
+    res += indent('var.put(%s, PyJsTemp)\n' % repr(name) + trans(body))
+    return res
 
 
 def IfStatement(type, test, consequent, alternate):
     # NOTE we cannot do elif because function definition inside elif statement would not be possible!
     IF = 'if %s:\n' % trans(test)
     IF += indent(trans(consequent))
+    if not alternate:
+        return IF
     ELSE = 'else:\n' + indent(trans(alternate))
     return IF + ELSE
 
@@ -306,24 +327,24 @@ def LabeledStatement(type, label, body):
         # we have to add contine label as well...
         # 3 or 1 since #for loop type has more lines before real for.
         sep = 1 if not inside.startswith('#for') else 3
-        cont_label = get_continue_label(label)
+        cont_label = get_continue_label(label['name'])
         temp = inside.split('\n')
         injected = 'try:\n'+'\n'.join(temp[sep:])
         injected += 'except %s:\n    pass\n'%cont_label
         inside = '\n'.join(temp[:sep])+'\n'+indent(injected)
         defs += 'class %s(Exception): pass\n'%cont_label
-    break_label = get_break_label(label)
+    break_label = get_break_label(label['name'])
     inside = 'try:\n%sexcept %s:\n    pass\n'% (indent(inside), break_label)
     defs += 'class %s(Exception): pass\n'%break_label
     return defs + inside
 
 
 def StatementList(lis):
-    if lis:
-        return ''.join(trans(e) for e in lis)
+    if lis:  # ensure we don't return empty string because it may ruin indentation!
+        code = ''.join(trans(e) for e in lis)
+        return code if code else 'pass\n'
     else:
         return 'pass\n'
-
 
 
 def SwitchStatement(type, discriminant, cases):
@@ -350,17 +371,19 @@ def ThrowStatement(type, argument):
 
 
 def TryStatement(type, block, handler, handlers, guardedHandlers, finalizer):
-    self.type = Syntax.TryStatement
-    self.block = block
-    self.guardedHandlers = []
-    self.handlers = [handler] if handler else []
-    self.handler = handler
-    self.finalizer = finalizer
-
-def CatchClause(type, param, body):
-    self.type = Syntax.CatchClause
-    self.param = param
-    self.body = body
+    result = 'try:\n%s' % indent(trans(block))
+    # complicated catch statement...
+    if handler:
+        identifier = handler['param']['name']
+        holder = 'PyJsHolder_%s_%d'%(identifier.encode('hex'), random.randrange(1e8))
+        identifier = repr(identifier)
+        result += 'except PyJsException as PyJsTempException:\n'
+        # fill in except ( catch ) block and remember to recover holder variable to its previous state
+        result += indent(TRY_CATCH.replace('HOLDER', holder).replace('NAME', identifier).replace('BLOCK', indent(trans(handler['body']))))
+    # translate finally statement if present
+    if finalizer:
+        result += 'finally:\n%s' % indent(trans(finalizer))
+    return result
 
 
 def LexicalDeclaration(type, declarations, kind):
@@ -381,14 +404,13 @@ def VariableDeclaration(type, declarations, kind):
     return code if code else 'pass\n'
 
 
-
 def WhileStatement(type, test, body):
     return 'while %s:\n'%trans(test) + indent(trans(body))
 
 
-
 def WithStatement(type, object, body):
     raise NotImplementedError('With statement not implemented!')
+
 
 def Program(type, body):
     InlineStack.reset()
@@ -396,40 +418,128 @@ def Program(type, body):
     # here add hoisted elements (register variables and define functions)
     code = Context.get_code() + code
     # replace all inline variables
+    code = InlineStack.inject_inlines(code)
     return code
 
 
 
 # ======== FUNCTIONS ============
 
-def FunctionDeclaration(type, id, params, defaults, body):
-    self.type = Syntax.FunctionDeclaration
-    self.id = id
-    self.params = params
-    self.defaults = defaults
-    self.body = body
-    self.generator = False
-    self.expression = False
+def FunctionDeclaration(type, id, params, defaults, body, generator, expression):
+    if generator:
+        raise NotImplementedError('Generators not supported')
+    if defaults:
+        raise NotImplementedError('Defaults not supported')
+    JsName = id['name']
+    PyName = 'PyJsHoisted_%s_' % JsName
+    PyName = PyName if is_valid_py_name(PyName) else 'PyJsHoistedNonPyName'
+    # this is quite complicated
+    global Context
+    previous_context = Context
+    # change context to the context of this function
+    Context = ContextStack()
+    # translate body within current context
+    code = trans(body)
+    # get arg names
+    vars = [v['name'] for v in params]
+    # args are automaticaly registered variables
+    Context.to_register.update(vars)
+    # add all hoisted elements inside function
+    code = Context.get_code() + code
+    # check whether args are valid python names:
+    used_vars = []
+    for v in vars:
+        if is_valid_py_name(v):
+            used_vars.append(v)
+        else: # invalid arg in python, for example $, replace with alternatice arg
+            used_vars.append('PyJsArg_%s_' % v.encode('hex'))
+    header = '@Js\n'
+    header+= 'def %s(%sthis, arguments, var=var):\n' % (PyName, ', '.join(used_vars) +(', ' if vars else ''))
+    # transfer names from Py scope to Js scope
+    arg_map = dict(zip(vars, used_vars))
+    arg_map.update({'this':'this', 'arguments':'arguments'})
+    arg_conv = 'var = Scope({%s}, var)\n' % ', '.join(repr(k)+':'+v for k,v in arg_map.iteritems())
+    # and finally set the name of the function to its real name:
+    footer = '%s.func_name = %s\n' % (PyName, repr(JsName))
+    footer+= 'var.put(%s, %s)\n' % (repr(JsName), PyName)
+    whole_code = header + indent(arg_conv+code) + footer
+    # restore context
+    Context = previous_context
+    # define in upper context
+    Context.define(JsName, whole_code)
+    return 'pass\n'
 
 
+def FunctionExpression(type, id, params, defaults, body, generator, expression):
+    if generator:
+        raise NotImplementedError('Generators not supported')
+    if defaults:
+        raise NotImplementedError('Defaults not supported')
+    JsName = id['name'] if id else 'anonymous'
+    if not is_valid_py_name(JsName):
+        ScriptName = 'InlineNonPyName'
+    else:
+        ScriptName = JsName
+    PyName = InlineStack.require(ScriptName)  # this is unique
 
-def FunctionExpression(type, id, params, defaults, body):
-    self.type = Syntax.FunctionExpression
-    self.id = id
-    self.params = params
-    self.defaults = defaults
-    self.body = body
-    self.generator = False
-    self.expression = False
+    # again quite complicated
+    global Context
+    previous_context = Context
+    # change context to the context of this function
+    Context = ContextStack()
+    # translate body within current context
+    code = trans(body)
+    # get arg names
+    vars = [v['name'] for v in params]
+    # args are automaticaly registered variables
+    Context.to_register.update(vars)
+    # add all hoisted elements inside function
+    code = Context.get_code() + code
+    # check whether args are valid python names:
+    used_vars = []
+    for v in vars:
+        try:
+            compile(v, 'a','exec')  # valid
+            used_vars.append(v)
+        except: # invalid arg in python, for example $, replace with alternatice arg
+            used_vars.append('PyJsArg_%s_' % v.encode('hex'))
+    header = '@Js\n'
+    header+= 'def %s(%sthis, arguments, var=var):\n' % (PyName, ', '.join(used_vars) +(', ' if vars else ''))
+    # transfer names from Py scope to Js scope
+    arg_map = dict(zip(vars, used_vars))
+    arg_map.update({'this':'this', 'arguments':'arguments'})
+    arg_conv = 'var = Scope({%s}, var)\n' % ', '.join(repr(k)+':'+v for k,v in arg_map.iteritems())
+    # and finally set the name of the function to its real name:
+    footer = '%s.func_name = %s\n' % (PyName, repr(JsName))
+    whole_code = header + indent(arg_conv+code) + footer
+    # restore context
+    Context = previous_context
+    # define in upper context
+    InlineStack.define(PyName, whole_code)
+    return PyName
+
+
+def translate_js(js, TOP_GLOBAL = '''from js2py.pyjs import *\nvar = Scope( JS_BUILTINS )\nset_global_object(var)\n'''):
+    return TOP_GLOBAL + trans(pyjsparser.PyJsParser().parse(c))
 
 LogicalExpression = BinaryExpression
 PostfixExpression = UpdateExpression
 
 
-import pyjsparser
+import codecs
+import time
 
-c = '''do {a = 4} while (3)'''
+c = 0#'''for (a=1;;a++) {}'''
+if not c:
+    with codecs.open("esp.js", "r", "utf-8") as f:
+        c = f.read()
 
-x = pyjsparser.PyJsParser().parse(c)
-print trans(x)
+print 'Started'
+t = time.time()
+res = translate_js(c)
+dt = time.time() - t+ 0.000000001
+print 'Translated everyting in', round(dt,5), 'seconds.'
+print 'Thats %d characters per second' % int(len(c)/dt)
+with open('res.py', 'w') as f:
+    f.write(res)
 
