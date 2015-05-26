@@ -1,3 +1,17 @@
+CONTINUE_LABEL = 'JS_CONTINUE_LABEL_%s'
+BREAK_LABEL = 'JS_BREAK_LABEL_%s'
+
+def get_continue_label(label):
+    return CONTINUE_LABEL%label.encode('hex')
+
+def get_break_label(label):
+    return BREAK_LABEL%label.encode('hex')
+
+def indent(lines, ind=4):
+    return ind*' '+lines.replace('\n', '\n'+ind*' ').rstrip(' ')
+
+def compose_regex(val):
+    return u'/%s/%s' % val
 
 def float_repr(f):
     if int(f)==f:
@@ -235,8 +249,17 @@ ADDS = {'+': js_add,
 MULTS = {'*': js_mul,
          '/': js_div,
          '%': js_mod}
-
-BINARY = MULTS.update(ADDS).update(BSHIFTS).update(COMPS).update(EQS).update(BAND).update(BXOR).update(BOR).update(AND).update(OR)
+BINARY = {}
+BINARY.update(ADDS)
+BINARY.update(MULTS)
+BINARY.update(BSHIFTS)
+BINARY.update(COMPS)
+BINARY.update(EQS)
+BINARY.update(BAND)
+BINARY.update(BXOR)
+BINARY.update(BOR)
+BINARY.update(AND)
+BINARY.update(OR)
 #Note they dont contain ++ and -- methods because they both have 2 different methods
 # correct method will be found automatically in translate function
 UNARY = {'typeof': js_typeof,

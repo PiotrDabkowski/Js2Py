@@ -16,7 +16,7 @@ from host.jsfunctions import parseFloat, parseInt, isFinite, isNaN
 __all__ = ['Js', 'PyJsComma', 'PyJsStrictEq', 'PyJsStrictNeq',
            'PyJsException', 'PyJsBshift', 'Scope', 'PyExceptionToJs',
            'JsToPyException', 'JS_BUILTINS', 'appengine', 'set_global_object',
-           'JsRegExp', 'PyJsException', 'PyExceptionToJs', 'JsToPyException']
+           'JsRegExp', 'PyJsException', 'PyExceptionToJs', 'JsToPyException', 'PyJsSwitchException']
 
 # these were defined in base.py
 builtins = ('true','false','null','undefined','Infinity',

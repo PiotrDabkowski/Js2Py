@@ -799,6 +799,8 @@ class PyJsException(Exception):
         else:
             return unicode(self.mes)
 
+class PyJsSwitchException(Exception): pass
+
 
 PyJs.MakeError = staticmethod(MakeError)
 
