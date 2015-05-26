@@ -3,9 +3,9 @@ from copy import copy
 import re
 from translators import translator
 from utils.injector import fix_js_args
-from translators.jsparser import OP_METHODS
 from types import FunctionType, ModuleType, GeneratorType, ClassType, BuiltinFunctionType, MethodType, BuiltinMethodType, NoneType
 import traceback
+
 
 def MakeError(name, message):
     """Returns PyJsException with PyJsError inside"""
@@ -1075,6 +1075,16 @@ class PyJsFunction(PyJs):
             return res
         return new
 
+OP_METHODS = {'*': '__mul__',
+              '/': '__div__',
+              '%': '__mod__',
+              '+': '__add__',
+              '-': '__sub__',
+              '<<': '__lshift__',
+              '>>': '__rshift__',
+              '&': '__and__',
+              '^': '__xor__',
+              '|': '__or__'}
 
 def Empty():
     return Js(None)

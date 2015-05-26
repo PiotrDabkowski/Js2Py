@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 from pyjsparserdata import *
-import pyjsparser
 from friendly_nodes import *
 import random
 class self: pass
@@ -74,10 +73,12 @@ def to_key(literal_or_identifier):
             return unicode(k)
 
 def trans(ele):
-    """delegates to appriopriate translating node"""
+    """Translates esprima syntax tree to python by delegating to appriopriate translating node"""
     try:
-       # print ele['type']
-        return globals()[ele['type']](**ele)
+        node = globals().get(ele['type'])
+        if not node:
+            raise NotImplementedError('%s is not supported!' % ele['type'])
+        return node(**ele)
     except:
         #print ele
         raise
@@ -519,27 +520,26 @@ def FunctionExpression(type, id, params, defaults, body, generator, expression):
     return PyName
 
 
-def translate_js(js, TOP_GLOBAL = '''from js2py.pyjs import *\nvar = Scope( JS_BUILTINS )\nset_global_object(var)\n'''):
-    return TOP_GLOBAL + trans(pyjsparser.PyJsParser().parse(c))
-
 LogicalExpression = BinaryExpression
 PostfixExpression = UpdateExpression
 
 
-import codecs
-import time
+if __name__=='__main__':
+    import codecs
+    import time
+    import pyjsparser
 
-c = 0#'''for (a=1;;a++) {}'''
-if not c:
-    with codecs.open("esp.js", "r", "utf-8") as f:
-        c = f.read()
+    c = '''`ijfdij`'''
+    if not c:
+        with codecs.open("esp.js", "r", "utf-8") as f:
+            c = f.read()
 
-print 'Started'
-t = time.time()
-res = translate_js(c)
-dt = time.time() - t+ 0.000000001
-print 'Translated everyting in', round(dt,5), 'seconds.'
-print 'Thats %d characters per second' % int(len(c)/dt)
-with open('res.py', 'w') as f:
-    f.write(res)
+    print 'Started'
+    t = time.time()
+    res = trans(pyjsparser.PyJsParser().parse(c))
+    dt = time.time() - t+ 0.000000001
+    print 'Translated everyting in', round(dt,5), 'seconds.'
+    print 'Thats %d characters per second' % int(len(c)/dt)
+    with open('res.py', 'w') as f:
+        f.write(res)
 
