@@ -46,6 +46,11 @@ In the future I will maybe replace my home made JS parser with Esprima because E
 <b> Automatic semicolon insertion is supported! </b>
 
 <hr>
+####Installation 
+
+    pip install js2py
+    
+    
 ####Demo
 Let's translate this Longest Common Substring algorithm:
 

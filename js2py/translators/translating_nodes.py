@@ -431,6 +431,8 @@ def FunctionDeclaration(type, id, params, defaults, body, generator, expression)
         raise NotImplementedError('Generators not supported')
     if defaults:
         raise NotImplementedError('Defaults not supported')
+    if not id:
+        return FunctionExpression(type, id, params, defaults, body, generator, expression)
     JsName = id['name']
     PyName = 'PyJsHoisted_%s_' % JsName
     PyName = PyName if is_valid_py_name(PyName) else 'PyJsHoistedNonPyName'
@@ -517,7 +519,7 @@ def FunctionExpression(type, id, params, defaults, body, generator, expression):
     Context = previous_context
     # define in upper context
     InlineStack.define(PyName, whole_code)
-    return PyName
+    return PyName + '\n'
 
 
 LogicalExpression = BinaryExpression
