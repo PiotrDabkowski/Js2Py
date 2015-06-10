@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 from pyjsparserdata import *
 from friendly_nodes import *
 import random
-class self: pass
 
 
 class InlineStack:
@@ -347,6 +346,18 @@ def StatementList(lis):
     else:
         return 'pass\n'
 
+def PyimportStatement(type, imp):
+    lib = imp['name']
+    jlib = 'PyImport_%s' % lib
+    code = 'import %s as %s\n' % (lib, jlib)
+    #check whether valid lib name...
+    try:
+        compile(code, '', 'exec')
+    except:
+        raise SyntaxError('Invalid Python module name (%s) in pyimport statement'%lib)
+    # var.pyimport will handle module conversion to PyJs object
+    code += 'var.pyimport(%s, %s)\n' % (repr(lib), jlib)
+    return code
 
 def SwitchStatement(type, discriminant, cases):
     #TODO there will be a problem with continue in a switch statement.... FIX IT
