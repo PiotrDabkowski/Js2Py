@@ -920,7 +920,7 @@ class JsObjectWrapper(object):
         self.__dict__['_obj'] = obj
 
     def __call__(self, *args):
-        return to_python(self.__obj(*tuple(Js(e) for e in args)))
+        return to_python(self._obj(*tuple(Js(e) for e in args)))
 
     def __getattr__(self, item):
         return to_python(self._obj.get(item))
@@ -932,7 +932,7 @@ class JsObjectWrapper(object):
         return to_dict(self.__dict__['_obj'])
 
     def __repr__(self):
-        return str(self.to_dict())
+        return repr(self._obj)
 
 
 class PyObjectWrapper(PyJs):
