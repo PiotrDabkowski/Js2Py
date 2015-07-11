@@ -24,12 +24,12 @@ def to_python(val):
         return v if i!=v else i
     elif isinstance(val, (PyJsString, PyJsBoolean)):
         return val.value
-    elif isinstance(val, PyJsFunction):
-        return val.code
-    # in rare cases it will give recursion error (self referencing arrays or objects) I could fix that but I am lazy
     elif isinstance(val, (PyJsArray, PyJsArguments)):
         return [to_python(e) for e in val.to_list()]
-    return {k.value:to_python(val.get(k)) for k in val}
+    return JsObjectWrapper(val)
+
+def to_dict(js_obj):
+    return {k.value:to_python(js_obj.get(k)) for k in js_obj}
 
 
 
@@ -763,7 +763,7 @@ class PyJs:
     def to_py(self):
         """returns equivalent python object.
          for example if this object is javascript array then this method will return equivalent python array"""
-        return to_python(self)
+        return self.to_python()
 
 
 #Define some more classes representing operators:
@@ -915,6 +915,25 @@ class Scope(PyJs):
         return u'[Object Global]'
 
 
+class JsObjectWrapper(object):
+    def __init__(self, obj):
+        self.__dict__['_obj'] = obj
+
+    def __call__(self, *args):
+        return to_python(self.__obj(*tuple(Js(e) for e in args)))
+
+    def __getattr__(self, item):
+        return to_python(self._obj.get(item))
+
+    def __setattr__(self, item, value):
+        self._obj.put(str(item), Js(value))
+
+    def to_dict(self):
+        return to_dict(self.__dict__['_obj'])
+
+    def __repr__(self):
+        return str(self.to_dict())
+
 
 class PyObjectWrapper(PyJs):
     Class = 'PyObjectWrapper'
@@ -964,6 +983,9 @@ class PyObjectWrapper(PyJs):
 
     def __repr__(self):
         return 'PyObjectWrapper(%s)' % str(self.obj)
+
+    def to_python(self):
+        return self.obj
 
 
 def py_wrap(py):

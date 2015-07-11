@@ -11,11 +11,27 @@ Managed to fully automatically translate esprima to Python! - Available <a href=
 Of course translates and evaluates JavaScript code in pure Python:
 
     >>> import js2py
-    >>> f = js2py.eval_js( "function (a) {return a + arguments[1]}" )
-    >>> f
-    function (a) { [python code] }
-    >>> f(1, 2, 3)
+    >>> js = 'var js_obj = {a:3, get b() {return 5+this.a}}'
+    >>> py_obj = js2py.eval_js(js).to_python()
+    >>> py_obj.a
     3
+    >>> py_obj.b
+    8
+    # This is how translated code looks like:
+    >>> print js2py.translate_js(js)
+    from js2py.pyjs import *
+    var = Scope( JS_BUILTINS )
+    set_global_object(var)
+    var.registers([u'js_obj', u'obj'])
+    PyJs_Object_0_ = Js({u'a':Js(3.0)})
+    @Js
+    def PyJs_anonymous_1_(this, arguments, var=var):
+        var = Scope({u'this':this, u'arguments':arguments}, var)
+        var.registers([])
+        return (Js(5.0)+var.get(u"this").get(u'a'))
+    PyJs_anonymous_1_.func_name = u'anonymous'
+    PyJs_Object_0_.define_own_property(u'b', {"get":PyJs_anonymous_1_})
+    var.put(u'js_obj', PyJs_Object_0_)
 
 <hr>
 
@@ -32,7 +48,6 @@ What's more Js2Py also supports importing any Python code from JavaScript using 
 It has few limitations which will be solved in the future:
 <ul>
 <li>Date and JSON objects are not implemented</li>
-<li>RegExp has few bugs</li>
 <li>Array prototype is not fully finished</li>
 <li>Bitwise operations are not implemented yet</li>
 <li>with statement is not supported</li>
@@ -41,7 +56,6 @@ It has few limitations which will be solved in the future:
 </ul>
 
 You can help me to fix these problems if you want since I don't have time to do that. Js2Py would be complete :)
-In the future I will maybe replace my home made JS parser with Esprima because Esprima is much more reliable (but also slower). 
 
 <b> Automatic semicolon insertion is supported! </b>
 

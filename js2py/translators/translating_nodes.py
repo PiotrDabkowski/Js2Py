@@ -530,7 +530,7 @@ def FunctionExpression(type, id, params, defaults, body, generator, expression):
     Context = previous_context
     # define in upper context
     InlineStack.define(PyName, whole_code)
-    return PyName + '\n'
+    return PyName
 
 
 LogicalExpression = BinaryExpression

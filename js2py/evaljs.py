@@ -4,7 +4,7 @@
 from translators.translator import translate_js, dbg
 import sys
 import time
-
+import json
 __all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js']
 
 def import_js(path, globals):
@@ -52,7 +52,7 @@ class EvalJs(object):
 
     def eval(self, expression):
         """evaluates expression in current context and returns its value"""
-        code = 'PyJsEvalResult = eval(%s)'%repr(expression)
+        code = 'PyJsEvalResult = eval(%s)'%json.dumps(expression)
         self.execute(code)
         return self['PyJsEvalResult']
 

@@ -22,3 +22,14 @@ def trasnlate(js, HEADER=DEFAULT_HEADER):
     return translate_js(js, HEADER)
 
 syntax_tree_translate = translating_nodes.trans
+
+if __name__=='__main__':
+    import js2py
+    import codecs
+    with codecs.open("esp.js", "r", "utf-8") as f:
+        d = f.read()
+        r = translate_js(d)
+        r = translate_js(d)
+        with open('res.py','w') as f2:
+            f2.write(r)
+    print js2py.eval_js(d)
