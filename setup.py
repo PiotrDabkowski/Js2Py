@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='Js2Py',
-    version='0.21',
+    version='0.22',
     packages=['js2py', 'js2py.utils', 'js2py.prototypes', 'js2py.translators', 'js2py.constructors', 'js2py.host'],
     url='',
     license='GPL',
