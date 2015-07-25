@@ -5318,6 +5318,3 @@
     }());
 
 }));
-a = 'k in ino'
-console.log(esprima.parse(a))
-/* vim: set sw=4 ts=4 et tw=80 : */

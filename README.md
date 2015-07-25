@@ -100,12 +100,12 @@ Moreover it has to_list and to_dict methods if you want to convert it to builtin
 
 Also, of course you can use Js2Py to parse (tree is the same as in esprima.js) and translate JavaScript
 
-#Parsing:
+####Parsing:
 
     >>> js2py.parse_js('var $ = 5')   
     {'body': [{'kind': 'var', 'declarations': [{'init': {'raw': None, 'type': u'Literal', 'value': 5.0}, 'type': u'VariableDeclarator', 'id': {'type': u'Identifier', 'name': u'$'}}], 'type': u'VariableDeclaration'}], 'type': u'Program'}
 
-#Transating:
+####Transating:
 
     >>> print js2py.translate_js('var $ = 5')
     import js2py.pyjs, sys
@@ -126,7 +126,7 @@ Also, of course you can use Js2Py to parse (tree is the same as in esprima.js) a
     
 <hr>
 
-#pyimport statement
+####pyimport statement
 Finally, Js2Py also supports importing any Python code from JavaScript using 'pyimport' statement:
 
     >>> x = """pyimport urllib;

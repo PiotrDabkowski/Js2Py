@@ -529,28 +529,40 @@ class PyJs:
         return Js(Type(self).lower())
         
     #Bitwise operators
-    #  <<, >>,  &, ^, | . I have NEVER used them in python so they can wait.
+    #  <<, >>,  &, ^, |
     
     # << 
     def __lshift__(self, other):
-        raise NotImplementedError()
+        lnum = self.to_int32()
+        rnum = other.to_uint32()
+        shiftCount = rnum & 0x1F
+        return Js(Js(lnum << shiftCount).to_int32())
     
     # >>
     def __rshift__(self, other):
-        raise NotImplementedError()
+        lnum = self.to_int32()
+        rnum = other.to_uint32()
+        shiftCount = rnum & 0x1F
+        return Js(Js(lnum >> shiftCount).to_int32())
      
     # & 
     def __and__(self, other):
-        raise NotImplementedError()
+        lnum = self.to_int32()
+        rnum = other.to_int32()
+        return Js(Js(lnum & rnum).to_int32())
     
     # ^
-    def __xor__(self, other): 
-        raise NotImplementedError()
-    
+    def __xor__(self, other):
+        lnum = self.to_int32()
+        rnum = other.to_int32()
+        return Js(Js(lnum ^ rnum).to_int32())
+
     # |
     def __or__(self, other):
-        raise NotImplementedError()
-        
+        lnum = self.to_int32()
+        rnum = other.to_int32()
+        return Js(Js(lnum | rnum).to_int32())
+
     # Additive operators
     # + and - are implemented here
         
