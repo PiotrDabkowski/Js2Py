@@ -20,17 +20,17 @@ def to_python(val):
     elif isinstance(val, PyJsNumber):
         # this can be either float or long/int better to assume its int/long when a whole number...
         v = val.value
-        i = int(v)
+        i = int(v) if v==v else v # nan...
         return v if i!=v else i
     elif isinstance(val, (PyJsString, PyJsBoolean)):
         return val.value
-    elif isinstance(val, (PyJsArray, PyJsArguments)):
-        return [to_python(e) for e in val.to_list()]
     return JsObjectWrapper(val)
 
 def to_dict(js_obj):
-    return {k.value:to_python(js_obj.get(k)) for k in js_obj}
+    return {k.value:to_python(js_obj.get(k)) for k in js_obj} # todo FIX RECURSION ERROR
 
+def to_list(js_obj):
+    pass
 
 
 def HJs(val):
@@ -85,6 +85,8 @@ def Js(val):
          return temp
     elif isinstance(val, list): #Convert to array
         return PyJsArray(val, ArrayPrototype)
+    elif isinstance(val, JsObjectWrapper):
+        return val.__dict__['_obj']
     else: # try to convert to js object
         raise RuntimeError('Cant convert python type to js (%s)' % repr(val))
         #try:
@@ -914,25 +916,49 @@ class Scope(PyJs):
     def __repr__(self):
         return u'[Object Global]'
 
+    def to_python(self):
+        return to_python(self)
+
 
 class JsObjectWrapper(object):
     def __init__(self, obj):
         self.__dict__['_obj'] = obj
 
     def __call__(self, *args):
-        return to_python(self._obj(*tuple(Js(e) for e in args)))
+        args = tuple(Js(e) for e in args)
+        if '_prop_of' in self.__dict__:
+            parent, meth =  self.__dict__['_prop_of']
+            return to_python(parent._obj.callprop(meth, *args))
+        return to_python(self._obj(*args))
 
     def __getattr__(self, item):
-        return to_python(self._obj.get(item))
+        cand = to_python(self._obj.get(str(item)))
+        # handling method calling... obj.meth(). Value of this in meth should be self
+        if isinstance(cand, self.__class__):
+            cand.__dict__['_prop_of'] = self, str(item)
+        return cand
 
     def __setattr__(self, item, value):
         self._obj.put(str(item), Js(value))
 
-    def to_dict(self):
-        return to_dict(self.__dict__['_obj'])
+    def __getitem__(self, item):
+        cand = to_python(self._obj.get(str(item)))
+        if isinstance(cand, self.__class__):
+            cand.__dict__['_prop_of'] = self, str(item)
+        return cand
+
+    def __setitem__(self, item, value):
+        self._obj.put(str(item), Js(value))
 
     def __repr__(self):
         return repr(self._obj)
+
+    def to_dict(self):
+        return to_dict(self.__dict__['_obj'])
+
+    def to_list(self):
+        return to_list(self.__dict__['_obj'])
+
 
 
 class PyObjectWrapper(PyJs):

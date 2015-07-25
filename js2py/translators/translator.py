@@ -1,7 +1,21 @@
 import pyjsparser
 import translating_nodes
 
-DEFAULT_HEADER = u'''from js2py.pyjs import *\nvar = Scope( JS_BUILTINS )\nset_global_object(var)\n'''
+DEFAULT_HEADER = u'''import js2py.pyjs, sys
+# Redefine builtin objects... Do you have a better idea?
+for m in sys.modules.keys():
+	if m.startswith('js2py'):
+		del sys.modules[m]
+del js2py.pyjs
+del js2py
+from js2py.pyjs import *
+# setting scope
+var = Scope( JS_BUILTINS )
+set_global_object(var)
+
+# Code follows:
+'''
+
 
 def dbg(x):
     """does nothing, legacy dummy function"""
@@ -12,6 +26,7 @@ def translate_js(js, HEADER=DEFAULT_HEADER):
        returns equivalent python code."""
     parser = pyjsparser.PyJsParser()
     parsed = parser.parse(js) # js to esprima syntax tree
+    translating_nodes.clean_stacks()
     return HEADER + translating_nodes.trans(parsed)  # syntax tree to python code
 
 def trasnlate(js, HEADER=DEFAULT_HEADER):

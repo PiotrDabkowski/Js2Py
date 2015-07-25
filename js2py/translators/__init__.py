@@ -8,6 +8,9 @@ from translator import translate_js, trasnlate, syntax_tree_translate, DEFAULT_H
 
 def parse(javascript_code):
     """Returns syntax tree of javascript_code.
+
+    Syntax tree has the same structure as syntax tree produced by esprima.js
+
        Same as PyJsParser().parse  For your convenience :) """
     p = PyJsParser()
     return p.parse(javascript_code)

@@ -52,9 +52,11 @@ class ContextStack:
 
 
 
+def clean_stacks():
+    global Context, inline_stack
+    Context = ContextStack()
+    inline_stack = InlineStack()
 
-Context = ContextStack()
-InlineStack = InlineStack()
 
 
 
@@ -148,7 +150,7 @@ def ArrayExpression(type, elements):  # todo fix null inside problem
 # ========== OBJECTS =============
 
 def ObjectExpression(type, properties):
-    name = InlineStack.require('Object')
+    name = inline_stack.require('Object')
     elems = []
     after = ''
     for p in properties:
@@ -163,7 +165,7 @@ def ObjectExpression(type, properties):
         else:
             raise RuntimeError('Unexpected object propery kind')
     obj = '%s = Js({%s})\n' % (name, ','.join(elems))
-    InlineStack.define(name, obj+after)
+    inline_stack.define(name, obj+after)
     return name
 
 
@@ -425,12 +427,12 @@ def WithStatement(type, object, body):
 
 
 def Program(type, body):
-    InlineStack.reset()
+    inline_stack.reset()
     code = ''.join(trans(e) for e in body)
     # here add hoisted elements (register variables and define functions)
     code = Context.get_code() + code
     # replace all inline variables
-    code = InlineStack.inject_inlines(code)
+    code = inline_stack.inject_inlines(code)
     return code
 
 
@@ -494,7 +496,7 @@ def FunctionExpression(type, id, params, defaults, body, generator, expression):
         ScriptName = 'InlineNonPyName'
     else:
         ScriptName = JsName
-    PyName = InlineStack.require(ScriptName)  # this is unique
+    PyName = inline_stack.require(ScriptName)  # this is unique
 
     # again quite complicated
     global Context
@@ -529,13 +531,14 @@ def FunctionExpression(type, id, params, defaults, body, generator, expression):
     # restore context
     Context = previous_context
     # define in upper context
-    InlineStack.define(PyName, whole_code)
+    inline_stack.define(PyName, whole_code)
     return PyName
 
 
 LogicalExpression = BinaryExpression
 PostfixExpression = UpdateExpression
 
+clean_stacks()
 
 if __name__=='__main__':
     import codecs

@@ -1,27 +1,41 @@
 # coding=utf-8
 """ This module is still experimental!
 """
-from translators.translator import translate_js, dbg
+from translators.translator import translate_js, dbg, DEFAULT_HEADER
 import sys
 import time
 import json
 __all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js']
 
-def import_js(path, globals):
-    """Imports from javascript source file. Note may cause name conflicts.
+def import_js(path, lib_name, globals):
+    """Imports from javascript source file.
       globals is your globals()"""
     with open(path, 'rb') as f:
         js = f.read()
     e = EvalJs()
     e.execute(js)
     var = e.context['var']
-    for name in var:
-        globals[name] = var.get(name)
+    globals[lib_name] = var.to_python()
 
 def eval_js(js):
     """Just like javascript eval. Translates javascript to python,
        executes and returns python object.
-       js is javascript source code"""
+       js is javascript source code
+
+       EXAMPLE:
+        >>> import js2py
+        >>> add = js2py.eval_js('function add(a, b) {return a + b}')
+        >>> add(1, 2) + 3
+        6
+        >>> add('1', 2, 3)
+        u'12'
+        >>> add.constructor
+        function Function() { [python code] }
+
+       NOTE: For Js Number, String, Boolean and other base types returns appropriate python BUILTIN type.
+       For Js functions and objects, returns Python wrapper - basically behaves like normal python object.
+       If you really want to convert object to python dict you can use to_dict method.
+       """
     e = EvalJs()
     return e.eval(js)
 
@@ -30,25 +44,22 @@ def eval_js(js):
 class EvalJs(object):
     """This class supports continuous execution of javascript under same context.
 
+        >>> js = EvalJs()
+        >>> js.execute('var a = 10;function f(x) {return x*x};')
+        >>> js.f(9)
+        81
+        >>> js.a
+        10
        You can run interactive javascript console with console method!"""
     def __init__(self, context=None):
-        self.context = {}
-        self.__started = False
+        self._context = {}
+        exec DEFAULT_HEADER in self._context
+        self._var = self._context['var'].to_python()
 
     def execute(self, js):
         """executes javascript js in current context"""
-        try:
-            if not self.__started:
-                code = translate_js(js)
-                self.__started = True
-            else:
-                code = translate_js(js, '')
-        except:
-            dbg(js)
-            raise
-        dbg(code)
-        #print code
-        exec code in self.context
+        code = translate_js(js, '')
+        exec code in self._context
 
     def eval(self, expression):
         """evaluates expression in current context and returns its value"""
@@ -56,16 +67,11 @@ class EvalJs(object):
         self.execute(code)
         return self['PyJsEvalResult']
 
-
     def __getattr__(self, var):
-        return self.get_variable(var)
-
-    def get_variable(self, var):
-        """returns variable from global JS context"""
-        return self.context['var'].get(var)
+        return getattr(self._var, var)
 
     def __getitem__(self, var):
-        return self.get_variable(var)
+        return getattr(self._var, var)
 
     def console(self):
         """starts to interact (starts interactive console) Something like code.InteractiveConsole"""
