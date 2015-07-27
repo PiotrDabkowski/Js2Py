@@ -231,7 +231,6 @@ class StringPrototype:
         p = q = 0
         while q!=len_s:
             e, cap = SplitMatch(s, q, R)
-            print q,e
             if e is None or e==p:
                 q += 1
                 continue
@@ -245,7 +244,6 @@ class StringPrototype:
                     return res
         res.append(s[p:])
         return res
-
 
 
     def substring (start, end):
@@ -289,7 +287,6 @@ class StringPrototype:
     def trim():
         this.cok()
         return this.Js(this.to_string().value.strip())
-
 
 
 

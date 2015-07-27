@@ -526,7 +526,7 @@ def FunctionExpression(type, id, params, defaults, body, generator, expression):
     arg_map.update({'this':'this', 'arguments':'arguments'})
     arg_conv = 'var = Scope({%s}, var)\n' % ', '.join(repr(k)+':'+v for k,v in arg_map.iteritems())
     # and finally set the name of the function to its real name:
-    footer = '%s.func_name = %s\n' % (PyName, repr(JsName))
+    footer = '%s._set_name(%s)\n' % (PyName, repr(JsName))
     whole_code = header + indent(arg_conv+code) + footer
     # restore context
     Context = previous_context

@@ -64,7 +64,7 @@ In Js2Py all JavaScript objects are a subclass of PyJs object. For example JS Nu
 js2py.eval_js and js2py.EvalJs automatically tries to convert PyJs type to builtin python type. So for example if you 
 execute:
 
->>> js2py.eval_js('"hello"')
+    >>> js2py.eval_js('"hello"')
 
 you will get unicode type. However for complex types such conversion is impossoble and JsObjectWrapper
 See the conversion table JsType -> PyType:
@@ -90,7 +90,7 @@ Moreover it has to_list and to_dict methods if you want to convert it to builtin
     1
     >>> js.b = 20
     >>> js
-    {a: 1, b: 2}  
+    {a: 1, b: 20}  
     >>> js['c'] = 30
     >>> js.to_dict()
     {u'a': 1, 'c': 30, u'b': 20}

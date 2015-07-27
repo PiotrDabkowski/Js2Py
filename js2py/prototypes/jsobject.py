@@ -25,7 +25,7 @@ class ObjectPrototype:
                 return True
 
     def propertyIsEnumerable(prop):
-        cand = prop.own.get(prop.to_string().value)
+        cand = this.own.get(prop.to_string().value)
         return cand is not None and cand.get('enumerable')
 
 

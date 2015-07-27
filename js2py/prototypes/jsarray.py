@@ -65,7 +65,6 @@ class ArrayPrototype:
         lower, middle = 0, arr_len/2
         while lower!=middle:
             upper = arr_len - lower - 1
-            print upper, lower
             ls, us = str(lower), str(upper)
             lower_val, upper_val = array.get(ls), array.get(us)
             lower_exists, upper_exists = array.has_property(ls), array.has_property(us)
@@ -127,8 +126,6 @@ class ArrayPrototype:
         relative_start = start.to_int()
         actual_start = max((arr_len + relative_start),0) if relative_start<0 else min(relative_start, arr_len)
         actual_delete_count =  min(max(deleteCount.to_int(),0 ), arr_len - actual_start)
-
-
 
 
     def unshift():

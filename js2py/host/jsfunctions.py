@@ -47,15 +47,22 @@ def parseFloat(string):
         string = string[1:]
     num = None
     length = 1
+    max_len = None
+    failed = 0
     while length<=len(string):
         try:
             num = float(string[:length])
-            length += 1
+            max_len = length
+            failed = 0
         except:
-            break
+            failed += 1
+            if failed>4: # cant be a number anymore
+                break
+        print length
+        length += 1
     if num is None:
         return NaN
-    return sign*num
+    return sign*float(string[:max_len])
 
 @Js
 def isNaN(number):
@@ -67,8 +74,8 @@ def isNaN(number):
 def isFinite(number):
     num = number.to_number()
     if num.is_nan() or num.is_infinity():
-        return False
-    return True
+        return false
+    return true
 
 
 #todo URI handling!

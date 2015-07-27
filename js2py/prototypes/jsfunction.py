@@ -25,12 +25,12 @@ class FunctionPrototype:
         if len(arguments)<=1:
             args = () 
         else:
-            args = tuple(arguments[e] for e in xrange(1, len(arguments)))
+            args = tuple([arguments[e] for e in xrange(1, len(arguments))])
         return this.call(obj, args)
 
     def bind(thisArg):
         if not this.is_callable():
-            raise this.Js(TypeError)('this must be callable!')
+            raise this.MakeError('TypeError', 'this must be callable!')
         to_call = this
         if not len(arguments):
             obj = this.Js(None)
@@ -39,14 +39,14 @@ class FunctionPrototype:
         if len(arguments)<=1:
             args = ()
         else:
-            args = tuple(arguments[e] for e in xrange(1, len(arguments)))
+            args = tuple([arguments[e] for e in xrange(1, len(arguments))])
         if obj.is_undefined():
             def PyJsLvalInline(this, arguments):
-                args2 = args + tuple(arguments[e] for e in xrange(0, len(arguments)))
+                args2 = args + tuple([arguments[e] for e in xrange(0, len(arguments))])
                 return to_call(*args2)
         else:
             def PyJsLvalInline(this, arguments):
-                args2 = args + tuple(arguments[e] for e in xrange(0, len(arguments)))
+                args2 = args + tuple([arguments[e] for e in xrange(0, len(arguments))])
                 return to_call.call(obj, args2)
         return PyJsLvalInline  # it will be automatically converted to js function :)
 

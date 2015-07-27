@@ -26,11 +26,42 @@ def to_python(val):
         return val.value
     return JsObjectWrapper(val)
 
-def to_dict(js_obj):
-    return {k.value:to_python(js_obj.get(k)) for k in js_obj} # todo FIX RECURSION ERROR
+def to_dict(js_obj, known=None): # fixed recursion error in self referencing objects
+    res = {}
+    if known is None:
+        known = {}
+    if js_obj in known:
+        return known[js_obj]
+    known[js_obj] = res
+    for k in js_obj:
+        name = k.value
+        input = js_obj.get(name)
+        output = to_python(input)
+        if isinstance(output, JsObjectWrapper):
+            if output._obj.Class=='Object':
+                output = to_dict(output._obj, known)
+                known[input] = output
+        res[name] = output
+    return res
 
-def to_list(js_obj):
-    pass
+
+def to_list(js_obj, known=None):
+    res = len(js_obj)*[None]
+    if known is None:
+        known = {}
+    if js_obj in known:
+        return known[js_obj]
+    known[js_obj] = res
+    for k in js_obj:
+        name = int(k.value)
+        input = js_obj.get(str(name))
+        output = to_python(input)
+        if isinstance(output, JsObjectWrapper):
+            if output._obj.Class in ['Array', 'Arguments']:
+                output = to_list(output._obj, known)
+                known[input] = output
+        res[name] = output
+    return res
 
 
 def HJs(val):
@@ -123,7 +154,7 @@ def is_generic_descriptor(desc):
 
 ##############################################################################
 
-class PyJs:
+class PyJs(object):
     PRIMITIVES =  {'String', 'Number', 'Boolean', 'Undefined', 'Null'}
     TYPE = 'Object'
     Class = None
@@ -341,23 +372,6 @@ class PyJs:
     def is_nan(self):
         assert self.Class=='Number'
         return self.value!=self.value #nan!=nan evaluates to true
-
-    #todo fix increments
-    def PostInc(self):
-        self.value+=1
-        return Js(self.value-1)
-
-    def PreInc(self):
-        self.value+=1
-        return Js(self.value) # returning new instance !
-
-    def PostDec(self):
-        self.value-=1
-        return Js(self.value+1)
-
-    def PreDec(self):
-        self.value-=1
-        return Js(self.value)
 
     #Type Conversions. to_type. All must return pyjs subclass instance
     
@@ -963,7 +977,11 @@ class JsObjectWrapper(object):
         self._obj.put(str(item), Js(value))
 
     def __repr__(self):
-        return repr(self._obj)
+        if self._obj.is_primitive() or self._obj.is_callable:
+            return repr(self._obj)
+        elif self._obj.Class in {'Array', 'Arguments'}:
+            return repr(self.to_list())
+        return repr(self.to_dict())
 
     def to_dict(self):
         return to_dict(self.__dict__['_obj'])
@@ -1062,13 +1080,18 @@ class PyJsFunction(PyJs):
         self.argcount = func.func_code.co_argcount - 2 - has_scope
         self.code = func
         self.source = source if source else '{ [python code] }'
-        self.func_name = func.func_name if not func.func_name.startswith('PyJsLvalInline') else ''
+        self.func_name = func.func_name if not func.func_name.startswith('PyJs_anonymous') else ''
         self.extensible = extensible
         self.prototype = prototype
         self.own = {}
         #set own property length to the number of arguments
         self.define_own_property('length', {'value': Js(self.argcount), 'writable': False,
                                             'enumerable': False, 'configurable': False})
+
+        if self.func_name:
+            self.define_own_property('name', {'value': Js(self.func_name), 'writable': False,
+                                            'enumerable': False, 'configurable': True})
+
         # set own prototype
         proto = Js({})
         # constructor points to this function
@@ -1076,6 +1099,12 @@ class PyJsFunction(PyJs):
                                                  'enumerable': False, 'configurable': True})
         self.define_own_property('prototype', {'value': proto, 'writable': True,
                                                  'enumerable': False, 'configurable': False})
+
+    def _set_name(self, name):
+        '''name is py type'''
+        if self.own.get('name'):
+            self.func_name = name
+            self.own['name']['value'] = Js(name)
 
     def construct(self, *args):
         proto = self.get('prototype')
@@ -1332,6 +1361,7 @@ class PyJsArguments(PyJs):
 
 #We can define function proto after number proto because func uses number in its init
 FunctionPrototype = PyJsFunction(Empty, ObjectPrototype)
+FunctionPrototype.own['name']['value'] = Js('')
 
 
 # I will not rewrite RegExp engine from scratch. I will use re because its much faster.
@@ -1470,10 +1500,7 @@ def __proto__():
 getter = __proto__
 @Js
 def __proto__(val):
-    print 'Setting proto'
-    print val
     if val.is_object():
-        print 'Yes its an object'
         this.prototype = val
 setter =  __proto__
 ObjectPrototype.define_own_property('__proto__', {'set': setter,
