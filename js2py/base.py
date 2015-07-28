@@ -466,10 +466,8 @@ class PyJs(object):
         num = self.to_number()
         if num.is_nan() or num.is_infinity():
             return 0
-        val = num.value
-        pos_int = int(val)
-        int32 = pos_int % 2**32
-        return int(int32 - 2**31 if int32 > 2**31 else int32)
+        int32 = int(num.value) % 2**32
+        return int(int32 - 2**32 if int32 >= 2**31 else int32)
 
     def cok(self):
         """Check object coercible"""
@@ -481,20 +479,29 @@ class PyJs(object):
         if num.is_nan():
             return 0
         elif num.is_infinity():
-            return 10**20
+            return 10**20 if num.value>0 else -10**20
         return int(num.value)
 
     def to_uint32(self):
         num = self.to_number()
         if num.is_nan() or num.is_infinity():
             return 0
-        return int(int(num.value) % 2**32)
+        return int(num.value) % 2**32
 
     def to_uint16(self):
         num = self.to_number()
         if num.is_nan() or num.is_infinity():
             return 0
-        return int(int(num.value) % 2**16)
+        return int(num.value) % 2**16
+
+    def to_int16(self):
+        num = self.to_number()
+        if num.is_nan() or num.is_infinity():
+            return 0
+        int16 = int(num.value) % 2**16
+        return int(int16 - 2**16 if int16 >= 2**15 else int16)
+
+
 
     def same_as(self, other):
         typ = Type(self)
@@ -528,8 +535,8 @@ class PyJs(object):
     def __pos__(self): #+u
         return self.to_number()
     
-    def __inv__(self): #~u    this one may be wrong! check it when implementing other bitwise ops.
-        return Js(~self.to_number().value)
+    def __invert__(self): #~u
+        return Js(Js(~self.to_int32()).to_int32())
     
     def neg(self): # !u  cant do 'not u' :(
         return Js(not self.to_boolean().value)
