@@ -22,7 +22,7 @@ class NumberPrototype:
             raise this.MakeError('TypeError', 'Number.prototype.toFixed called on incompatible receiver')
         digs = fractionDigits.to_int()
         if digs<0 or digs>20:
-            raise this.Js(RangeError)('toFixed() digits argument must be between 0 and 20')
+            raise this.MakeError('RangeError', 'toFixed() digits argument must be between 0 and 20')
         elif this.is_infinity():
             return 'Infinity' if this.value>0 else '-Infinity'
         elif this.is_nan():
@@ -35,7 +35,7 @@ class NumberPrototype:
             raise this.MakeError('TypeError', 'Number.prototype.toExponential called on incompatible receiver')
         digs = fractionDigits.to_int()
         if digs<0 or digs>20:
-            raise this.Js(RangeError)('toFixed() digits argument must be between 0 and 20')
+            raise this.MakeError('RangeError', 'toFixed() digits argument must be between 0 and 20')
         elif this.is_infinity():
             return 'Infinity' if this.value>0 else '-Infinity'
         elif this.is_nan():

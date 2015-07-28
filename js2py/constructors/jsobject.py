@@ -1,5 +1,7 @@
 from js2py.base import *
 
+#todo Double check everything is OK
+
 @Js
 def Object():
     val = arguments.get('0')
@@ -117,7 +119,7 @@ class ObjectMethods:
     def keys(obj):
         if not obj.is_object():
             raise MakeError('TypeError', 'Object.keys called on non-object')
-        return obj.keys()
+        return obj.own.keys()
 
 
 # add methods attached to Object constructor

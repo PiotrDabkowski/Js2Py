@@ -12,7 +12,7 @@ def Function():
         body = '%s;' % a[-1]
         args = a[:-1]
     # translate this function to js inline function
-    js_func = 'function (%s) {%s}' % (','.join(args), body)
+    js_func = '(function (%s) {%s})' % (','.join(args), body)
     # now translate js inline to python function
     py_func =  translate_js(js_func, '')
     # add set func scope to global scope
@@ -26,7 +26,7 @@ def Function():
 
 def executor(f, glob):
     exec f in globals()
-    return globals()['PyJsLvalInline1_']
+    return globals()['PyJs_anonymous_0_']
 
 
 #new statement simply calls Function

@@ -8,7 +8,7 @@ def Array():
     if a.Class=='Number':
         length = a.to_uint32()
         if length!=a.value:
-            raise MakeError('RangeError', 'invalid length!')
+            raise MakeError('RangeError', 'Invalid array length')
         temp = Js([])
         temp.put('length', a)
         return temp
@@ -17,6 +17,7 @@ def Array():
 Array.create = Array
 Array.own['length']['value'] = Js(1)
 
+@Js
 def isArray(arg):
     return arg.Class=='Array'
 

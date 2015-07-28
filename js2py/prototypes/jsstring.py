@@ -96,12 +96,12 @@ class StringPrototype:
     def lastIndexOf(searchString, position):
         this.cok()
         s = this.to_string().value
-        search = searchString.to_stirng().value
+        search = searchString.to_string().value
         pos = position.to_number()
         pos = 10**15 if pos.is_nan() else pos.to_int()
         return s.rfind(search, 0, min(max(pos, 0)+1, len(s)))
 
-    def localeCompare (that):
+    def localeCompare(that):
         this.cok()
         s = this.to_string()
         that = that.to_string()
@@ -114,27 +114,30 @@ class StringPrototype:
     def match(regexp):
         this.cok()
         s = this.to_string()
-        r = this.RegExp(regexp)
-        if r.glob:
+        r = this.RegExp(regexp) if regexp.Class!='RegExp' else regexp
+        if not r.glob:
             return Exec(r, s)
         r.put('lastIndex', this.Js(0))
         found = []
-        last_index = n = 0
-        while True:
-            res = Exec(r, s)
-            if res.is_null():
-               break
-            index = res.get('lastIndex').value
-            if last_index==index:
-                r.put('lastIndex', index+1)
-                last_index = index + 1
+        previous_last_index = 0
+        last_match = True
+        while last_match:
+            result = Exec(r, s)
+            if result.is_null():
+                last_match=False
             else:
-                last_index = index
-            found.append(res.get('0'))
-            n += 1
-        if not n:
+                this_index = r.get('lastIndex').value
+                if this_index==previous_last_index:
+                    r.put('lastIndex', this.Js(this_index+1))
+                    previous_last_index += 1
+                else:
+                    previous_last_index = this_index
+                matchStr = result.get('0')
+                found.append(matchStr)
+        if not found:
             return this.null
         return found
+
 
     def replace(searchValue, replaceValue):
         # VERY COMPLICATED. to check again.
@@ -248,25 +251,25 @@ class StringPrototype:
 
     def substring (start, end):
         this.cok()
-        s = this.to_string()
+        s = this.to_string().value
         start = start.to_int()
-        length = len(s.value)
-        end = length if  end.is_undefined() else end.to_int()
-        fstart = min(max(start, 0), len)
-        fend = min(max(end, 0), len)
-        return this.Js(s[min(ftart, fend):max(fstart, fend)])
+        length = len(s)
+        end = length if end.is_undefined() else end.to_int()
+        fstart = min(max(start, 0), length)
+        fend = min(max(end, 0), length)
+        return this.Js(s[min(fstart, fend):max(fstart, fend)])
 
     def substr(start, length):
         #I hate this function and its description in specification
-        s = this.to_string().value
-        start = start.to_int()
-        length = 10**20 if  length.is_undefined() else length.to_int()
-        s_len = len(s)
-        length2 = start if start>=0 else max(0, start+s_len)
-        res6 = min(max(length ,0), s_len - length2)
-        if res6<=0:
+        r1 = this.to_string().value
+        r2 = start.to_int()
+        r3 = 10**20 if  length.is_undefined() else length.to_int()
+        r4 = len(r1)
+        r5 = r2 if r2>=0 else max(0, r2+r4)
+        r6 = min(max(r3 ,0), r4 - r5)
+        if r6<=0:
             return ''
-        return s[length2:length2+res6]
+        return r1[r5:r5+r6]
 
     def toLowerCase():
         this.cok()
@@ -300,37 +303,4 @@ def SplitMatch(s, q, R):
     if s[q:].startswith(R.value):
         return q+len(R.value), ()
     return None, ()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

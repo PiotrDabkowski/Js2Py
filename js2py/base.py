@@ -821,7 +821,7 @@ def PyJsStrictNeq(a, b):
     
 def PyJsBshift(a, b):
     """a>>>b"""
-    return Js(0)  #NOT IMPLEMENTED YET
+    return a>>b
 
 
 def PyJsComma(a, b):
@@ -1072,6 +1072,10 @@ class PyJsObject(PyJs):
         self.own = {}
         for prop, desc in prop_descs.iteritems():
             self.define_own_property(prop, desc)
+
+    def __repr__(self):
+        return repr(self.to_python().to_dict())
+
     
     
 ObjectPrototype = PyJsObject()
@@ -1180,7 +1184,8 @@ OP_METHODS = {'*': '__mul__',
               '>>': '__rshift__',
               '&': '__and__',
               '^': '__xor__',
-              '|': '__or__'}
+              '|': '__or__',
+              '>>>': '__rshift__'}
 
 def Empty():
     return Js(None)
@@ -1227,10 +1232,10 @@ class PyJsString(PyJs):
                                # 'enumerable': True, 'configurable': False}
 
     def get(self, prop):
+        if not isinstance(prop, basestring):
+                prop = prop.to_string().value
         try:
-            if not isinstance(prop, basestring):
-                p = prop.value
-            char = self.value[int(p)]
+            char = self.value[int(prop)]
             if char not in CHAR_BANK:
                 Js(char) # this will add char to CHAR BANK
             return CHAR_BANK[char]
@@ -1281,6 +1286,7 @@ class PyJsNull(PyJs):
     def __init__(self):
         pass
 null = PyJsNull()
+PyJs.null = null
 
 class PyJsArray(PyJs):
     Class = 'Array'
@@ -1342,6 +1348,9 @@ class PyJsArray(PyJs):
 
     def to_list(self):
         return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
+    def __repr__(self):
+        return repr(self.to_python().to_list())
 
 
 
@@ -1409,6 +1418,7 @@ class PyJsRegExp(PyJs):
                     'lastIndex' : {'value': Js(0), 'enumerable': False, 'writable': True, 'configurable': False}}
 
     def match(self, string, pos):
+        '''string is of course py string'''
         return re.match(self.pat, string[pos:])
 
 
@@ -1531,8 +1541,8 @@ fill_prototype(ErrorPrototype, jserror.ErrorPrototype, default_attrs)
 #RegExp proto
 fill_prototype(RegExpPrototype, jsregexp.RegExpPrototype, default_attrs)
 # add exec to regexpfunction (cant add it automatically because of its name :(
-default_attrs['value'] = jsregexp.Exec
-RegExpPrototype.define_own_property('exec', default_attrs)
+RegExpPrototype.own['exec'] = RegExpPrototype.own['exec2']
+del RegExpPrototype.own['exec2']
 
 #########################################################################
 # Constructors

@@ -2736,7 +2736,7 @@ class PyJsParser:
             raise NotImplementedError('Options not implemented! You can only use default settings.')
 
         self.clean()
-        self.source = unicode(code) + ' ; //END' # I have to add it in order not to check for EOF every time
+        self.source = unicode(code) + ' \n ; //END' # I have to add it in order not to check for EOF every time
         self.index = 0
         self.lineNumber = 1 if len(self.source) > 0 else 0
         self.lineStart = 0

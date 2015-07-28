@@ -105,7 +105,7 @@ Also, of course you can use Js2Py to parse (tree is the same as in esprima.js) a
     >>> js2py.parse_js('var $ = 5')   
     {'body': [{'kind': 'var', 'declarations': [{'init': {'raw': None, 'type': u'Literal', 'value': 5.0}, 'type': u'VariableDeclarator', 'id': {'type': u'Identifier', 'name': u'$'}}], 'type': u'VariableDeclaration'}], 'type': u'Program'}
 
-####Transating:
+####Translating:
 
     >>> print js2py.translate_js('var $ = 5')
     import js2py.pyjs, sys

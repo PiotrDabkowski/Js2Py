@@ -1,30 +1,9 @@
-TODO
-2. Fix if-elif by removing elif and replacing it with nested if-else
-4. Fix regexp literals
-5. Fix string/regexp to regexp transformation
-6. Fix ?: < worst shit ever. Code runs but has unexpected output :(
-7. Fix array elision ( handle None elements in array passed to Js function )
-8. Fix increments. Again...
-9. Repair stringo objects  and their get_own_property internal method
-!!!. Run 262 test! I cant run it now because errors and constructors are not implemented yet.
-     90% of tests fail because of that.
+# TODO
+Fix function.call
+Check Object Constructor
+Complete list prototype
+Fix function apply/bind...
+Fix regexp compile
+Check prototypes:
+   String: replace, split
 
-TODO Maybe
-1. Add regexp to NodeVisitor
-2. Fix <<= and other operators
-3. Speed up NodeVisitor
-
-
-BUILTINS
-todo
-1. Array
-3. Date
-4. JSON
-5. RegExp
-
-PARSING PROBLEMS:
-1. UNICODE
-2. \ line break in strings and to small number of chars in \1 escape
-2. Further empty object checks!
-3. getters and setters improve detection ( {set:40} is not a setter while {set 40() {}} is )
-4. Repair for-in statement :) it has a lot of bugs!

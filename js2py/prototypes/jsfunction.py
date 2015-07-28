@@ -1,4 +1,7 @@
 
+
+# todo fix apply and bind
+
 class FunctionPrototype:            
     def toString():
         if not this.is_callable():

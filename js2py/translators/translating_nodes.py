@@ -4,6 +4,30 @@ from friendly_nodes import *
 import random
 
 
+class ForController:
+    def __init__(self):
+        self.inside = [False]
+        self.update = ''
+
+    def enter_for(self, update):
+        self.inside.append(True)
+        self.update = update
+
+    def leave_for(self):
+        self.inside.pop()
+
+    def enter_other(self):
+        self.inside.append(False)
+
+    def leave_other(self):
+        self.inside.pop()
+
+    def is_inside(self):
+        return self.inside[-1]
+
+
+FOR_CONTROLLER = ForController()
+
 class InlineStack:
     NAME = 'PyJs_%s_%d_'
     def __init__(self):
@@ -157,11 +181,11 @@ def ObjectExpression(type, properties):
         if p['kind']=='init':
             elems.append('%s:%s' % Property(**p))
         elif p['kind']=='set':
-            k, setter = Property(**p)  # setter is just a lval reffereing to that function, it will be defined in InlineStack automatically
-            after += '%s.define_own_property(%s, {"set":%s})\n' % (name, k, setter)
+            k, setter = Property(**p)  # setter is just a lval referring to that function, it will be defined in InlineStack automatically
+            after += '%s.define_own_property(%s, {"set":%s, "configurable":True, "enumerable":True})\n' % (name, k, setter)
         elif p['kind']=='get':
             k, getter = Property(**p)
-            after += '%s.define_own_property(%s, {"get":%s})\n' % (name, k, getter)
+            after += '%s.define_own_property(%s, {"get":%s, "configurable":True, "enumerable":True})\n' % (name, k, getter)
         else:
             raise RuntimeError('Unexpected object propery kind')
     obj = '%s = Js({%s})\n' % (name, ','.join(elems))
@@ -207,7 +231,7 @@ def UpdateExpression(type, operator, argument, prefix):
     return js_postfix(a, operator=='++', not prefix)
 
 
-def AssignmentExpression(type, operator, left, right): # todo fix operator
+def AssignmentExpression(type, operator, left, right):
     operator = operator[:-1]
     if left['type']=='Identifier':
         if operator:
@@ -239,7 +263,7 @@ def SequenceExpression(type, expressions):
 def NewExpression(type, callee, arguments):
     return trans(callee) + '.create(%s)' % ', '.join(trans(e) for e in arguments)
 
-def ConditionalExpression(type, test, consequent, alternate):
+def ConditionalExpression(type, test, consequent, alternate): # caused plenty of problems in my home-made translator :)
     return '(%s if %s else %s)' % (trans(consequent), trans(test), trans(alternate))
 
 
@@ -263,10 +287,13 @@ def BreakStatement(type, label):
 
 
 def ContinueStatement(type, label):
+    inc = ''
+    if FOR_CONTROLLER.is_inside() and FOR_CONTROLLER.update.strip():
+        inc = FOR_CONTROLLER.update.strip() + '\n'
     if label:
-        return 'raise %s("Continued")\n' % (get_continue_label(label['name']))
+        return inc + 'raise %s("Continued")\n' % (get_continue_label(label['name']))
     else:
-        return 'continue\n'
+        return inc + 'continue\n'
 
 def ReturnStatement(type, argument):
     return 'return %s\n' % (trans(argument) if argument else "var.get('undefined')")
@@ -281,18 +308,26 @@ def DebuggerStatement(type):
 
 
 def DoWhileStatement(type, body, test):
+    FOR_CONTROLLER.enter_other()
     inside = trans(body) + 'if not %s:\n' % trans(test) + indent('break\n')
-    return  'while 1:\n' + indent(inside)
+    result = 'while 1:\n' + indent(inside)
+    FOR_CONTROLLER.leave_other()
+    return result
+
 
 
 def ForStatement(type, init, test, update, body):
+    update = indent(trans(update)) if update else ''
+    FOR_CONTROLLER.enter_for(update)
     init = trans(init) + '\n' if init else ''
     test = trans(test) if test else '1'
-    update = indent(trans(update)) if update else ''
-    return '#for JS loop\n%swhile %s:\n%s%s\n' % (init, test, indent(trans(body)), update)
+    result = '#for JS loop\n%swhile %s:\n%s%s\n' % (init, test, indent(trans(body)), update)
+    FOR_CONTROLLER.leave_for()
+    return result
 
 
 def ForInStatement(type, left, right, body, each):
+    FOR_CONTROLLER.enter_other()
     res =  'for PyJsTemp in %s:\n' % trans(right)
     if left['type']=="VariableDeclaration":
         addon = trans(left) # make sure variable is registered
@@ -308,6 +343,7 @@ def ForInStatement(type, left, right, body, each):
     else:
         raise RuntimeError('Unusual ForIn loop')
     res += indent('var.put(%s, PyJsTemp)\n' % repr(name) + trans(body))
+    FOR_CONTROLLER.leave_other()
     return res
 
 
@@ -419,7 +455,10 @@ def VariableDeclaration(type, declarations, kind):
 
 
 def WhileStatement(type, test, body):
-    return 'while %s:\n'%trans(test) + indent(trans(body))
+    FOR_CONTROLLER.enter_other()
+    result = 'while %s:\n'%trans(test) + indent(trans(body))
+    FOR_CONTROLLER.leave_other()
+    return result
 
 
 def WithStatement(type, object, body):

@@ -7,4 +7,4 @@ class ErrorPrototype:
         name = 'Error' if name.is_undefined() else name.to_string().value
         msg = this.get('message')
         msg = '' if msg.is_undefined() else msg.to_string().value
-        return name + (name and msg and ' : ') + msg
+        return name + (name and msg and ': ') + msg
