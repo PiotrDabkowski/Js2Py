@@ -119,7 +119,7 @@ class ObjectMethods:
     def keys(obj):
         if not obj.is_object():
             raise MakeError('TypeError', 'Object.keys called on non-object')
-        return obj.own.keys()
+        return [e for e,d in obj.own.iteritems() if d.get('enumerable')]
 
 
 # add methods attached to Object constructor

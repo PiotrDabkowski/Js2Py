@@ -5,12 +5,17 @@ def to_arr(this):
 class ArrayPrototype:
     def toString():
         # this function is wrong but I will leave it here fore debugging purposes.
-        return unicode(to_arr(this))
+        func = this.get('join')
+        if not func.is_callable():
+            @this.Js
+            def func():
+                return '[object %s]'%this.Class
+        return func.call(this, ())
 
     def toLocaleString():
         array = this.to_object()
         arr_len = array.get('length').to_uint32()
-        # separator is simply a comma ', '
+        # separator is simply a comma ','
         if not arr_len:
             return ''
         res = []
@@ -23,19 +28,40 @@ class ArrayPrototype:
                 str_func = element.get('toLocaleString')
                 if not str_func.is_callable():
                     raise this.MakeError('TypeError', 'toLocaleString method of item at index %d is not callable'%i)
-                res.append(element.callprop('toLocaleString'))
-        return ', '.join(res)
+                res.append(element.callprop('toLocaleString').value)
+        return ','.join(res)
 
     def concat():
-        raise NotImplementedError()
+        array = this.to_object()
+        A = this.Js([])
+        items = [array]
+        items.extend(to_arr(arguments))
+        n = 0
+        for E in items:
+            if E.Class=='Array':
+                k = 0
+                e_len = len(E)
+                while k<e_len:
+                    if E.has_property(str(k)):
+                        A.put(str(n), E.get(str(k)))
+                    n+=1
+                    k+=1
+            else:
+                A.put(str(n), E)
+                n+=1
+        return A
 
     def join(separator):
         array = this.to_object()
         arr_len = array.get('length').to_uint32()
         separator = ',' if separator.is_undefined() else separator.to_string().value
-        return separator.join(array.get(str(e)).to_string().value for e in xrange(arr_len))
+        elems = []
+        for e in xrange(arr_len):
+            elem = array.get(str(e))
+            elems.append(elem.to_string().value if not (elem.is_undefined() or elem.is_null()) else '')
+        return separator.join(elems)
 
-    def pop():
+    def pop(): #todo check
         array = this.to_object()
         arr_len = array.get('length').to_uint32()
         if not arr_len:
@@ -48,40 +74,34 @@ class ArrayPrototype:
         return element
 
 
-    def push(item):
+    def push(item): # todo check
         array = this.to_object()
         arr_len = array.get('length').to_uint32()
         to_put = arguments.to_list()
+        i = arr_len
         for i, e in enumerate(to_put, arr_len):
             array.put(str(i), e)
-        i += 1
-        array.put('length', this.Js(i))
+        if to_put:
+            i+=1
+            array.put('length', this.Js(i))
         return i
 
 
     def reverse():
-        array = this.to_object()
-        arr_len = array.get('length').to_uint32()
-        lower, middle = 0, arr_len/2
-        while lower!=middle:
-            upper = arr_len - lower - 1
-            ls, us = str(lower), str(upper)
-            lower_val, upper_val = array.get(ls), array.get(us)
-            lower_exists, upper_exists = array.has_property(ls), array.has_property(us)
-            if lower_exists and upper_exists:
-                array.put(us, lower_val)
-                array.put(ls, upper_val)
-            elif not lower_exists and upper_exists:
-                array.put(ls, upper_val)
-                array.delete(us)
-            elif not lower_exists and upper_exists:
-                array.put(us, lower_val)
-                array.delete(ls)
-            lower += 1
+        array = this.to_object() # my own algorithm
+        vals = to_arr(array)
+        has_props = [array.has_property(str(e)) for e in xrange(len(array))]
+        vals.reverse()
+        has_props.reverse()
+        for i, val in enumerate(vals):
+            if has_props[i]:
+                array.put(str(i), val)
+            else:
+                array.delete(str(i))
         return array
 
 
-    def shift():
+    def shift():  #todo check
         array = this.to_object()
         arr_len = array.get('length').to_uint32()
         if not arr_len:
@@ -98,7 +118,7 @@ class ArrayPrototype:
         array.put('length', this.Js(str(arr_len-1)))
         return first
 
-    def slice(start, end):
+    def slice(start, end): # todo check
         array = this.to_object()
         arr_len = array.get('length').to_uint32()
         relative_start = start.to_int()
@@ -121,11 +141,57 @@ class ArrayPrototype:
         raise NotImplementedError()
 
     def splice(start, deleteCount):
+        # 1-8
         array = this.to_object()
         arr_len = array.get('length').to_uint32()
         relative_start = start.to_int()
         actual_start = max((arr_len + relative_start),0) if relative_start<0 else min(relative_start, arr_len)
         actual_delete_count =  min(max(deleteCount.to_int(),0 ), arr_len - actual_start)
+        k = 0
+        A = this.Js([])
+        # 9
+        while k<actual_delete_count:
+            if array.has_property(str(actual_start+k)):
+                A.put(str(k), array.get(str(actual_start+k)))
+            k += 1
+        # 10-11
+        items = to_arr(arguments)[2:]
+        items_len = len(items)
+        # 12
+        if items_len<actual_delete_count:
+            k = actual_start
+            while k < (arr_len-actual_delete_count):
+                fr = str(k+actual_delete_count)
+                to = str(k+items_len)
+                if array.has_property(fr):
+                    array.put(to, array.get(fr))
+                else:
+                    array.delete(to)
+                k += 1
+            k = arr_len
+            while k > (arr_len - actual_delete_count + items_len):
+                array.delete(str(k-1))
+                k -= 1
+        # 13
+        elif items_len>actual_delete_count:
+            k = arr_len - actual_delete_count
+            while k>actual_start:
+                fr = str(k + actual_delete_count - 1)
+                to = str(k + items_len - 1)
+                if array.has_property(fr):
+                    array.put(to, array.get(fr))
+                else:
+                    array.delete(to)
+                k -= 1
+        # 14-17
+        k = actual_start
+        while items:
+            E = items.pop(0)
+            array.put(str(k), E)
+            k += 1
+        array.put('length', this.Js(arr_len - actual_delete_count + items_len))
+        return A
+
 
 
     def unshift():
@@ -144,7 +210,18 @@ class ArrayPrototype:
         raise NotImplementedError()
 
     def forEach(callbackfn):
-        raise NotImplementedError()
+        array = this.to_object()
+        arr_len = array.get('length').to_uint32()
+        if not callbackfn.is_callable():
+            raise this.MakeError('TypeError', 'callbackfn must be a function')
+        T = arguments[1]
+        k = 0
+        while k<arr_len:
+            if array.has_property(str(k)):
+                kValue = array.get(str(k))
+                callbackfn.call(T, (kValue, this.Js(k), array))
+            k+=1
+
 
     def map(callbackfn):
         raise NotImplementedError()

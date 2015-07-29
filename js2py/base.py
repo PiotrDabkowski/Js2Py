@@ -20,8 +20,11 @@ def to_python(val):
     elif isinstance(val, PyJsNumber):
         # this can be either float or long/int better to assume its int/long when a whole number...
         v = val.value
-        i = int(v) if v==v else v # nan...
-        return v if i!=v else i
+        try:
+            i = int(v) if v==v else v # nan...
+            return v if i!=v else i
+        except:
+            return v
     elif isinstance(val, (PyJsString, PyJsBoolean)):
         return val.value
     return JsObjectWrapper(val)
@@ -89,6 +92,9 @@ def Js(val):
     elif isinstance(val, bool):
         return true if val else false
     elif isinstance(val, float) or isinstance(val, int) or isinstance(val, long):
+        # This is supposed to speed things up. may not be the case
+        if val in NUM_BANK:
+            return NUM_BANK[val]
         return PyJsNumber(float(val), NumberPrototype)
     elif isinstance(val, tuple): # convert to arguments
         return val # todo later
@@ -166,15 +172,16 @@ class PyJs(object):
     
     def __init__(self, value=None, prototype=None, extensible=False):
         '''Constructor for Number String and Boolean'''
-        if self.Class=='String' and not isinstance(value, basestring):
-            raise TypeError
-        if self.Class=='Number':
-            if not isinstance(value, float):
-                if not (isinstance(value, int) or isinstance(value, long)):
-                    raise TypeError
-                value = float(value)
-        if self.Class=='Boolean' and not isinstance(value, bool):
-            raise TypeError
+        # I dont think this is needed anymore
+        # if self.Class=='String' and not isinstance(value, basestring):
+        #     raise TypeError
+        # if self.Class=='Number':
+        #     if not isinstance(value, float):
+        #         if not (isinstance(value, int) or isinstance(value, long)):
+        #             raise TypeError
+        #         value = float(value)
+        # if self.Class=='Boolean' and not isinstance(value, bool):
+        #     raise TypeError
         self.value = value
         self.extensible = extensible
         self.prototype = prototype
@@ -523,7 +530,7 @@ class PyJs(object):
 
     def __len__(self):
         try:
-            return int(self.own['length']['value'].value)
+            return self.get('length').to_uint32()
         except:
             raise TypeError('This object (%s) does not have length property'%self.Class)
     #Oprators-------------
@@ -1208,6 +1215,7 @@ PyJs.Infinity = Infinity
 
 # This dict aims to increase speed of string creation by storing character instances
 CHAR_BANK = {}
+NUM_BANK = {}
 PyJs.CHAR_BANK = CHAR_BANK
 #String
 # Different than implementation design in order to improve performance
@@ -1642,6 +1650,10 @@ scope = dict(zip(builtins, [eval(e) for e in builtins]))
 
 JS_BUILTINS = {k:v for k,v in scope.iteritems()}
 
+
+# Fill in NUM_BANK
+for e in xrange(-2**10,2**14):
+    NUM_BANK[e] = Js(e)
 
 if __name__=='__main__':
     print ObjectPrototype.get('toString').callprop('call')

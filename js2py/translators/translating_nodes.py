@@ -167,7 +167,7 @@ def CallExpression(type, callee, arguments):
 
 
 def ArrayExpression(type, elements):  # todo fix null inside problem
-    return 'Js([%s])' % ', '.join(trans(e) for e in elements)
+    return 'Js([%s])' % ', '.join(trans(e) if e else 'None' for e in elements)
 
 
 
