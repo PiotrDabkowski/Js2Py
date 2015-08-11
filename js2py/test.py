@@ -4,13 +4,30 @@ c = js2py.EvalJs()
 # c.execute('function k(a) {console.log(a);console.log(this)}')
 # c.execute('f = function (){}')
 a = '''
+assert = console.log
+var test = function () {
+    //private members
+    var x = 1;
+    var y = function () {
+        return x * 2;
+    };
+    //public interface
+    return {
+        setx : function (newx) {
+            x = newx;
+        },
+        gety : function () {
+            return y();
+        }
+    }
+}();
 
-Array.prototype.max = function(array ){
-    return Math.max.apply( Math, array );
-};
-
-[1,2,3,4,1,-50, -Infinity].max()
+assert(undefined == test.x);
+assert(undefined == test.y);
+assert(2 == test.gety());
+test.setx(5);
+assert(10 == test.gety());
 '''
 
 #c.execute(a)
-print js2py.eval_js(a)
+print js2py.translate_js(a)
