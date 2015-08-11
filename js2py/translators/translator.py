@@ -1,4 +1,5 @@
 import pyjsparser
+#from pyesprima import esprima
 import translating_nodes
 
 DEFAULT_HEADER = u'''import js2py.pyjs, sys
@@ -26,6 +27,8 @@ def translate_js(js, HEADER=DEFAULT_HEADER):
        returns equivalent python code."""
     parser = pyjsparser.PyJsParser()
     parsed = parser.parse(js) # js to esprima syntax tree
+    # Another way of doing that would be with my auto esprima translation but its much slower and causes import problems:
+    # parsed = esprima.parse(js).to_dict()
     translating_nodes.clean_stacks()
     return HEADER + translating_nodes.trans(parsed)  # syntax tree to python code
 

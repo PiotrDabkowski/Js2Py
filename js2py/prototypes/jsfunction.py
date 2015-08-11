@@ -17,7 +17,7 @@ class FunctionPrototype:
         if len(arguments)<=1:
             args = () 
         else:
-            args = arguments[1]
+            args = tuple([arguments[e] for e in xrange(1, len(arguments))])
         return this.call(obj, args)
     
     def apply():
@@ -28,7 +28,11 @@ class FunctionPrototype:
         if len(arguments)<=1:
             args = () 
         else:
-            args = tuple([arguments[e] for e in xrange(1, len(arguments))])
+            appl = arguments[1]
+            try:
+                args = tuple([appl[e] for e in xrange(len(appl))])
+            except:
+                args = ()
         return this.call(obj, args)
 
     def bind(thisArg):

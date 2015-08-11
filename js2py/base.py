@@ -1,7 +1,7 @@
 '''Most important file in Js2Py implementation: PyJs class - father of all PyJs objects'''
 from copy import copy
 import re
-from translators import translator
+#from translators import translator
 from utils.injector import fix_js_args
 from types import FunctionType, ModuleType, GeneratorType, ClassType, BuiltinFunctionType, MethodType, BuiltinMethodType, NoneType
 import traceback
@@ -44,6 +44,9 @@ def to_dict(js_obj, known=None): # fixed recursion error in self referencing obj
             if output._obj.Class=='Object':
                 output = to_dict(output._obj, known)
                 known[input] = output
+            elif output._obj.Class=='Array':
+                output = to_list(output._obj)
+                known[input] = output
         res[name] = output
     return res
 
@@ -62,6 +65,9 @@ def to_list(js_obj, known=None):
         if isinstance(output, JsObjectWrapper):
             if output._obj.Class in ['Array', 'Arguments']:
                 output = to_list(output._obj, known)
+                known[input] = output
+            elif output._obj.Class in ['Object']:
+                output = to_dict(output._obj)
                 known[input] = output
         res[name] = output
     return res

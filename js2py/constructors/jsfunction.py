@@ -1,5 +1,8 @@
 from js2py.base import *
-from js2py.translators.translator import translate_js
+try:
+    from js2py.translators.translator import translate_js
+except:
+    pass
 
 
 @Js

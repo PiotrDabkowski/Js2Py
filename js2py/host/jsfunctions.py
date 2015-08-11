@@ -58,7 +58,6 @@ def parseFloat(string):
             failed += 1
             if failed>4: # cant be a number anymore
                 break
-        print length
         length += 1
     if num is None:
         return NaN

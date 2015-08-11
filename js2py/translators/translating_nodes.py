@@ -113,6 +113,8 @@ def trans(ele):
 # ==== IDENTIFIERS AND LITERALS  =======
 
 
+inf = float('inf')
+
 
 def Literal(type, value, raw, regex=None):
     if regex: # regex
@@ -121,7 +123,7 @@ def Literal(type, value, raw, regex=None):
         return 'var.get(u"null")'
     # Todo template
     # String, Bool, Float
-    return 'Js(%s)' % repr(value)
+    return 'Js(%s)' % repr(value) if value!=inf else 'Js(float("inf"))'
 
 def Identifier(type, name):
     return 'var.get(%s)' % repr(name)
