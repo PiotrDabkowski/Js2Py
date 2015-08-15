@@ -124,7 +124,7 @@ def Js(val):
     elif isinstance(val, dict): # convert to object
          temp = PyJsObject({}, ObjectPrototype)
          for k, v in val.iteritems():
-             temp.put(k, v)
+             temp.put(Js(k), Js(v))
          return temp
     elif isinstance(val, list): #Convert to array
         return PyJsArray(val, ArrayPrototype)
@@ -174,6 +174,7 @@ class PyJs(object):
     prototype = None
     own = {}
     GlobalObject = None
+    IS_CHILD_SCOPE = False
     value = None
     
     def __init__(self, value=None, prototype=None, extensible=False):
@@ -204,6 +205,9 @@ class PyJs(object):
     
     def is_object(self):
         return not self.is_primitive()
+
+    def _type(self):
+        return Type(self)
     
     def is_callable(self):
         return hasattr(self, 'call')
@@ -529,10 +533,10 @@ class PyJs(object):
 
     #Not to be used by translation (only internal use)
     def __getitem__(self, item):
-        return self.get(str(item))
+        return self.get(str(item) if not isinstance(item, PyJs) else item.to_string().value)
 
-    def __setitem__(self, key, value):
-        self.put(str(key),  Js(value))
+    def __setitem__(self, item, value):
+        self.put(str(item) if not isinstance(item, PyJs) else item.to_string().value,  Js(value))
 
     def __len__(self):
         try:
@@ -749,7 +753,10 @@ class PyJs(object):
         # since the size od self.own can change we need to use different method of iteration.
         # SLOW! New items will NOT show up.
         returned = {}
-        cands = sorted(name for name in self.own if self.own[name]['enumerable'])
+        if not self.IS_CHILD_SCOPE:
+            cands = sorted(name for name in self.own if self.own[name]['enumerable'])
+        else:
+            cands = sorted(name for name in self.own)
         for cand in cands:
             check = self.own.get(cand)
             if check and check['enumerable']:
@@ -864,6 +871,7 @@ def PyExceptionToJs(py):
 class Scope(PyJs):
     Class = 'global'
     extensible = True
+    IS_CHILD_SCOPE = True
     # todo speed up
     # in order to speed up this very important class the top scope should behave differently than
     # child scopes, child scope should not have this property descriptor thing because they cant be changed anyway
@@ -965,6 +973,10 @@ class Scope(PyJs):
     def to_python(self):
         return to_python(self)
 
+class This(Scope):
+    IS_CHILD_SCOPE = False
+    def get(self, prop, throw=False):
+        return Scope.get(self, prop, throw)
 
 class JsObjectWrapper(object):
     def __init__(self, obj):
@@ -1680,3 +1692,5 @@ if __name__=='__main__':
     e = code.InteractiveConsole(globals())
     #e.raw_input = interactor
     e.interact()
+
+

@@ -1,3 +1,23 @@
+# The MIT License
+#
+# Copyright 2014, 2015 Piotr Dabkowski
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the 'Software'),
+# to deal in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so, subject
+# to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or
+# substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+# LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+#  OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
+
 """ Usage:
 
 tree = esprima.parse('var a = 10')
@@ -6,7 +26,6 @@ You can convert tree to python dict if you want:
 
 tree.to_dict()
 """
-
 import js2py.pyjs, sys
 # Redefine builtin objects... Do you have a better idea?
 for m in sys.modules.keys():
@@ -19,11 +38,12 @@ from js2py.pyjs import *
 var = Scope( JS_BUILTINS )
 set_global_object(var)
 
-# Code follows:var.registers([])
+# Code follows:
+var.registers([])
 @Js
 def PyJs_anonymous_0_(exports, this, arguments, var=var):
     var = Scope({u'this':this, u'exports':exports, u'arguments':arguments}, var)
-    var.registers([u'isKeyword', u'isolateCoverGrammar', u'consumeSemicolon', u'parseLeftHandSideExpression', u'throwUnexpectedToken', u'parsePatternWithDefault', u'parseExpressionStatement', u'advanceSlash', u'lastLineStart', u'tolerateUnexpectedToken', u'WrappingSourceLocation', u'source', u'parseThrowStatement', u'addComment', u'parseSwitchStatement', u'match', u'parseEmptyStatement', u'validateParam', u'exports', u'parseConditionalExpression', u'parseStatementListItem', u'parseClassDeclaration', u'Messages', u'isAssignmentTarget', u'parseVariableDeclaration', u'Token', u'reinterpretExpressionAsPattern', u'Position', u'isWhiteSpace', u'parseWhileStatement', u'scanIdentifier', u'parseTemplateLiteral', u'parseTemplateElement', u'parseGroupExpression', u'scanHexLiteral', u'parseBreakStatement', u'scanBinaryLiteral', u'firstCoverInitializedNameError', u'expectCommaSeparator', u'parseParams', u'getEscapedIdentifier', u'SourceLocation', u'parsePrimaryExpression', u'FnExprTokens', u'scanning', u'scanRegExpFlags', u'parseImportDeclaration', u'parseVariableDeclarationList', u'parseFunctionExpression', u'parseReturnStatement', u'recordError', u'parseExportAllDeclaration', u'collectRegex', u'expect', u'skipMultiLineComment', u'scanNumericLiteral', u'index', u'isIdentifierStart', u'parsePropertyMethodFunction', u'parseProgram', u'isImplicitOctalLiteral', u'state', u'isOctalDigit', u'isDecimalDigit', u'parseClassExpression', u'parseObjectProperty', u'parseCatchClause', u'peek', u'parseArguments', u'testRegExp', u'octalToDecimal', u'parseExportDeclaration', u'parseStatement', u'lastLineNumber', u'isLineTerminator', u'parseStatementList', u'parseModuleSpecifier', u'lex', u'parseFunctionSourceElements', u'isIdentifierName', u'advance', u'inheritCoverGrammar', u'isBindingElement', u'TokenName', u'parseArrayInitialiser', u'reinterpretAsCoverFormalsList', u'length', u'parseObjectInitialiser', u'isFutureReservedWord', u'parseImportNamespaceSpecifier', u'parseUnaryExpression', u'parseAssignmentExpression', u'Regex', u'parseLexicalBinding', u'tolerateError', u'parseBinaryExpression', u'startLineNumber', u'extra', u'scanStringLiteral', u'parseNamedImports', u'unexpectedTokenError', u'parseNonComputedProperty', u'startIndex', u'startLineStart', u'parseParam', u'parseNewExpression', u'scanRegExpBody', u'Node', u'collectToken', u'parseWithStatement', u'parseDebuggerStatement', u'parseObjectPattern', u'parseImportSpecifier', u'skipComment', u'parseVariableStatement', u'strict', u'lookaheadPropertyName', u'tokenize', u'parseVariableIdentifier', u'parseExpression', u'parseObjectPropertyKey', u'parseArrayPattern', u'expectKeyword', u'assert', u'lineNumber', u'parseConciseBody', u'createError', u'parseLeftHandSideExpressionAllowCall', u'hasLineTerminator', u'parseExportNamedDeclaration', u'parseBlock', u'Syntax', u'parseExportSpecifier', u'skipSingleLineComment', u'parseDoWhileStatement', u'scanHexEscape', u'isHexDigit', u'matchContextualKeyword', u'isStrictModeReservedWord', u'binaryPrecedence', u'parse', u'matchAssign', u'WrappingNode', u'getIdentifier', u'isRestrictedWord', u'parseSwitchCase', u'parsePropertyPattern', u'parseIfStatement', u'parseFunctionDeclaration', u'parsePostfixExpression', u'parseNonComputedMember', u'parseExportDefaultDeclaration', u'lastIndex', u'parseRestElement', u'parseScriptBody', u'parseBindingList', u'scanTemplate', u'PlaceHolders', u'parseLexicalDeclaration', u'checkProto', u'checkPatternParam', u'parsePropertyFunction', u'sourceType', u'scanPunctuator', u'parseArrowFunctionExpression', u'throwError', u'scanUnicodeCodePointEscape', u'scanOctalLiteral', u'scanRegExp', u'parseImportDefaultSpecifier', u'parsePattern', u'lineStart', u'parseForStatement', u'isIdentifierPart', u'matchKeyword', u'lookahead', u'parseTryStatement', u'parseComputedMember', u'parseContinueStatement', u'tryParseMethodDefinition', u'parseClassBody', u'filterTokenLocation'])
+    var.registers([u'isKeyword', u'isolateCoverGrammar', u'consumeSemicolon', u'parseLeftHandSideExpression', u'throwUnexpectedToken', u'parsePatternWithDefault', u'parseExpressionStatement', u'advanceSlash', u'lastLineStart', u'tolerateUnexpectedToken', u'WrappingSourceLocation', u'source', u'parseThrowStatement', u'addComment', u'parseSwitchStatement', u'match', u'parseEmptyStatement', u'validateParam', u'exports', u'parseConditionalExpression', u'parseStatementListItem', u'parseClassDeclaration', u'Messages', u'isAssignmentTarget', u'parseVariableDeclaration', u'Token', u'reinterpretExpressionAsPattern', u'getComplexIdentifier', u'Position', u'isWhiteSpace', u'parseWhileStatement', u'parseTemplateLiteral', u'parseTemplateElement', u'parseGroupExpression', u'scanHexLiteral', u'parseBreakStatement', u'scanBinaryLiteral', u'firstCoverInitializedNameError', u'expectCommaSeparator', u'parseParams', u'SourceLocation', u'parsePrimaryExpression', u'FnExprTokens', u'scanning', u'scanRegExpFlags', u'parseImportDeclaration', u'parseVariableDeclarationList', u'parseFunctionExpression', u'parseReturnStatement', u'recordError', u'parseExportAllDeclaration', u'collectRegex', u'expect', u'skipMultiLineComment', u'scanNumericLiteral', u'parseYieldExpression', u'index', u'isIdentifierStart', u'parsePropertyMethodFunction', u'parseProgram', u'isImplicitOctalLiteral', u'state', u'isOctalDigit', u'parseArrayInitializer', u'isDecimalDigit', u'parseClassExpression', u'parseObjectProperty', u'parseCatchClause', u'peek', u'parseArguments', u'testRegExp', u'octalToDecimal', u'parseExportDeclaration', u'parseStatement', u'lastLineNumber', u'isLineTerminator', u'parseStatementList', u'parseModuleSpecifier', u'lex', u'parseFunctionSourceElements', u'isIdentifierName', u'advance', u'inheritCoverGrammar', u'isBindingElement', u'TokenName', u'reinterpretAsCoverFormalsList', u'length', u'isFutureReservedWord', u'parseImportNamespaceSpecifier', u'parseUnaryExpression', u'parseAssignmentExpression', u'Regex', u'parseLexicalBinding', u'tolerateError', u'parseBinaryExpression', u'startLineNumber', u'extra', u'scanIdentifier', u'parseNamedImports', u'unexpectedTokenError', u'parseNonComputedProperty', u'startIndex', u'startLineStart', u'parseParam', u'parseNewExpression', u'scanRegExpBody', u'Node', u'collectToken', u'parseWithStatement', u'parseDebuggerStatement', u'parseObjectPattern', u'parseImportSpecifier', u'skipComment', u'parseVariableStatement', u'strict', u'lookaheadPropertyName', u'tokenize', u'parseVariableIdentifier', u'parseExpression', u'scanStringLiteral', u'parseObjectPropertyKey', u'parseArrayPattern', u'expectKeyword', u'assert', u'lineNumber', u'parseConciseBody', u'createError', u'parseLeftHandSideExpressionAllowCall', u'hasLineTerminator', u'fromCodePoint', u'parseExportNamedDeclaration', u'parseBlock', u'Syntax', u'parseExportSpecifier', u'skipSingleLineComment', u'parseDoWhileStatement', u'codePointAt', u'scanHexEscape', u'isHexDigit', u'matchContextualKeyword', u'isStrictModeReservedWord', u'binaryPrecedence', u'parse', u'matchAssign', u'WrappingNode', u'parseObjectInitializer', u'getIdentifier', u'isRestrictedWord', u'parseSwitchCase', u'parsePropertyPattern', u'parseIfStatement', u'parseFunctionDeclaration', u'parsePostfixExpression', u'parseNonComputedMember', u'parseExportDefaultDeclaration', u'lastIndex', u'parseRestElement', u'parseScriptBody', u'parseBindingList', u'scanTemplate', u'PlaceHolders', u'parseLexicalDeclaration', u'checkPatternParam', u'parsePropertyFunction', u'scanPunctuator', u'parseArrowFunctionExpression', u'throwError', u'scanUnicodeCodePointEscape', u'scanOctalLiteral', u'scanRegExp', u'parseImportDefaultSpecifier', u'parsePattern', u'lineStart', u'parseForStatement', u'isIdentifierPart', u'matchKeyword', u'lookahead', u'parseTryStatement', u'parseComputedMember', u'parseContinueStatement', u'tryParseMethodDefinition', u'parseClassBody', u'filterTokenLocation'])
     @Js
     def PyJsHoisted_consumeSemicolon_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
@@ -75,6 +95,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         else:
             var.put(u'expr', var.get(u'inheritCoverGrammar')((var.get(u'parseNewExpression') if var.get(u'matchKeyword')(Js(u'new')) else var.get(u'parsePrimaryExpression'))))
         #for JS loop
+
         while 1:
             if var.get(u'match')(Js(u'[')):
                 var.put(u'isBindingElement', Js(False))
@@ -93,7 +114,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                         var.put(u'expr', var.get(u'WrappingNode').create(var.get(u'startToken')).callprop(u'finishTaggedTemplateExpression', var.get(u'expr'), var.get(u'quasi')))
                     else:
                         break
-        
+
         return var.get(u'expr')
     PyJsHoisted_parseLeftHandSideExpression_.func_name = u'parseLeftHandSideExpression'
     var.put(u'parseLeftHandSideExpression', PyJsHoisted_parseLeftHandSideExpression_)
@@ -106,14 +127,17 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     PyJsHoisted_throwUnexpectedToken_.func_name = u'throwUnexpectedToken'
     var.put(u'throwUnexpectedToken', PyJsHoisted_throwUnexpectedToken_)
     @Js
-    def PyJsHoisted_parsePatternWithDefault_(this, arguments, var=var):
-        var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'startToken', u'right', u'pattern'])
+    def PyJsHoisted_parsePatternWithDefault_(params, this, arguments, var=var):
+        var = Scope({u'this':this, u'params':params, u'arguments':arguments}, var)
+        var.registers([u'startToken', u'previousAllowYield', u'right', u'params', u'pattern'])
         var.put(u'startToken', var.get(u'lookahead'))
-        var.put(u'pattern', var.get(u'parsePattern')())
+        var.put(u'pattern', var.get(u'parsePattern')(var.get(u'params')))
         if var.get(u'match')(Js(u'=')):
             var.get(u'lex')()
+            var.put(u'previousAllowYield', var.get(u'state').get(u'allowYield'))
+            var.get(u'state').put(u'allowYield', var.get(u'true'))
             var.put(u'right', var.get(u'isolateCoverGrammar')(var.get(u'parseAssignmentExpression')))
+            var.get(u'state').put(u'allowYield', var.get(u'previousAllowYield'))
             var.put(u'pattern', var.get(u'WrappingNode').create(var.get(u'startToken')).callprop(u'finishAssignmentPattern', var.get(u'pattern'), var.get(u'right')))
         return var.get(u'pattern')
     PyJsHoisted_parsePatternWithDefault_.func_name = u'parsePatternWithDefault'
@@ -269,8 +293,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                                 pass
                             if SWITCHED or PyJsStrictEq(CONDITION, Js(u'9')):
                                 SWITCHED = True
-                                PyJsTempException = JsToPyException(var.get(u'throwUnexpectedToken')())
-                                raise PyJsTempException
+                                var.put(u'str', var.get(u'ch'), u'+')
+                                var.get(u'tolerateUnexpectedToken')()
+                                break
                             if True:
                                 SWITCHED = True
                                 if var.get(u'isOctalDigit')(var.get(u'ch')):
@@ -399,7 +424,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                         var.get(u'options').put(u'message', var.get(u'Messages').get(u'StrictReservedWord'))
                     else:
                         if var.get(u'Object').get(u'prototype').get(u'hasOwnProperty').callprop(u'call', var.get(u'options').get(u'paramSet'), var.get(u'key')):
-                            var.get(u'options').put(u'firstRestricted', var.get(u'param'))
+                            var.get(u'options').put(u'stricted', var.get(u'param'))
                             var.get(u'options').put(u'message', var.get(u'Messages').get(u'StrictParamDupe'))
         var.get(u'options').get(u'paramSet').put(var.get(u'key'), var.get(u'true'))
     PyJsHoisted_validateParam_.func_name = u'validateParam'
@@ -434,12 +459,12 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 CONDITION = (var.get(u'lookahead').get(u'value'))
                 if SWITCHED or PyJsStrictEq(CONDITION, Js(u'export')):
                     SWITCHED = True
-                    if PyJsStrictNeq(var.get(u'sourceType'),Js(u'module')):
+                    if PyJsStrictNeq(var.get(u'state').get(u'sourceType'),Js(u'module')):
                         var.get(u'tolerateUnexpectedToken')(var.get(u'lookahead'), var.get(u'Messages').get(u'IllegalExportDeclaration'))
                     return var.get(u'parseExportDeclaration')()
                 if SWITCHED or PyJsStrictEq(CONDITION, Js(u'import')):
                     SWITCHED = True
-                    if PyJsStrictNeq(var.get(u'sourceType'),Js(u'module')):
+                    if PyJsStrictNeq(var.get(u'state').get(u'sourceType'),Js(u'module')):
                         var.get(u'tolerateUnexpectedToken')(var.get(u'lookahead'), var.get(u'Messages').get(u'IllegalImportDeclaration'))
                     return var.get(u'parseImportDeclaration')()
                 if SWITCHED or PyJsStrictEq(CONDITION, Js(u'const')):
@@ -447,8 +472,8 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                     pass
                 if SWITCHED or PyJsStrictEq(CONDITION, Js(u'let')):
                     SWITCHED = True
-                    PyJs_Object_125_ = Js({u'inFor':Js(False)})
-                    return var.get(u'parseLexicalDeclaration')(PyJs_Object_125_)
+                    PyJs_Object_129_ = Js({u'inFor':Js(False)})
+                    return var.get(u'parseLexicalDeclaration')(PyJs_Object_129_)
                 if SWITCHED or PyJsStrictEq(CONDITION, Js(u'function')):
                     SWITCHED = True
                     return var.get(u'parseFunctionDeclaration')(var.get(u'Node').create())
@@ -483,10 +508,11 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     @Js
     def PyJsHoisted_parseVariableDeclaration_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'node', u'init', u'id'])
+        var.registers([u'node', u'init', u'params', u'id'])
         var.put(u'init', var.get(u"null"))
         var.put(u'node', var.get(u'Node').create())
-        var.put(u'id', var.get(u'parsePattern')())
+        var.put(u'params', Js([]))
+        var.put(u'id', var.get(u'parsePattern')(var.get(u'params')))
         if (var.get(u'strict') and var.get(u'isRestrictedWord')(var.get(u'id').get(u'name'))):
             var.get(u'tolerateError')(var.get(u'Messages').get(u'StrictVarName'))
         if var.get(u'match')(Js(u'=')):
@@ -529,9 +555,11 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 #for JS loop
                 var.put(u'i', Js(0.0))
                 while (var.get(u'i')<var.get(u'expr').get(u'elements').get(u'length')):
-                    if PyJsStrictNeq(var.get(u'expr').get(u'elements').get(var.get(u'i')),var.get(u"null")):
-                        var.get(u'reinterpretExpressionAsPattern')(var.get(u'expr').get(u'elements').get(var.get(u'i')))
-                    (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
+                    try:
+                        if PyJsStrictNeq(var.get(u'expr').get(u'elements').get(var.get(u'i')),var.get(u"null")):
+                            var.get(u'reinterpretExpressionAsPattern')(var.get(u'expr').get(u'elements').get(var.get(u'i')))
+                    finally:
+                            (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
                 break
             if SWITCHED or PyJsStrictEq(CONDITION, var.get(u'Syntax').get(u'ObjectExpression')):
                 SWITCHED = True
@@ -539,8 +567,10 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 #for JS loop
                 var.put(u'i', Js(0.0))
                 while (var.get(u'i')<var.get(u'expr').get(u'properties').get(u'length')):
-                    var.get(u'reinterpretExpressionAsPattern')(var.get(u'expr').get(u'properties').get(var.get(u'i')).get(u'value'))
-                    (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
+                    try:
+                        var.get(u'reinterpretExpressionAsPattern')(var.get(u'expr').get(u'properties').get(var.get(u'i')).get(u'value'))
+                    finally:
+                            (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
                 break
             if SWITCHED or PyJsStrictEq(CONDITION, var.get(u'Syntax').get(u'AssignmentExpression')):
                 SWITCHED = True
@@ -554,6 +584,51 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
             break
     PyJsHoisted_reinterpretExpressionAsPattern_.func_name = u'reinterpretExpressionAsPattern'
     var.put(u'reinterpretExpressionAsPattern', PyJsHoisted_reinterpretExpressionAsPattern_)
+    @Js
+    def PyJsHoisted_getComplexIdentifier_(this, arguments, var=var):
+        var = Scope({u'this':this, u'arguments':arguments}, var)
+        var.registers([u'ch', u'cp', u'id'])
+        pass
+        var.put(u'cp', var.get(u'codePointAt')(var.get(u'index')))
+        var.put(u'id', var.get(u'fromCodePoint')(var.get(u'cp')))
+        var.put(u'index', var.get(u'id').get(u'length'), u'+')
+        if PyJsStrictEq(var.get(u'cp'),Js(92)):
+            if PyJsStrictNeq(var.get(u'source').callprop(u'charCodeAt', var.get(u'index')),Js(117)):
+                var.get(u'throwUnexpectedToken')()
+            var.put(u'index',var.get(u'index')+Js(1))
+            if PyJsStrictEq(var.get(u'source').get(var.get(u'index')),Js(u'{')):
+                var.put(u'index',var.get(u'index')+Js(1))
+                var.put(u'ch', var.get(u'scanUnicodeCodePointEscape')())
+            else:
+                var.put(u'ch', var.get(u'scanHexEscape')(Js(u'u')))
+                var.put(u'cp', var.get(u'ch').callprop(u'charCodeAt', Js(0.0)))
+                if ((var.get(u'ch').neg() or PyJsStrictEq(var.get(u'ch'),Js(u'\\'))) or var.get(u'isIdentifierStart')(var.get(u'cp')).neg()):
+                    var.get(u'throwUnexpectedToken')()
+            var.put(u'id', var.get(u'ch'))
+        while (var.get(u'index')<var.get(u'length')):
+            var.put(u'cp', var.get(u'codePointAt')(var.get(u'index')))
+            if var.get(u'isIdentifierPart')(var.get(u'cp')).neg():
+                break
+            var.put(u'ch', var.get(u'fromCodePoint')(var.get(u'cp')))
+            var.put(u'id', var.get(u'ch'), u'+')
+            var.put(u'index', var.get(u'ch').get(u'length'), u'+')
+            if PyJsStrictEq(var.get(u'cp'),Js(92)):
+                var.put(u'id', var.get(u'id').callprop(u'substr', Js(0.0), (var.get(u'id').get(u'length')-Js(1.0))))
+                if PyJsStrictNeq(var.get(u'source').callprop(u'charCodeAt', var.get(u'index')),Js(117)):
+                    var.get(u'throwUnexpectedToken')()
+                var.put(u'index',var.get(u'index')+Js(1))
+                if PyJsStrictEq(var.get(u'source').get(var.get(u'index')),Js(u'{')):
+                    var.put(u'index',var.get(u'index')+Js(1))
+                    var.put(u'ch', var.get(u'scanUnicodeCodePointEscape')())
+                else:
+                    var.put(u'ch', var.get(u'scanHexEscape')(Js(u'u')))
+                    var.put(u'cp', var.get(u'ch').callprop(u'charCodeAt', Js(0.0)))
+                    if ((var.get(u'ch').neg() or PyJsStrictEq(var.get(u'ch'),Js(u'\\'))) or var.get(u'isIdentifierPart')(var.get(u'cp')).neg()):
+                        var.get(u'throwUnexpectedToken')()
+                var.put(u'id', var.get(u'ch'), u'+')
+        return var.get(u'id')
+    PyJsHoisted_getComplexIdentifier_.func_name = u'getComplexIdentifier'
+    var.put(u'getComplexIdentifier', PyJsHoisted_getComplexIdentifier_)
     @Js
     def PyJsHoisted_Position_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
@@ -590,14 +665,14 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
         var.registers([u'quasis', u'node', u'quasi', u'expressions'])
         var.put(u'node', var.get(u'Node').create())
-        PyJs_Object_116_ = Js({u'head':var.get(u'true')})
-        var.put(u'quasi', var.get(u'parseTemplateElement')(PyJs_Object_116_))
+        PyJs_Object_119_ = Js({u'head':var.get(u'true')})
+        var.put(u'quasi', var.get(u'parseTemplateElement')(PyJs_Object_119_))
         var.put(u'quasis', Js([var.get(u'quasi')]))
         var.put(u'expressions', Js([]))
         while var.get(u'quasi').get(u'tail').neg():
             var.get(u'expressions').callprop(u'push', var.get(u'parseExpression')())
-            PyJs_Object_117_ = Js({u'head':Js(False)})
-            var.put(u'quasi', var.get(u'parseTemplateElement')(PyJs_Object_117_))
+            PyJs_Object_120_ = Js({u'head':Js(False)})
+            var.put(u'quasi', var.get(u'parseTemplateElement')(PyJs_Object_120_))
             var.get(u'quasis').callprop(u'push', var.get(u'quasi'))
         return var.get(u'node').callprop(u'finishTemplateLiteral', var.get(u'quasis'), var.get(u'expressions'))
     PyJsHoisted_parseTemplateLiteral_.func_name = u'parseTemplateLiteral'
@@ -611,30 +686,30 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
             var.get(u'throwUnexpectedToken')()
         var.put(u'node', var.get(u'Node').create())
         var.put(u'token', var.get(u'lex')())
-        PyJs_Object_115_ = Js({u'raw':var.get(u'token').get(u'value').get(u'raw'),u'cooked':var.get(u'token').get(u'value').get(u'cooked')})
-        return var.get(u'node').callprop(u'finishTemplateElement', PyJs_Object_115_, var.get(u'token').get(u'tail'))
+        PyJs_Object_118_ = Js({u'raw':var.get(u'token').get(u'value').get(u'raw'),u'cooked':var.get(u'token').get(u'value').get(u'cooked')})
+        return var.get(u'node').callprop(u'finishTemplateElement', PyJs_Object_118_, var.get(u'token').get(u'tail'))
     PyJsHoisted_parseTemplateElement_.func_name = u'parseTemplateElement'
     var.put(u'parseTemplateElement', PyJsHoisted_parseTemplateElement_)
     @Js
     def PyJsHoisted_parseGroupExpression_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'i', u'expr', u'expressions', u'startToken'])
-        pass
+        var.registers([u'i', u'expr', u'expressions', u'params', u'startToken'])
+        var.put(u'params', Js([]))
         var.get(u'expect')(Js(u'('))
         if var.get(u'match')(Js(u')')):
             var.get(u'lex')()
             if var.get(u'match')(Js(u'=>')).neg():
                 var.get(u'expect')(Js(u'=>'))
-            PyJs_Object_118_ = Js({u'type':var.get(u'PlaceHolders').get(u'ArrowParameterPlaceHolder'),u'params':Js([])})
-            return PyJs_Object_118_
+            PyJs_Object_121_ = Js({u'type':var.get(u'PlaceHolders').get(u'ArrowParameterPlaceHolder'),u'params':Js([]),u'rawParams':Js([])})
+            return PyJs_Object_121_
         var.put(u'startToken', var.get(u'lookahead'))
         if var.get(u'match')(Js(u'...')):
-            var.put(u'expr', var.get(u'parseRestElement')())
+            var.put(u'expr', var.get(u'parseRestElement')(var.get(u'params')))
             var.get(u'expect')(Js(u')'))
             if var.get(u'match')(Js(u'=>')).neg():
                 var.get(u'expect')(Js(u'=>'))
-            PyJs_Object_119_ = Js({u'type':var.get(u'PlaceHolders').get(u'ArrowParameterPlaceHolder'),u'params':Js([var.get(u'expr')])})
-            return PyJs_Object_119_
+            PyJs_Object_122_ = Js({u'type':var.get(u'PlaceHolders').get(u'ArrowParameterPlaceHolder'),u'params':Js([var.get(u'expr')])})
+            return PyJs_Object_122_
         var.put(u'isBindingElement', var.get(u'true'))
         var.put(u'expr', var.get(u'inheritCoverGrammar')(var.get(u'parseAssignmentExpression')))
         if var.get(u'match')(Js(u',')):
@@ -647,7 +722,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 if var.get(u'match')(Js(u'...')):
                     if var.get(u'isBindingElement').neg():
                         var.get(u'throwUnexpectedToken')(var.get(u'lookahead'))
-                    var.get(u'expressions').callprop(u'push', var.get(u'parseRestElement')())
+                    var.get(u'expressions').callprop(u'push', var.get(u'parseRestElement')(var.get(u'params')))
                     var.get(u'expect')(Js(u')'))
                     if var.get(u'match')(Js(u'=>')).neg():
                         var.get(u'expect')(Js(u'=>'))
@@ -655,26 +730,33 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                     #for JS loop
                     var.put(u'i', Js(0.0))
                     while (var.get(u'i')<var.get(u'expressions').get(u'length')):
-                        var.get(u'reinterpretExpressionAsPattern')(var.get(u'expressions').get(var.get(u'i')))
-                        (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
-                    PyJs_Object_120_ = Js({u'type':var.get(u'PlaceHolders').get(u'ArrowParameterPlaceHolder'),u'params':var.get(u'expressions')})
-                    return PyJs_Object_120_
+                        try:
+                            var.get(u'reinterpretExpressionAsPattern')(var.get(u'expressions').get(var.get(u'i')))
+                        finally:
+                                (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
+                    PyJs_Object_123_ = Js({u'type':var.get(u'PlaceHolders').get(u'ArrowParameterPlaceHolder'),u'params':var.get(u'expressions')})
+                    return PyJs_Object_123_
                 var.get(u'expressions').callprop(u'push', var.get(u'inheritCoverGrammar')(var.get(u'parseAssignmentExpression')))
             var.put(u'expr', var.get(u'WrappingNode').create(var.get(u'startToken')).callprop(u'finishSequenceExpression', var.get(u'expressions')))
         var.get(u'expect')(Js(u')'))
         if var.get(u'match')(Js(u'=>')):
+            if (PyJsStrictEq(var.get(u'expr').get(u'type'),var.get(u'Syntax').get(u'Identifier')) and PyJsStrictEq(var.get(u'expr').get(u'name'),Js(u'yield'))):
+                PyJs_Object_124_ = Js({u'type':var.get(u'PlaceHolders').get(u'ArrowParameterPlaceHolder'),u'params':Js([var.get(u'expr')])})
+                return PyJs_Object_124_
             if var.get(u'isBindingElement').neg():
                 var.get(u'throwUnexpectedToken')(var.get(u'lookahead'))
             if PyJsStrictEq(var.get(u'expr').get(u'type'),var.get(u'Syntax').get(u'SequenceExpression')):
                 #for JS loop
                 var.put(u'i', Js(0.0))
                 while (var.get(u'i')<var.get(u'expr').get(u'expressions').get(u'length')):
-                    var.get(u'reinterpretExpressionAsPattern')(var.get(u'expr').get(u'expressions').get(var.get(u'i')))
-                    (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
+                    try:
+                        var.get(u'reinterpretExpressionAsPattern')(var.get(u'expr').get(u'expressions').get(var.get(u'i')))
+                    finally:
+                            (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
             else:
                 var.get(u'reinterpretExpressionAsPattern')(var.get(u'expr'))
-            PyJs_Object_121_ = Js({u'type':var.get(u'PlaceHolders').get(u'ArrowParameterPlaceHolder'),u'params':(var.get(u'expr').get(u'expressions') if PyJsStrictEq(var.get(u'expr').get(u'type'),var.get(u'Syntax').get(u'SequenceExpression')) else Js([var.get(u'expr')]))})
-            var.put(u'expr', PyJs_Object_121_)
+            PyJs_Object_125_ = Js({u'type':var.get(u'PlaceHolders').get(u'ArrowParameterPlaceHolder'),u'params':(var.get(u'expr').get(u'expressions') if PyJsStrictEq(var.get(u'expr').get(u'type'),var.get(u'Syntax').get(u'SequenceExpression')) else Js([var.get(u'expr')]))})
+            var.put(u'expr', PyJs_Object_125_)
         var.put(u'isBindingElement', Js(False))
         return var.get(u'expr')
     PyJsHoisted_parseGroupExpression_.func_name = u'parseGroupExpression'
@@ -744,6 +826,28 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     PyJsHoisted_scanBinaryLiteral_.func_name = u'scanBinaryLiteral'
     var.put(u'scanBinaryLiteral', PyJsHoisted_scanBinaryLiteral_)
     @Js
+    def PyJsHoisted_parseYieldExpression_(this, arguments, var=var):
+        var = Scope({u'this':this, u'arguments':arguments}, var)
+        var.registers([u'expr', u'previousAllowYield', u'argument', u'delegate'])
+        pass
+        var.put(u'argument', var.get(u"null"))
+        var.put(u'expr', var.get(u'Node').create())
+        var.get(u'expectKeyword')(Js(u'yield'))
+        if var.get(u'hasLineTerminator').neg():
+            var.put(u'previousAllowYield', var.get(u'state').get(u'allowYield'))
+            var.get(u'state').put(u'allowYield', Js(False))
+            var.put(u'delegate', var.get(u'match')(Js(u'*')))
+            if var.get(u'delegate'):
+                var.get(u'lex')()
+                var.put(u'argument', var.get(u'parseAssignmentExpression')())
+            else:
+                if (((var.get(u'match')(Js(u';')).neg() and var.get(u'match')(Js(u'}')).neg()) and var.get(u'match')(Js(u')')).neg()) and PyJsStrictNeq(var.get(u'lookahead').get(u'type'),var.get(u'Token').get(u'EOF'))):
+                    var.put(u'argument', var.get(u'parseAssignmentExpression')())
+            var.get(u'state').put(u'allowYield', var.get(u'previousAllowYield'))
+        return var.get(u'expr').callprop(u'finishYieldExpression', var.get(u'argument'), var.get(u'delegate'))
+    PyJsHoisted_parseYieldExpression_.func_name = u'parseYieldExpression'
+    var.put(u'parseYieldExpression', PyJsHoisted_parseYieldExpression_)
+    @Js
     def PyJsHoisted_expectCommaSeparator_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
         var.registers([u'token'])
@@ -767,12 +871,12 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var = Scope({u'this':this, u'firstRestricted':firstRestricted, u'arguments':arguments}, var)
         var.registers([u'firstRestricted', u'options'])
         pass
-        PyJs_Object_128_ = Js({u'params':Js([]),u'defaultCount':Js(0.0),u'defaults':Js([]),u'firstRestricted':var.get(u'firstRestricted')})
-        var.put(u'options', PyJs_Object_128_)
+        PyJs_Object_133_ = Js({u'params':Js([]),u'defaultCount':Js(0.0),u'defaults':Js([]),u'firstRestricted':var.get(u'firstRestricted')})
+        var.put(u'options', PyJs_Object_133_)
         var.get(u'expect')(Js(u'('))
         if var.get(u'match')(Js(u')')).neg():
-            PyJs_Object_129_ = Js({})
-            var.get(u'options').put(u'paramSet', PyJs_Object_129_)
+            PyJs_Object_134_ = Js({})
+            var.get(u'options').put(u'paramSet', PyJs_Object_134_)
             while (var.get(u'startIndex')<var.get(u'length')):
                 if var.get(u'parseParam')(var.get(u'options')).neg():
                     break
@@ -780,43 +884,10 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u'expect')(Js(u')'))
         if PyJsStrictEq(var.get(u'options').get(u'defaultCount'),Js(0.0)):
             var.get(u'options').put(u'defaults', Js([]))
-        PyJs_Object_130_ = Js({u'params':var.get(u'options').get(u'params'),u'defaults':var.get(u'options').get(u'defaults'),u'stricted':var.get(u'options').get(u'stricted'),u'firstRestricted':var.get(u'options').get(u'firstRestricted'),u'message':var.get(u'options').get(u'message')})
-        return PyJs_Object_130_
+        PyJs_Object_135_ = Js({u'params':var.get(u'options').get(u'params'),u'defaults':var.get(u'options').get(u'defaults'),u'stricted':var.get(u'options').get(u'stricted'),u'firstRestricted':var.get(u'options').get(u'firstRestricted'),u'message':var.get(u'options').get(u'message')})
+        return PyJs_Object_135_
     PyJsHoisted_parseParams_.func_name = u'parseParams'
     var.put(u'parseParams', PyJsHoisted_parseParams_)
-    @Js
-    def PyJsHoisted_getEscapedIdentifier_(this, arguments, var=var):
-        var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'ch', u'id'])
-        pass
-        var.put(u'ch', var.get(u'source').callprop(u'charCodeAt', (var.put(u'index',var.get(u'index')+Js(1))-Js(1))))
-        var.put(u'id', var.get(u'String').callprop(u'fromCharCode', var.get(u'ch')))
-        if PyJsStrictEq(var.get(u'ch'),Js(92)):
-            if PyJsStrictNeq(var.get(u'source').callprop(u'charCodeAt', var.get(u'index')),Js(117)):
-                var.get(u'throwUnexpectedToken')()
-            var.put(u'index',var.get(u'index')+Js(1))
-            var.put(u'ch', var.get(u'scanHexEscape')(Js(u'u')))
-            if ((var.get(u'ch').neg() or PyJsStrictEq(var.get(u'ch'),Js(u'\\'))) or var.get(u'isIdentifierStart')(var.get(u'ch').callprop(u'charCodeAt', Js(0.0))).neg()):
-                var.get(u'throwUnexpectedToken')()
-            var.put(u'id', var.get(u'ch'))
-        while (var.get(u'index')<var.get(u'length')):
-            var.put(u'ch', var.get(u'source').callprop(u'charCodeAt', var.get(u'index')))
-            if var.get(u'isIdentifierPart')(var.get(u'ch')).neg():
-                break
-            var.put(u'index',var.get(u'index')+Js(1))
-            var.put(u'id', var.get(u'String').callprop(u'fromCharCode', var.get(u'ch')), u'+')
-            if PyJsStrictEq(var.get(u'ch'),Js(92)):
-                var.put(u'id', var.get(u'id').callprop(u'substr', Js(0.0), (var.get(u'id').get(u'length')-Js(1.0))))
-                if PyJsStrictNeq(var.get(u'source').callprop(u'charCodeAt', var.get(u'index')),Js(117)):
-                    var.get(u'throwUnexpectedToken')()
-                var.put(u'index',var.get(u'index')+Js(1))
-                var.put(u'ch', var.get(u'scanHexEscape')(Js(u'u')))
-                if ((var.get(u'ch').neg() or PyJsStrictEq(var.get(u'ch'),Js(u'\\'))) or var.get(u'isIdentifierPart')(var.get(u'ch').callprop(u'charCodeAt', Js(0.0))).neg()):
-                    var.get(u'throwUnexpectedToken')()
-                var.put(u'id', var.get(u'ch'), u'+')
-        return var.get(u'id')
-    PyJsHoisted_getEscapedIdentifier_.func_name = u'getEscapedIdentifier'
-    var.put(u'getEscapedIdentifier', PyJsHoisted_getEscapedIdentifier_)
     @Js
     def PyJsHoisted_SourceLocation_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
@@ -834,12 +905,14 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
             var.put(u'isBindingElement', Js(False))
             return var.get(u'inheritCoverGrammar')(var.get(u'parseGroupExpression'))
         if var.get(u'match')(Js(u'[')):
-            return var.get(u'inheritCoverGrammar')(var.get(u'parseArrayInitialiser'))
+            return var.get(u'inheritCoverGrammar')(var.get(u'parseArrayInitializer'))
         if var.get(u'match')(Js(u'{')):
-            return var.get(u'inheritCoverGrammar')(var.get(u'parseObjectInitialiser'))
+            return var.get(u'inheritCoverGrammar')(var.get(u'parseObjectInitializer'))
         var.put(u'type', var.get(u'lookahead').get(u'type'))
         var.put(u'node', var.get(u'Node').create())
         if PyJsStrictEq(var.get(u'type'),var.get(u'Token').get(u'Identifier')):
+            if (PyJsStrictEq(var.get(u'state').get(u'sourceType'),Js(u'module')) and PyJsStrictEq(var.get(u'lookahead').get(u'value'),Js(u'await'))):
+                var.get(u'tolerateUnexpectedToken')(var.get(u'lookahead'))
             var.put(u'expr', var.get(u'node').callprop(u'finishIdentifier', var.get(u'lex')().get(u'value')))
         else:
             if (PyJsStrictEq(var.get(u'type'),var.get(u'Token').get(u'StringLiteral')) or PyJsStrictEq(var.get(u'type'),var.get(u'Token').get(u'NumericLiteral'))):
@@ -849,6 +922,8 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 var.put(u'expr', var.get(u'node').callprop(u'finishLiteral', var.get(u'lex')()))
             else:
                 if PyJsStrictEq(var.get(u'type'),var.get(u'Token').get(u'Keyword')):
+                    if ((var.get(u'strict').neg() and var.get(u'state').get(u'allowYield')) and var.get(u'matchKeyword')(Js(u'yield'))):
+                        return var.get(u'parseNonComputedProperty')()
                     var.put(u'isAssignmentTarget', var.put(u'isBindingElement', Js(False)))
                     if var.get(u'matchKeyword')(Js(u'function')):
                         return var.get(u'parseFunctionExpression')()
@@ -911,8 +986,10 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                         #for JS loop
                         var.put(u'str', Js(u'\\u'), u'+')
                         while (var.get(u'restore')<var.get(u'index')):
-                            var.put(u'str', var.get(u'source').get(var.get(u'restore')), u'+')
-                            var.put(u'restore',var.get(u'restore')+Js(1))
+                            try:
+                                var.put(u'str', var.get(u'source').get(var.get(u'restore')), u'+')
+                            finally:
+                                    var.put(u'restore',var.get(u'restore')+Js(1))
                     else:
                         var.put(u'index', var.get(u'restore'))
                         var.put(u'flags', Js(u'u'), u'+')
@@ -932,28 +1009,37 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     def PyJsHoisted_parseImportDeclaration_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
         var.registers([u'node', u'specifiers', u'src'])
+        var.put(u'specifiers', Js([]))
         var.put(u'node', var.get(u'Node').create())
         if var.get(u'state').get(u'inFunctionBody'):
             var.get(u'throwError')(var.get(u'Messages').get(u'IllegalImportDeclaration'))
         var.get(u'expectKeyword')(Js(u'import'))
-        var.put(u'specifiers', Js([]))
         if PyJsStrictEq(var.get(u'lookahead').get(u'type'),var.get(u'Token').get(u'StringLiteral')):
             var.put(u'src', var.get(u'parseModuleSpecifier')())
-            var.get(u'consumeSemicolon')()
-            return var.get(u'node').callprop(u'finishImportDeclaration', var.get(u'specifiers'), var.get(u'src'))
-        if (var.get(u'matchKeyword')(Js(u'default')).neg() and var.get(u'isIdentifierName')(var.get(u'lookahead'))):
-            var.get(u'specifiers').callprop(u'push', var.get(u'parseImportDefaultSpecifier')())
-            if var.get(u'match')(Js(u',')):
-                var.get(u'lex')()
-        if var.get(u'match')(Js(u'*')):
-            var.get(u'specifiers').callprop(u'push', var.get(u'parseImportNamespaceSpecifier')())
         else:
             if var.get(u'match')(Js(u'{')):
                 var.put(u'specifiers', var.get(u'specifiers').callprop(u'concat', var.get(u'parseNamedImports')()))
-        if var.get(u'matchContextualKeyword')(Js(u'from')).neg():
-            var.get(u'throwError')((var.get(u'Messages').get(u'UnexpectedToken') if var.get(u'lookahead').get(u'value') else var.get(u'Messages').get(u'MissingFromClause')), var.get(u'lookahead').get(u'value'))
-        var.get(u'lex')()
-        var.put(u'src', var.get(u'parseModuleSpecifier')())
+            else:
+                if var.get(u'match')(Js(u'*')):
+                    var.get(u'specifiers').callprop(u'push', var.get(u'parseImportNamespaceSpecifier')())
+                else:
+                    if (var.get(u'isIdentifierName')(var.get(u'lookahead')) and var.get(u'matchKeyword')(Js(u'default')).neg()):
+                        var.get(u'specifiers').callprop(u'push', var.get(u'parseImportDefaultSpecifier')())
+                        if var.get(u'match')(Js(u',')):
+                            var.get(u'lex')()
+                            if var.get(u'match')(Js(u'*')):
+                                var.get(u'specifiers').callprop(u'push', var.get(u'parseImportNamespaceSpecifier')())
+                            else:
+                                if var.get(u'match')(Js(u'{')):
+                                    var.put(u'specifiers', var.get(u'specifiers').callprop(u'concat', var.get(u'parseNamedImports')()))
+                                else:
+                                    var.get(u'throwUnexpectedToken')(var.get(u'lookahead'))
+                    else:
+                        var.get(u'throwUnexpectedToken')(var.get(u'lex')())
+            if var.get(u'matchContextualKeyword')(Js(u'from')).neg():
+                var.get(u'throwError')((var.get(u'Messages').get(u'UnexpectedToken') if var.get(u'lookahead').get(u'value') else var.get(u'Messages').get(u'MissingFromClause')), var.get(u'lookahead').get(u'value'))
+            var.get(u'lex')()
+            var.put(u'src', var.get(u'parseModuleSpecifier')())
         var.get(u'consumeSemicolon')()
         return var.get(u'node').callprop(u'finishImportDeclaration', var.get(u'specifiers'), var.get(u'src'))
     PyJsHoisted_parseImportDeclaration_.func_name = u'parseImportDeclaration'
@@ -976,15 +1062,20 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     @Js
     def PyJsHoisted_parseFunctionExpression_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'tmp', u'body', u'previousStrict', u'node', u'stricted', u'id', u'token', u'params', u'defaults', u'firstRestricted', u'message'])
+        var.registers([u'tmp', u'body', u'previousStrict', u'node', u'isGenerator', u'stricted', u'id', u'token', u'params', u'defaults', u'previousAllowYield', u'firstRestricted', u'message'])
         var.put(u'id', var.get(u"null"))
         var.put(u'params', Js([]))
         var.put(u'defaults', Js([]))
         var.put(u'node', var.get(u'Node').create())
+        var.put(u'previousAllowYield', var.get(u'state').get(u'allowYield'))
         var.get(u'expectKeyword')(Js(u'function'))
+        var.put(u'isGenerator', var.get(u'match')(Js(u'*')))
+        if var.get(u'isGenerator'):
+            var.get(u'lex')()
+        var.get(u'state').put(u'allowYield', var.get(u'isGenerator').neg())
         if var.get(u'match')(Js(u'(')).neg():
             var.put(u'token', var.get(u'lookahead'))
-            var.put(u'id', var.get(u'parseVariableIdentifier')())
+            var.put(u'id', (var.get(u'parseNonComputedProperty')() if ((var.get(u'strict').neg() and var.get(u'isGenerator').neg()) and var.get(u'matchKeyword')(Js(u'yield'))) else var.get(u'parseVariableIdentifier')()))
             if var.get(u'strict'):
                 if var.get(u'isRestrictedWord')(var.get(u'token').get(u'value')):
                     var.get(u'tolerateUnexpectedToken')(var.get(u'token'), var.get(u'Messages').get(u'StrictFunctionName'))
@@ -1010,7 +1101,8 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         if (var.get(u'strict') and var.get(u'stricted')):
             var.get(u'tolerateUnexpectedToken')(var.get(u'stricted'), var.get(u'message'))
         var.put(u'strict', var.get(u'previousStrict'))
-        return var.get(u'node').callprop(u'finishFunctionExpression', var.get(u'id'), var.get(u'params'), var.get(u'defaults'), var.get(u'body'))
+        var.get(u'state').put(u'allowYield', var.get(u'previousAllowYield'))
+        return var.get(u'node').callprop(u'finishFunctionExpression', var.get(u'id'), var.get(u'params'), var.get(u'defaults'), var.get(u'body'), var.get(u'isGenerator'))
     PyJsHoisted_parseFunctionExpression_.func_name = u'parseFunctionExpression'
     var.put(u'parseFunctionExpression', PyJsHoisted_parseFunctionExpression_)
     @Js
@@ -1043,10 +1135,12 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         #for JS loop
         var.put(u'e', Js(0.0))
         while (var.get(u'e')<var.get(u'extra').get(u'errors').get(u'length')):
-            var.put(u'existing', var.get(u'extra').get(u'errors').get(var.get(u'e')))
-            if (PyJsStrictEq(var.get(u'existing').get(u'index'),var.get(u'error').get(u'index')) and PyJsStrictEq(var.get(u'existing').get(u'message'),var.get(u'error').get(u'message'))):
-                return var.get('undefined')
-            (var.put(u'e',var.get(u'e')+Js(1))-Js(1))
+            try:
+                var.put(u'existing', var.get(u'extra').get(u'errors').get(var.get(u'e')))
+                if (PyJsStrictEq(var.get(u'existing').get(u'index'),var.get(u'error').get(u'index')) and PyJsStrictEq(var.get(u'existing').get(u'message'),var.get(u'error').get(u'message'))):
+                    return var.get('undefined')
+            finally:
+                    (var.put(u'e',var.get(u'e')+Js(1))-Js(1))
         var.get(u'extra').get(u'errors').callprop(u'push', var.get(u'error'))
     PyJsHoisted_recordError_.func_name = u'recordError'
     var.put(u'recordError', PyJsHoisted_recordError_)
@@ -1190,16 +1284,21 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     def PyJsHoisted_isIdentifierStart_(ch, this, arguments, var=var):
         var = Scope({u'this':this, u'ch':ch, u'arguments':arguments}, var)
         var.registers([u'ch'])
-        return (((((PyJsStrictEq(var.get(u'ch'),Js(36)) or PyJsStrictEq(var.get(u'ch'),Js(95))) or ((var.get(u'ch')>=Js(65)) and (var.get(u'ch')<=Js(90)))) or ((var.get(u'ch')>=Js(97)) and (var.get(u'ch')<=Js(122)))) or PyJsStrictEq(var.get(u'ch'),Js(92))) or ((var.get(u'ch')>=Js(128)) and var.get(u'Regex').get(u'NonAsciiIdentifierStart').callprop(u'test', var.get(u'String').callprop(u'fromCharCode', var.get(u'ch')))))
+        return (((((PyJsStrictEq(var.get(u'ch'),Js(36)) or PyJsStrictEq(var.get(u'ch'),Js(95))) or ((var.get(u'ch')>=Js(65)) and (var.get(u'ch')<=Js(90)))) or ((var.get(u'ch')>=Js(97)) and (var.get(u'ch')<=Js(122)))) or PyJsStrictEq(var.get(u'ch'),Js(92))) or ((var.get(u'ch')>=Js(128)) and var.get(u'Regex').get(u'NonAsciiIdentifierStart').callprop(u'test', var.get(u'fromCodePoint')(var.get(u'ch')))))
     PyJsHoisted_isIdentifierStart_.func_name = u'isIdentifierStart'
     var.put(u'isIdentifierStart', PyJsHoisted_isIdentifierStart_)
     @Js
     def PyJsHoisted_parsePropertyMethodFunction_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'node', u'params', u'method'])
+        var.registers([u'node', u'params', u'method', u'previousAllowYield'])
         var.put(u'node', var.get(u'Node').create())
+        var.put(u'previousAllowYield', var.get(u'state').get(u'allowYield'))
+        var.get(u'state').put(u'allowYield', Js(False))
         var.put(u'params', var.get(u'parseParams')())
-        var.put(u'method', var.get(u'parsePropertyFunction')(var.get(u'node'), var.get(u'params')))
+        var.get(u'state').put(u'allowYield', var.get(u'previousAllowYield'))
+        var.get(u'state').put(u'allowYield', Js(False))
+        var.put(u'method', var.get(u'parsePropertyFunction')(var.get(u'node'), var.get(u'params'), Js(False)))
+        var.get(u'state').put(u'allowYield', var.get(u'previousAllowYield'))
         return var.get(u'method')
     PyJsHoisted_parsePropertyMethodFunction_.func_name = u'parsePropertyMethodFunction'
     var.put(u'parsePropertyMethodFunction', PyJsHoisted_parsePropertyMethodFunction_)
@@ -1211,7 +1310,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u'peek')()
         var.put(u'node', var.get(u'Node').create())
         var.put(u'body', var.get(u'parseScriptBody')())
-        return var.get(u'node').callprop(u'finishProgram', var.get(u'body'))
+        return var.get(u'node').callprop(u'finishProgram', var.get(u'body'), var.get(u'state').get(u'sourceType'))
     PyJsHoisted_parseProgram_.func_name = u'parseProgram'
     var.put(u'parseProgram', PyJsHoisted_parseProgram_)
     @Js
@@ -1222,12 +1321,14 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         #for JS loop
         var.put(u'i', (var.get(u'index')+Js(1.0)))
         while (var.get(u'i')<var.get(u'length')):
-            var.put(u'ch', var.get(u'source').get(var.get(u'i')))
-            if (PyJsStrictEq(var.get(u'ch'),Js(u'8')) or PyJsStrictEq(var.get(u'ch'),Js(u'9'))):
-                return Js(False)
-            if var.get(u'isOctalDigit')(var.get(u'ch')).neg():
-                return var.get(u'true')
-            var.put(u'i',var.get(u'i')+Js(1))
+            try:
+                var.put(u'ch', var.get(u'source').get(var.get(u'i')))
+                if (PyJsStrictEq(var.get(u'ch'),Js(u'8')) or PyJsStrictEq(var.get(u'ch'),Js(u'9'))):
+                    return Js(False)
+                if var.get(u'isOctalDigit')(var.get(u'ch')).neg():
+                    return var.get(u'true')
+            finally:
+                    var.put(u'i',var.get(u'i')+Js(1))
         return var.get(u'true')
     PyJsHoisted_isImplicitOctalLiteral_.func_name = u'isImplicitOctalLiteral'
     var.put(u'isImplicitOctalLiteral', PyJsHoisted_isImplicitOctalLiteral_)
@@ -1238,6 +1339,34 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         return (Js(u'01234567').callprop(u'indexOf', var.get(u'ch'))>=Js(0.0))
     PyJsHoisted_isOctalDigit_.func_name = u'isOctalDigit'
     var.put(u'isOctalDigit', PyJsHoisted_isOctalDigit_)
+    @Js
+    def PyJsHoisted_parseArrayInitializer_(this, arguments, var=var):
+        var = Scope({u'this':this, u'arguments':arguments}, var)
+        var.registers([u'node', u'elements', u'restSpread'])
+        var.put(u'elements', Js([]))
+        var.put(u'node', var.get(u'Node').create())
+        var.get(u'expect')(Js(u'['))
+        while var.get(u'match')(Js(u']')).neg():
+            if var.get(u'match')(Js(u',')):
+                var.get(u'lex')()
+                var.get(u'elements').callprop(u'push', var.get(u"null"))
+            else:
+                if var.get(u'match')(Js(u'...')):
+                    var.put(u'restSpread', var.get(u'Node').create())
+                    var.get(u'lex')()
+                    var.get(u'restSpread').callprop(u'finishSpreadElement', var.get(u'inheritCoverGrammar')(var.get(u'parseAssignmentExpression')))
+                    if var.get(u'match')(Js(u']')).neg():
+                        var.put(u'isAssignmentTarget', var.put(u'isBindingElement', Js(False)))
+                        var.get(u'expect')(Js(u','))
+                    var.get(u'elements').callprop(u'push', var.get(u'restSpread'))
+                else:
+                    var.get(u'elements').callprop(u'push', var.get(u'inheritCoverGrammar')(var.get(u'parseAssignmentExpression')))
+                    if var.get(u'match')(Js(u']')).neg():
+                        var.get(u'expect')(Js(u','))
+        var.get(u'lex')()
+        return var.get(u'node').callprop(u'finishArrayExpression', var.get(u'elements'))
+    PyJsHoisted_parseArrayInitializer_.func_name = u'parseArrayInitializer'
+    var.put(u'parseArrayInitializer', PyJsHoisted_parseArrayInitializer_)
     @Js
     def PyJsHoisted_isDecimalDigit_(ch, this, arguments, var=var):
         var = Scope({u'this':this, u'ch':ch, u'arguments':arguments}, var)
@@ -1268,16 +1397,24 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     @Js
     def PyJsHoisted_parseObjectProperty_(hasProto, this, arguments, var=var):
         var = Scope({u'this':this, u'hasProto':hasProto, u'arguments':arguments}, var)
-        var.registers([u'node', u'hasProto', u'computed', u'value', u'token', u'maybeMethod', u'key'])
+        var.registers([u'node', u'hasProto', u'computed', u'proto', u'value', u'token', u'maybeMethod', u'key'])
         var.put(u'token', var.get(u'lookahead'))
         var.put(u'node', var.get(u'Node').create())
         var.put(u'computed', var.get(u'match')(Js(u'[')))
-        var.put(u'key', var.get(u'parseObjectPropertyKey')())
+        if var.get(u'match')(Js(u'*')):
+            var.get(u'lex')()
+        else:
+            var.put(u'key', var.get(u'parseObjectPropertyKey')())
         var.put(u'maybeMethod', var.get(u'tryParseMethodDefinition')(var.get(u'token'), var.get(u'key'), var.get(u'computed'), var.get(u'node')))
         if var.get(u'maybeMethod'):
-            var.get(u'checkProto')(var.get(u'maybeMethod').get(u'key'), var.get(u'maybeMethod').get(u'computed'), var.get(u'hasProto'))
             return var.get(u'maybeMethod')
-        var.get(u'checkProto')(var.get(u'key'), var.get(u'computed'), var.get(u'hasProto'))
+        if var.get(u'key').neg():
+            var.get(u'throwUnexpectedToken')(var.get(u'lookahead'))
+        if var.get(u'computed').neg():
+            var.put(u'proto', ((PyJsStrictEq(var.get(u'key').get(u'type'),var.get(u'Syntax').get(u'Identifier')) and PyJsStrictEq(var.get(u'key').get(u'name'),Js(u'__proto__'))) or (PyJsStrictEq(var.get(u'key').get(u'type'),var.get(u'Syntax').get(u'Literal')) and PyJsStrictEq(var.get(u'key').get(u'value'),Js(u'__proto__')))))
+            if (var.get(u'hasProto').get(u'value') and var.get(u'proto')):
+                var.get(u'tolerateError')(var.get(u'Messages').get(u'DuplicateProtoProperty'))
+            var.get(u'hasProto').put(u'value', var.get(u'proto'), u'|')
         if var.get(u'match')(Js(u':')):
             var.get(u'lex')()
             var.put(u'value', var.get(u'inheritCoverGrammar')(var.get(u'parseAssignmentExpression')))
@@ -1295,13 +1432,26 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     @Js
     def PyJsHoisted_parseCatchClause_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'body', u'node', u'param'])
+        var.registers([u'body', u'node', u'i', u'param', u'params', u'key', u'paramMap'])
+        var.put(u'params', Js([]))
+        PyJs_Object_131_ = Js({})
+        var.put(u'paramMap', PyJs_Object_131_)
         var.put(u'node', var.get(u'Node').create())
         var.get(u'expectKeyword')(Js(u'catch'))
         var.get(u'expect')(Js(u'('))
         if var.get(u'match')(Js(u')')):
             var.get(u'throwUnexpectedToken')(var.get(u'lookahead'))
-        var.put(u'param', var.get(u'parsePattern')())
+        var.put(u'param', var.get(u'parsePattern')(var.get(u'params')))
+        #for JS loop
+        var.put(u'i', Js(0.0))
+        while (var.get(u'i')<var.get(u'params').get(u'length')):
+            try:
+                var.put(u'key', (Js(u'$')+var.get(u'params').get(var.get(u'i')).get(u'value')))
+                if var.get(u'Object').get(u'prototype').get(u'hasOwnProperty').callprop(u'call', var.get(u'paramMap'), var.get(u'key')):
+                    var.get(u'tolerateError')(var.get(u'Messages').get(u'DuplicateBinding'), var.get(u'params').get(var.get(u'i')).get(u'value'))
+                var.get(u'paramMap').put(var.get(u'key'), var.get(u'true'))
+            finally:
+                    (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
         if (var.get(u'strict') and var.get(u'isRestrictedWord')(var.get(u'param').get(u'name'))):
             var.get(u'tolerateError')(var.get(u'Messages').get(u'StrictCatchVariable'))
         var.get(u'expect')(Js(u')'))
@@ -1328,12 +1478,18 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     @Js
     def PyJsHoisted_parseArguments_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'args'])
+        var.registers([u'expr', u'args'])
         var.put(u'args', Js([]))
         var.get(u'expect')(Js(u'('))
         if var.get(u'match')(Js(u')')).neg():
             while (var.get(u'startIndex')<var.get(u'length')):
-                var.get(u'args').callprop(u'push', var.get(u'isolateCoverGrammar')(var.get(u'parseAssignmentExpression')))
+                if var.get(u'match')(Js(u'...')):
+                    var.put(u'expr', var.get(u'Node').create())
+                    var.get(u'lex')()
+                    var.get(u'expr').callprop(u'finishSpreadElement', var.get(u'isolateCoverGrammar')(var.get(u'parseAssignmentExpression')))
+                else:
+                    var.put(u'expr', var.get(u'isolateCoverGrammar')(var.get(u'parseAssignmentExpression')))
+                var.get(u'args').callprop(u'push', var.get(u'expr'))
                 if var.get(u'match')(Js(u')')):
                     break
                 var.get(u'expectCommaSeparator')()
@@ -1344,44 +1500,49 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     @Js
     def PyJsHoisted_testRegExp_(pattern, flags, this, arguments, var=var):
         var = Scope({u'this':this, u'pattern':pattern, u'flags':flags, u'arguments':arguments}, var)
-        var.registers([u'tmp', u'pattern', u'flags'])
+        var.registers([u'tmp', u'pattern', u'flags', u'astralSubstitute'])
+        var.put(u'astralSubstitute', Js(u'\uffff'))
         var.put(u'tmp', var.get(u'pattern'))
         if (var.get(u'flags').callprop(u'indexOf', Js(u'u'))>=Js(0.0)):
             @Js
-            def PyJs_anonymous_26_(PyJsArg_2430_, PyJsArg_2431_, this, arguments, var=var):
-                var = Scope({u'this':this, u'arguments':arguments, u'$0':PyJsArg_2430_, u'$1':PyJsArg_2431_}, var)
-                var.registers([u'$0', u'$1'])
-                if (var.get(u'parseInt')(var.get(u'$1'), Js(16.0))<=Js(1114111)):
-                    return Js(u'x')
-                var.get(u'throwUnexpectedToken')(var.get(u"null"), var.get(u'Messages').get(u'InvalidRegExp'))
-            PyJs_anonymous_26_.func_name = u'anonymous'
-            var.put(u'tmp', var.get(u'tmp').callprop(u'replace', JsRegExp(u'/\\\\u\\{([0-9a-fA-F]+)\\}/g'), PyJs_anonymous_26_).callprop(u'replace', JsRegExp(u'/\\\\u([a-fA-F0-9]{4})|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]/g'), Js(u'x')))
+            def PyJs_anonymous_26_(PyJsArg_2430_, PyJsArg_2431_, PyJsArg_2432_, this, arguments, var=var):
+                var = Scope({u'this':this, u'$2':PyJsArg_2432_, u'arguments':arguments, u'$0':PyJsArg_2430_, u'$1':PyJsArg_2431_}, var)
+                var.registers([u'codePoint', u'$2', u'$0', u'$1'])
+                var.put(u'codePoint', var.get(u'parseInt')((var.get(u'$1') or var.get(u'$2')), Js(16.0)))
+                if (var.get(u'codePoint')>Js(1114111)):
+                    var.get(u'throwUnexpectedToken')(var.get(u"null"), var.get(u'Messages').get(u'InvalidRegExp'))
+                if (var.get(u'codePoint')<=Js(65535)):
+                    return var.get(u'String').callprop(u'fromCharCode', var.get(u'codePoint'))
+                return var.get(u'astralSubstitute')
+            PyJs_anonymous_26_._set_name(u'anonymous')
+            var.put(u'tmp', var.get(u'tmp').callprop(u'replace', JsRegExp(u'/\\u{([0-9a-fA-F]+)}|\\u([a-fA-F0-9]{4})/g'), PyJs_anonymous_26_).callprop(u'replace', JsRegExp(u'/[\ud800-\udbff][\udc00-\udfff]/g'), var.get(u'astralSubstitute')))
         try:
-            var.get(u'RegExp')(var.get(u'tmp'))
+            #var.get(u'RegExp')(var.get(u'tmp')) todo this somehow fails...
+            pass
         except PyJsException as PyJsTempException:
-            PyJsHolder_65_51610080 = var.own.get(u'e')
+            PyJsHolder_65_32046955 = var.own.get(u'e')
             var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
             try:
                 var.get(u'throwUnexpectedToken')(var.get(u"null"), var.get(u'Messages').get(u'InvalidRegExp'))
             finally:
-                if PyJsHolder_65_51610080 is not None:
-                    var.own[u'e'] = PyJsHolder_65_51610080
+                if PyJsHolder_65_32046955 is not None:
+                    var.own[u'e'] = PyJsHolder_65_32046955
                 else:
                     del var.own[u'e']
-                del PyJsHolder_65_51610080
+                del PyJsHolder_65_32046955
         try:
             return var.get(u'RegExp').create(var.get(u'pattern'), var.get(u'flags'))
         except PyJsException as PyJsTempException:
-            PyJsHolder_657863657074696f6e_30067606 = var.own.get(u'exception')
+            PyJsHolder_657863657074696f6e_52927013 = var.own.get(u'exception')
             var.force_own_put(u'exception', PyExceptionToJs(PyJsTempException))
             try:
                 return var.get(u"null")
             finally:
-                if PyJsHolder_657863657074696f6e_30067606 is not None:
-                    var.own[u'exception'] = PyJsHolder_657863657074696f6e_30067606
+                if PyJsHolder_657863657074696f6e_52927013 is not None:
+                    var.own[u'exception'] = PyJsHolder_657863657074696f6e_52927013
                 else:
                     del var.own[u'exception']
-                del PyJsHolder_657863657074696f6e_30067606
+                del PyJsHolder_657863657074696f6e_52927013
     PyJsHoisted_testRegExp_.func_name = u'testRegExp'
     var.put(u'testRegExp', PyJsHoisted_testRegExp_)
     @Js
@@ -1507,23 +1668,6 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     PyJsHoisted_parseStatement_.func_name = u'parseStatement'
     var.put(u'parseStatement', PyJsHoisted_parseStatement_)
     @Js
-    def PyJsHoisted_parseObjectInitialiser_(this, arguments, var=var):
-        var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'node', u'hasProto', u'properties'])
-        var.put(u'properties', Js([]))
-        PyJs_Object_114_ = Js({u'value':Js(False)})
-        var.put(u'hasProto', PyJs_Object_114_)
-        var.put(u'node', var.get(u'Node').create())
-        var.get(u'expect')(Js(u'{'))
-        while var.get(u'match')(Js(u'}')).neg():
-            var.get(u'properties').callprop(u'push', var.get(u'parseObjectProperty')(var.get(u'hasProto')))
-            if var.get(u'match')(Js(u'}')).neg():
-                var.get(u'expectCommaSeparator')()
-        var.get(u'expect')(Js(u'}'))
-        return var.get(u'node').callprop(u'finishObjectExpression', var.get(u'properties'))
-    PyJsHoisted_parseObjectInitialiser_.func_name = u'parseObjectInitialiser'
-    var.put(u'parseObjectInitialiser', PyJsHoisted_parseObjectInitialiser_)
-    @Js
     def PyJsHoisted_isLineTerminator_(ch, this, arguments, var=var):
         var = Scope({u'this':this, u'ch':ch, u'arguments':arguments}, var)
         var.registers([u'ch'])
@@ -1548,10 +1692,11 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.registers([u'specifiers'])
         var.put(u'specifiers', Js([]))
         var.get(u'expect')(Js(u'{'))
-        if var.get(u'match')(Js(u'}')).neg():
-            while 1:
-                var.get(u'specifiers').callprop(u'push', var.get(u'parseImportSpecifier')())
-                if not (var.get(u'match')(Js(u',')) and var.get(u'lex')()):
+        while var.get(u'match')(Js(u'}')).neg():
+            var.get(u'specifiers').callprop(u'push', var.get(u'parseImportSpecifier')())
+            if var.get(u'match')(Js(u'}')).neg():
+                var.get(u'expect')(Js(u','))
+                if var.get(u'match')(Js(u'}')):
                     break
         var.get(u'expect')(Js(u'}'))
         return var.get(u'specifiers')
@@ -1604,8 +1749,8 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.put(u'oldInSwitch', var.get(u'state').get(u'inSwitch'))
         var.put(u'oldInFunctionBody', var.get(u'state').get(u'inFunctionBody'))
         var.put(u'oldParenthesisCount', var.get(u'state').get(u'parenthesizedCount'))
-        PyJs_Object_127_ = Js({})
-        var.get(u'state').put(u'labelSet', PyJs_Object_127_)
+        PyJs_Object_132_ = Js({})
+        var.get(u'state').put(u'labelSet', PyJs_Object_132_)
         var.get(u'state').put(u'inIteration', Js(False))
         var.get(u'state').put(u'inSwitch', Js(False))
         var.get(u'state').put(u'inFunctionBody', var.get(u'true'))
@@ -1633,31 +1778,35 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     @Js
     def PyJsHoisted_advance_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'token', u'ch'])
+        var.registers([u'token', u'cp'])
         pass
         if (var.get(u'index')>=var.get(u'length')):
             PyJs_Object_37_ = Js({u'type':var.get(u'Token').get(u'EOF'),u'lineNumber':var.get(u'lineNumber'),u'lineStart':var.get(u'lineStart'),u'start':var.get(u'index'),u'end':var.get(u'index')})
             return PyJs_Object_37_
-        var.put(u'ch', var.get(u'source').callprop(u'charCodeAt', var.get(u'index')))
-        if var.get(u'isIdentifierStart')(var.get(u'ch')):
+        var.put(u'cp', var.get(u'source').callprop(u'charCodeAt', var.get(u'index')))
+        if var.get(u'isIdentifierStart')(var.get(u'cp')):
             var.put(u'token', var.get(u'scanIdentifier')())
             if (var.get(u'strict') and var.get(u'isStrictModeReservedWord')(var.get(u'token').get(u'value'))):
                 var.get(u'token').put(u'type', var.get(u'Token').get(u'Keyword'))
             return var.get(u'token')
-        if ((PyJsStrictEq(var.get(u'ch'),Js(40)) or PyJsStrictEq(var.get(u'ch'),Js(41))) or PyJsStrictEq(var.get(u'ch'),Js(59))):
+        if ((PyJsStrictEq(var.get(u'cp'),Js(40)) or PyJsStrictEq(var.get(u'cp'),Js(41))) or PyJsStrictEq(var.get(u'cp'),Js(59))):
             return var.get(u'scanPunctuator')()
-        if (PyJsStrictEq(var.get(u'ch'),Js(39)) or PyJsStrictEq(var.get(u'ch'),Js(34))):
+        if (PyJsStrictEq(var.get(u'cp'),Js(39)) or PyJsStrictEq(var.get(u'cp'),Js(34))):
             return var.get(u'scanStringLiteral')()
-        if PyJsStrictEq(var.get(u'ch'),Js(46)):
+        if PyJsStrictEq(var.get(u'cp'),Js(46)):
             if var.get(u'isDecimalDigit')(var.get(u'source').callprop(u'charCodeAt', (var.get(u'index')+Js(1.0)))):
                 return var.get(u'scanNumericLiteral')()
             return var.get(u'scanPunctuator')()
-        if var.get(u'isDecimalDigit')(var.get(u'ch')):
+        if var.get(u'isDecimalDigit')(var.get(u'cp')):
             return var.get(u'scanNumericLiteral')()
-        if (var.get(u'extra').get(u'tokenize') and PyJsStrictEq(var.get(u'ch'),Js(47))):
+        if (var.get(u'extra').get(u'tokenize') and PyJsStrictEq(var.get(u'cp'),Js(47))):
             return var.get(u'advanceSlash')()
-        if (PyJsStrictEq(var.get(u'ch'),Js(96)) or (PyJsStrictEq(var.get(u'ch'),Js(125)) and PyJsStrictEq(var.get(u'state').get(u'curlyStack').get((var.get(u'state').get(u'curlyStack').get(u'length')-Js(1.0))),Js(u'${')))):
+        if (PyJsStrictEq(var.get(u'cp'),Js(96)) or (PyJsStrictEq(var.get(u'cp'),Js(125)) and PyJsStrictEq(var.get(u'state').get(u'curlyStack').get((var.get(u'state').get(u'curlyStack').get(u'length')-Js(1.0))),Js(u'${')))):
             return var.get(u'scanTemplate')()
+        if ((var.get(u'cp')>=Js(55296)) and (var.get(u'cp')<Js(57343))):
+            var.put(u'cp', var.get(u'codePointAt')(var.get(u'index')))
+            if var.get(u'isIdentifierStart')(var.get(u'cp')):
+                return var.get(u'scanIdentifier')()
         return var.get(u'scanPunctuator')()
     PyJsHoisted_advance_.func_name = u'advance'
     var.put(u'advance', PyJsHoisted_advance_)
@@ -1678,34 +1827,6 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         return var.get(u'result')
     PyJsHoisted_inheritCoverGrammar_.func_name = u'inheritCoverGrammar'
     var.put(u'inheritCoverGrammar', PyJsHoisted_inheritCoverGrammar_)
-    @Js
-    def PyJsHoisted_parseArrayInitialiser_(this, arguments, var=var):
-        var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'node', u'elements', u'restSpread'])
-        var.put(u'elements', Js([]))
-        var.put(u'node', var.get(u'Node').create())
-        var.get(u'expect')(Js(u'['))
-        while var.get(u'match')(Js(u']')).neg():
-            if var.get(u'match')(Js(u',')):
-                var.get(u'lex')()
-                var.get(u'elements').callprop(u'push', var.get(u"null"))
-            else:
-                if var.get(u'match')(Js(u'...')):
-                    var.put(u'restSpread', var.get(u'Node').create())
-                    var.get(u'lex')()
-                    var.get(u'restSpread').callprop(u'finishSpreadElement', var.get(u'inheritCoverGrammar')(var.get(u'parseAssignmentExpression')))
-                    if var.get(u'match')(Js(u']')).neg():
-                        var.put(u'isAssignmentTarget', var.put(u'isBindingElement', Js(False)))
-                        var.get(u'expect')(Js(u','))
-                    var.get(u'elements').callprop(u'push', var.get(u'restSpread'))
-                else:
-                    var.get(u'elements').callprop(u'push', var.get(u'inheritCoverGrammar')(var.get(u'parseAssignmentExpression')))
-                    if var.get(u'match')(Js(u']')).neg():
-                        var.get(u'expect')(Js(u','))
-        var.get(u'lex')()
-        return var.get(u'node').callprop(u'finishArrayExpression', var.get(u'elements'))
-    PyJsHoisted_parseArrayInitialiser_.func_name = u'parseArrayInitialiser'
-    var.put(u'parseArrayInitialiser', PyJsHoisted_parseArrayInitialiser_)
     @Js
     def PyJsHoisted_reinterpretAsCoverFormalsList_(expr, this, arguments, var=var):
         var = Scope({u'this':this, u'expr':expr, u'arguments':arguments}, var)
@@ -1729,39 +1850,58 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 return var.get(u"null")
             SWITCHED = True
             break
-        PyJs_Object_123_ = Js({})
-        PyJs_Object_122_ = Js({u'paramSet':PyJs_Object_123_})
-        var.put(u'options', PyJs_Object_122_)
+        PyJs_Object_127_ = Js({})
+        PyJs_Object_126_ = Js({u'paramSet':PyJs_Object_127_})
+        var.put(u'options', PyJs_Object_126_)
         #for JS loop
         PyJsComma(var.put(u'i', Js(0.0)),var.put(u'len', var.get(u'params').get(u'length')))
         while (var.get(u'i')<var.get(u'len')):
-            var.put(u'param', var.get(u'params').get(var.get(u'i')))
-            while 1:
-                SWITCHED = False
-                CONDITION = (var.get(u'param').get(u'type'))
-                if SWITCHED or PyJsStrictEq(CONDITION, var.get(u'Syntax').get(u'AssignmentPattern')):
+            try:
+                var.put(u'param', var.get(u'params').get(var.get(u'i')))
+                while 1:
+                    SWITCHED = False
+                    CONDITION = (var.get(u'param').get(u'type'))
+                    if SWITCHED or PyJsStrictEq(CONDITION, var.get(u'Syntax').get(u'AssignmentPattern')):
+                        SWITCHED = True
+                        var.get(u'params').put(var.get(u'i'), var.get(u'param').get(u'left'))
+                        if PyJsStrictEq(var.get(u'param').get(u'right').get(u'type'),var.get(u'Syntax').get(u'YieldExpression')):
+                            if var.get(u'param').get(u'right').get(u'argument'):
+                                var.get(u'throwUnexpectedToken')(var.get(u'lookahead'))
+                            var.get(u'param').get(u'right').put(u'type', var.get(u'Syntax').get(u'Identifier'))
+                            var.get(u'param').get(u'right').put(u'name', Js(u'yield'))
+                            var.get(u'param').get(u'right').delete(u'argument')
+                            var.get(u'param').get(u'right').delete(u'delegate')
+                        var.get(u'defaults').callprop(u'push', var.get(u'param').get(u'right'))
+                        var.put(u'defaultCount',var.get(u'defaultCount')+Js(1))
+                        var.get(u'checkPatternParam')(var.get(u'options'), var.get(u'param').get(u'left'))
+                        break
+                    if True:
+                        SWITCHED = True
+                        var.get(u'checkPatternParam')(var.get(u'options'), var.get(u'param'))
+                        var.get(u'params').put(var.get(u'i'), var.get(u'param'))
+                        var.get(u'defaults').callprop(u'push', var.get(u"null"))
+                        break
                     SWITCHED = True
-                    var.get(u'params').put(var.get(u'i'), var.get(u'param').get(u'left'))
-                    var.get(u'defaults').callprop(u'push', var.get(u'param').get(u'right'))
-                    var.put(u'defaultCount',var.get(u'defaultCount')+Js(1))
-                    var.get(u'checkPatternParam')(var.get(u'options'), var.get(u'param').get(u'left'))
                     break
-                if True:
-                    SWITCHED = True
-                    var.get(u'checkPatternParam')(var.get(u'options'), var.get(u'param'))
-                    var.get(u'params').put(var.get(u'i'), var.get(u'param'))
-                    var.get(u'defaults').callprop(u'push', var.get(u"null"))
-                    break
-                SWITCHED = True
-                break
-            var.put(u'i', Js(1.0), u'+')
+            finally:
+                    var.put(u'i', Js(1.0), u'+')
+        if (var.get(u'strict') or var.get(u'state').get(u'allowYield').neg()):
+            #for JS loop
+            PyJsComma(var.put(u'i', Js(0.0)),var.put(u'len', var.get(u'params').get(u'length')))
+            while (var.get(u'i')<var.get(u'len')):
+                try:
+                    var.put(u'param', var.get(u'params').get(var.get(u'i')))
+                    if PyJsStrictEq(var.get(u'param').get(u'type'),var.get(u'Syntax').get(u'YieldExpression')):
+                        var.get(u'throwUnexpectedToken')(var.get(u'lookahead'))
+                finally:
+                        var.put(u'i', Js(1.0), u'+')
         if PyJsStrictEq(var.get(u'options').get(u'message'),var.get(u'Messages').get(u'StrictParamDupe')):
             var.put(u'token', (var.get(u'options').get(u'stricted') if var.get(u'strict') else var.get(u'options').get(u'firstRestricted')))
             var.get(u'throwUnexpectedToken')(var.get(u'token'), var.get(u'options').get(u'message'))
         if PyJsStrictEq(var.get(u'defaultCount'),Js(0.0)):
             var.put(u'defaults', Js([]))
-        PyJs_Object_124_ = Js({u'params':var.get(u'params'),u'defaults':var.get(u'defaults'),u'stricted':var.get(u'options').get(u'stricted'),u'firstRestricted':var.get(u'options').get(u'firstRestricted'),u'message':var.get(u'options').get(u'message')})
-        return PyJs_Object_124_
+        PyJs_Object_128_ = Js({u'params':var.get(u'params'),u'defaults':var.get(u'defaults'),u'stricted':var.get(u'options').get(u'stricted'),u'firstRestricted':var.get(u'options').get(u'firstRestricted'),u'message':var.get(u'options').get(u'message')})
+        return PyJs_Object_128_
     PyJsHoisted_reinterpretAsCoverFormalsList_.func_name = u'reinterpretAsCoverFormalsList'
     var.put(u'reinterpretAsCoverFormalsList', PyJsHoisted_reinterpretAsCoverFormalsList_)
     @Js
@@ -1849,6 +1989,8 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         pass
         var.put(u'startToken', var.get(u'lookahead'))
         var.put(u'token', var.get(u'lookahead'))
+        if (var.get(u'state').get(u'allowYield').neg() and var.get(u'matchKeyword')(Js(u'yield'))):
+            return var.get(u'parseYieldExpression')()
         var.put(u'expr', var.get(u'parseConditionalExpression')())
         if (PyJsStrictEq(var.get(u'expr').get(u'type'),var.get(u'PlaceHolders').get(u'ArrowParameterPlaceHolder')) or var.get(u'match')(Js(u'=>'))):
             var.put(u'isAssignmentTarget', var.put(u'isBindingElement', Js(False)))
@@ -1914,14 +2056,15 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     @Js
     def PyJsHoisted_parseLexicalBinding_(kind, options, this, arguments, var=var):
         var = Scope({u'this':this, u'kind':kind, u'options':options, u'arguments':arguments}, var)
-        var.registers([u'node', u'init', u'id', u'kind', u'options'])
+        var.registers([u'node', u'kind', u'options', u'init', u'params', u'id'])
         var.put(u'init', var.get(u"null"))
         var.put(u'node', var.get(u'Node').create())
-        var.put(u'id', var.get(u'parsePattern')())
+        var.put(u'params', Js([]))
+        var.put(u'id', var.get(u'parsePattern')(var.get(u'params')))
         if ((var.get(u'strict') and PyJsStrictEq(var.get(u'id').get(u'type'),var.get(u'Syntax').get(u'Identifier'))) and var.get(u'isRestrictedWord')(var.get(u'id').get(u'name'))):
             var.get(u'tolerateError')(var.get(u'Messages').get(u'StrictVarName'))
         if PyJsStrictEq(var.get(u'kind'),Js(u'const')):
-            if var.get(u'matchKeyword')(Js(u'in')).neg():
+            if (var.get(u'matchKeyword')(Js(u'in')).neg() and var.get(u'matchContextualKeyword')(Js(u'of')).neg()):
                 var.get(u'expect')(Js(u'='))
                 var.put(u'init', var.get(u'isolateCoverGrammar')(var.get(u'parseAssignmentExpression')))
         else:
@@ -1938,13 +2081,13 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         pass
         var.put(u'args', var.get(u'Array').get(u'prototype').get(u'slice').callprop(u'call', var.get(u'arguments'), Js(1.0)))
         @Js
-        def PyJs_anonymous_110_(whole, idx, this, arguments, var=var):
+        def PyJs_anonymous_113_(whole, idx, this, arguments, var=var):
             var = Scope({u'this':this, u'whole':whole, u'arguments':arguments, u'idx':idx}, var)
             var.registers([u'whole', u'idx'])
             var.get(u'assert')((var.get(u'idx')<var.get(u'args').get(u'length')), Js(u'Message reference must be in range'))
             return var.get(u'args').get(var.get(u'idx'))
-        PyJs_anonymous_110_.func_name = u'anonymous'
-        var.put(u'msg', var.get(u'messageFormat').callprop(u'replace', JsRegExp(u'/%(\\d)/g'), PyJs_anonymous_110_))
+        PyJs_anonymous_113_._set_name(u'anonymous')
+        var.put(u'msg', var.get(u'messageFormat').callprop(u'replace', JsRegExp(u'/%(d)/g'), PyJs_anonymous_113_))
         var.put(u'error', var.get(u'createError')(var.get(u'lineNumber'), var.get(u'lastIndex'), var.get(u'msg')))
         if var.get(u'extra').get(u'errors'):
             var.get(u'recordError')(var.get(u'error'))
@@ -1999,7 +2142,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.registers([u'start', u'type', u'id'])
         pass
         var.put(u'start', var.get(u'index'))
-        var.put(u'id', (var.get(u'getEscapedIdentifier')() if PyJsStrictEq(var.get(u'source').callprop(u'charCodeAt', var.get(u'index')),Js(92)) else var.get(u'getIdentifier')()))
+        var.put(u'id', (var.get(u'getComplexIdentifier')() if PyJsStrictEq(var.get(u'source').callprop(u'charCodeAt', var.get(u'index')),Js(92)) else var.get(u'getIdentifier')()))
         if PyJsStrictEq(var.get(u'id').get(u'length'),Js(1.0)):
             var.put(u'type', var.get(u'Token').get(u'Identifier'))
         else:
@@ -2062,17 +2205,23 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     @Js
     def PyJsHoisted_parseParam_(options, this, arguments, var=var):
         var = Scope({u'this':this, u'options':options, u'arguments':arguments}, var)
-        var.registers([u'token', u'def', u'param', u'options'])
-        pass
+        var.registers([u'i', u'param', u'token', u'params', u'options', u'def'])
+        var.put(u'params', Js([]))
         var.put(u'token', var.get(u'lookahead'))
         if PyJsStrictEq(var.get(u'token').get(u'value'),Js(u'...')):
-            var.put(u'param', var.get(u'parseRestElement')())
+            var.put(u'param', var.get(u'parseRestElement')(var.get(u'params')))
             var.get(u'validateParam')(var.get(u'options'), var.get(u'param').get(u'argument'), var.get(u'param').get(u'argument').get(u'name'))
             var.get(u'options').get(u'params').callprop(u'push', var.get(u'param'))
             var.get(u'options').get(u'defaults').callprop(u'push', var.get(u"null"))
             return Js(False)
-        var.put(u'param', var.get(u'parsePatternWithDefault')())
-        var.get(u'validateParam')(var.get(u'options'), var.get(u'token'), var.get(u'token').get(u'value'))
+        var.put(u'param', var.get(u'parsePatternWithDefault')(var.get(u'params')))
+        #for JS loop
+        var.put(u'i', Js(0.0))
+        while (var.get(u'i')<var.get(u'params').get(u'length')):
+            try:
+                var.get(u'validateParam')(var.get(u'options'), var.get(u'params').get(var.get(u'i')), var.get(u'params').get(var.get(u'i')).get(u'value'))
+            finally:
+                    (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
         if PyJsStrictEq(var.get(u'param').get(u'type'),var.get(u'Syntax').get(u'AssignmentPattern')):
             var.put(u'def', var.get(u'param').get(u'right'))
             var.put(u'param', var.get(u'param').get(u'left'))
@@ -2088,6 +2237,13 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.registers([u'node', u'args', u'callee'])
         var.put(u'node', var.get(u'Node').create())
         var.get(u'expectKeyword')(Js(u'new'))
+        if var.get(u'match')(Js(u'.')):
+            var.get(u'lex')()
+            if (PyJsStrictEq(var.get(u'lookahead').get(u'type'),var.get(u'Token').get(u'Identifier')) and PyJsStrictEq(var.get(u'lookahead').get(u'value'),Js(u'target'))):
+                if var.get(u'state').get(u'inFunctionBody'):
+                    var.get(u'lex')()
+                    return var.get(u'node').callprop(u'finishMetaProperty', Js(u'new'), Js(u'target'))
+            var.get(u'throwUnexpectedToken')(var.get(u'lookahead'))
         var.put(u'callee', var.get(u'isolateCoverGrammar')(var.get(u'parseLeftHandSideExpression')))
         var.put(u'args', (var.get(u'parseArguments')() if var.get(u'match')(Js(u'(')) else Js([])))
         var.put(u'isAssignmentTarget', var.put(u'isBindingElement', Js(False)))
@@ -2181,14 +2337,14 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     PyJsHoisted_parseWithStatement_.func_name = u'parseWithStatement'
     var.put(u'parseWithStatement', PyJsHoisted_parseWithStatement_)
     @Js
-    def PyJsHoisted_parseObjectPattern_(this, arguments, var=var):
-        var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'node', u'properties'])
+    def PyJsHoisted_parseObjectPattern_(params, this, arguments, var=var):
+        var = Scope({u'this':this, u'params':params, u'arguments':arguments}, var)
+        var.registers([u'node', u'params', u'properties'])
         var.put(u'node', var.get(u'Node').create())
         var.put(u'properties', Js([]))
         var.get(u'expect')(Js(u'{'))
         while var.get(u'match')(Js(u'}')).neg():
-            var.get(u'properties').callprop(u'push', var.get(u'parsePropertyPattern')())
+            var.get(u'properties').callprop(u'push', var.get(u'parsePropertyPattern')(var.get(u'params')))
             if var.get(u'match')(Js(u'}')).neg():
                 var.get(u'expect')(Js(u','))
         var.get(u'lex')()
@@ -2333,13 +2489,13 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.put(u'startLineStart', var.get(u'lineStart'))
         var.put(u'length', var.get(u'source').get(u'length'))
         var.put(u'lookahead', var.get(u"null"))
-        PyJs_Object_134_ = Js({})
-        PyJs_Object_133_ = Js({u'allowIn':var.get(u'true'),u'labelSet':PyJs_Object_134_,u'inFunctionBody':Js(False),u'inIteration':Js(False),u'inSwitch':Js(False),u'lastCommentStart':(-Js(1.0)),u'curlyStack':Js([])})
-        var.put(u'state', PyJs_Object_133_)
-        PyJs_Object_135_ = Js({})
-        var.put(u'extra', PyJs_Object_135_)
-        PyJs_Object_136_ = Js({})
-        var.put(u'options', (var.get(u'options') or PyJs_Object_136_))
+        PyJs_Object_139_ = Js({})
+        PyJs_Object_138_ = Js({u'allowIn':var.get(u'true'),u'allowYield':var.get(u'true'),u'labelSet':PyJs_Object_139_,u'inFunctionBody':Js(False),u'inIteration':Js(False),u'inSwitch':Js(False),u'lastCommentStart':(-Js(1.0)),u'curlyStack':Js([])})
+        var.put(u'state', PyJs_Object_138_)
+        PyJs_Object_140_ = Js({})
+        var.put(u'extra', PyJs_Object_140_)
+        PyJs_Object_141_ = Js({})
+        var.put(u'options', (var.get(u'options') or PyJs_Object_141_))
         var.get(u'options').put(u'tokens', var.get(u'true'))
         var.get(u'extra').put(u'tokens', Js([]))
         var.get(u'extra').put(u'tokenize', var.get(u'true'))
@@ -2360,7 +2516,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 try:
                     var.get(u'lex')()
                 except PyJsException as PyJsTempException:
-                    PyJsHolder_6c65784572726f72_11098557 = var.own.get(u'lexError')
+                    PyJsHolder_6c65784572726f72_89705948 = var.own.get(u'lexError')
                     var.force_own_put(u'lexError', PyExceptionToJs(PyJsTempException))
                     try:
                         if var.get(u'extra').get(u'errors'):
@@ -2370,11 +2526,11 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                             PyJsTempException = JsToPyException(var.get(u'lexError'))
                             raise PyJsTempException
                     finally:
-                        if PyJsHolder_6c65784572726f72_11098557 is not None:
-                            var.own[u'lexError'] = PyJsHolder_6c65784572726f72_11098557
+                        if PyJsHolder_6c65784572726f72_89705948 is not None:
+                            var.own[u'lexError'] = PyJsHolder_6c65784572726f72_89705948
                         else:
                             del var.own[u'lexError']
-                        del PyJsHolder_6c65784572726f72_11098557
+                        del PyJsHolder_6c65784572726f72_89705948
             var.get(u'filterTokenLocation')()
             var.put(u'tokens', var.get(u'extra').get(u'tokens'))
             if PyJsStrictNeq(var.get(u'extra').get(u'comments').typeof(),Js(u'undefined')):
@@ -2382,20 +2538,20 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
             if PyJsStrictNeq(var.get(u'extra').get(u'errors').typeof(),Js(u'undefined')):
                 var.get(u'tokens').put(u'errors', var.get(u'extra').get(u'errors'))
         except PyJsException as PyJsTempException:
-            PyJsHolder_65_11489438 = var.own.get(u'e')
+            PyJsHolder_65_64624640 = var.own.get(u'e')
             var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
             try:
                 PyJsTempException = JsToPyException(var.get(u'e'))
                 raise PyJsTempException
             finally:
-                if PyJsHolder_65_11489438 is not None:
-                    var.own[u'e'] = PyJsHolder_65_11489438
+                if PyJsHolder_65_64624640 is not None:
+                    var.own[u'e'] = PyJsHolder_65_64624640
                 else:
                     del var.own[u'e']
-                del PyJsHolder_65_11489438
+                del PyJsHolder_65_64624640
         finally:
-            PyJs_Object_137_ = Js({})
-            var.put(u'extra', PyJs_Object_137_)
+            PyJs_Object_142_ = Js({})
+            var.put(u'extra', PyJs_Object_142_)
         return var.get(u'tokens')
     PyJsHoisted_tokenize_.func_name = u'tokenize'
     var.put(u'tokenize', PyJsHoisted_tokenize_)
@@ -2458,9 +2614,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     PyJsHoisted_parseObjectPropertyKey_.func_name = u'parseObjectPropertyKey'
     var.put(u'parseObjectPropertyKey', PyJsHoisted_parseObjectPropertyKey_)
     @Js
-    def PyJsHoisted_parseArrayPattern_(this, arguments, var=var):
-        var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'node', u'elements', u'restNode', u'rest'])
+    def PyJsHoisted_parseArrayPattern_(params, this, arguments, var=var):
+        var = Scope({u'this':this, u'params':params, u'arguments':arguments}, var)
+        var.registers([u'node', u'elements', u'params', u'restNode', u'rest'])
         var.put(u'node', var.get(u'Node').create())
         var.put(u'elements', Js([]))
         var.get(u'expect')(Js(u'['))
@@ -2472,11 +2628,12 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 if var.get(u'match')(Js(u'...')):
                     var.put(u'restNode', var.get(u'Node').create())
                     var.get(u'lex')()
-                    var.put(u'rest', var.get(u'parseVariableIdentifier')())
+                    var.get(u'params').callprop(u'push', var.get(u'lookahead'))
+                    var.put(u'rest', var.get(u'parseVariableIdentifier')(var.get(u'params')))
                     var.get(u'elements').callprop(u'push', var.get(u'restNode').callprop(u'finishRestElement', var.get(u'rest')))
                     break
                 else:
-                    var.get(u'elements').callprop(u'push', var.get(u'parsePatternWithDefault')())
+                    var.get(u'elements').callprop(u'push', var.get(u'parsePatternWithDefault')(var.get(u'params')))
                 if var.get(u'match')(Js(u']')).neg():
                     var.get(u'expect')(Js(u','))
         var.get(u'expect')(Js(u']'))
@@ -2538,6 +2695,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         else:
             var.put(u'expr', var.get(u'inheritCoverGrammar')((var.get(u'parseNewExpression') if var.get(u'matchKeyword')(Js(u'new')) else var.get(u'parsePrimaryExpression'))))
         #for JS loop
+
         while 1:
             if var.get(u'match')(Js(u'.')):
                 var.put(u'isBindingElement', Js(False))
@@ -2562,11 +2720,18 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                             var.put(u'expr', var.get(u'WrappingNode').create(var.get(u'startToken')).callprop(u'finishTaggedTemplateExpression', var.get(u'expr'), var.get(u'quasi')))
                         else:
                             break
-        
+
         var.get(u'state').put(u'allowIn', var.get(u'previousAllowIn'))
         return var.get(u'expr')
     PyJsHoisted_parseLeftHandSideExpressionAllowCall_.func_name = u'parseLeftHandSideExpressionAllowCall'
     var.put(u'parseLeftHandSideExpressionAllowCall', PyJsHoisted_parseLeftHandSideExpressionAllowCall_)
+    @Js
+    def PyJsHoisted_fromCodePoint_(cp, this, arguments, var=var):
+        var = Scope({u'this':this, u'cp':cp, u'arguments':arguments}, var)
+        var.registers([u'cp'])
+        return (var.get(u'String').callprop(u'fromCharCode', var.get(u'cp')) if (var.get(u'cp')<Js(65536)) else (var.get(u'String').callprop(u'fromCharCode', (Js(55296)+((var.get(u'cp')-Js(65536))>>Js(10.0))))+var.get(u'String').callprop(u'fromCharCode', (Js(56320)+((var.get(u'cp')-Js(65536))&Js(1023.0))))))
+    PyJsHoisted_fromCodePoint_.func_name = u'fromCodePoint'
+    var.put(u'fromCodePoint', PyJsHoisted_fromCodePoint_)
     @Js
     def PyJsHoisted_parseExportNamedDeclaration_(node, this, arguments, var=var):
         var = Scope({u'node':node, u'this':this, u'arguments':arguments}, var)
@@ -2597,11 +2762,12 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 SWITCHED = True
                 break
         var.get(u'expect')(Js(u'{'))
-        if var.get(u'match')(Js(u'}')).neg():
-            while 1:
-                var.put(u'isExportFromIdentifier', (var.get(u'isExportFromIdentifier') or var.get(u'matchKeyword')(Js(u'default'))))
-                var.get(u'specifiers').callprop(u'push', var.get(u'parseExportSpecifier')())
-                if not (var.get(u'match')(Js(u',')) and var.get(u'lex')()):
+        while var.get(u'match')(Js(u'}')).neg():
+            var.put(u'isExportFromIdentifier', (var.get(u'isExportFromIdentifier') or var.get(u'matchKeyword')(Js(u'default'))))
+            var.get(u'specifiers').callprop(u'push', var.get(u'parseExportSpecifier')())
+            if var.get(u'match')(Js(u'}')).neg():
+                var.get(u'expect')(Js(u','))
+                if var.get(u'match')(Js(u'}')):
                     break
         var.get(u'expect')(Js(u'}'))
         if var.get(u'matchContextualKeyword')(Js(u'from')):
@@ -2695,6 +2861,20 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     PyJsHoisted_parseDoWhileStatement_.func_name = u'parseDoWhileStatement'
     var.put(u'parseDoWhileStatement', PyJsHoisted_parseDoWhileStatement_)
     @Js
+    def PyJsHoisted_codePointAt_(i, this, arguments, var=var):
+        var = Scope({u'i':i, u'this':this, u'arguments':arguments}, var)
+        var.registers([u'i', u'second', u'cp', u'first'])
+        pass
+        var.put(u'cp', var.get(u'source').callprop(u'charCodeAt', var.get(u'i')))
+        if ((var.get(u'cp')>=Js(55296)) and (var.get(u'cp')<=Js(56319))):
+            var.put(u'second', var.get(u'source').callprop(u'charCodeAt', (var.get(u'i')+Js(1.0))))
+            if ((var.get(u'second')>=Js(56320)) and (var.get(u'second')<=Js(57343))):
+                var.put(u'first', var.get(u'cp'))
+                var.put(u'cp', (((((var.get(u'first')-Js(55296))*Js(1024))+var.get(u'second'))-Js(56320))+Js(65536)))
+        return var.get(u'cp')
+    PyJsHoisted_codePointAt_.func_name = u'codePointAt'
+    var.put(u'codePointAt', PyJsHoisted_codePointAt_)
+    @Js
     def PyJsHoisted_scanHexEscape_(prefix, this, arguments, var=var):
         var = Scope({u'this':this, u'prefix':prefix, u'arguments':arguments}, var)
         var.registers([u'i', u'prefix', u'ch', u'len', u'code'])
@@ -2703,12 +2883,14 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         #for JS loop
         var.put(u'i', Js(0.0))
         while (var.get(u'i')<var.get(u'len')):
-            if ((var.get(u'index')<var.get(u'length')) and var.get(u'isHexDigit')(var.get(u'source').get(var.get(u'index')))):
-                var.put(u'ch', var.get(u'source').get((var.put(u'index',var.get(u'index')+Js(1))-Js(1))))
-                var.put(u'code', ((var.get(u'code')*Js(16.0))+Js(u'0123456789abcdef').callprop(u'indexOf', var.get(u'ch').callprop(u'toLowerCase'))))
-            else:
-                return Js(u'')
-            var.put(u'i',var.get(u'i')+Js(1))
+            try:
+                if ((var.get(u'index')<var.get(u'length')) and var.get(u'isHexDigit')(var.get(u'source').get(var.get(u'index')))):
+                    var.put(u'ch', var.get(u'source').get((var.put(u'index',var.get(u'index')+Js(1))-Js(1))))
+                    var.put(u'code', ((var.get(u'code')*Js(16.0))+Js(u'0123456789abcdef').callprop(u'indexOf', var.get(u'ch').callprop(u'toLowerCase'))))
+                else:
+                    return Js(u'')
+            finally:
+                    var.put(u'i',var.get(u'i')+Js(1))
         return var.get(u'String').callprop(u'fromCharCode', var.get(u'code'))
     PyJsHoisted_scanHexEscape_.func_name = u'scanHexEscape'
     var.put(u'scanHexEscape', PyJsHoisted_scanHexEscape_)
@@ -2882,13 +3064,12 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.put(u'startLineStart', var.get(u'lineStart'))
         var.put(u'length', var.get(u'source').get(u'length'))
         var.put(u'lookahead', var.get(u"null"))
-        PyJs_Object_139_ = Js({})
-        PyJs_Object_138_ = Js({u'allowIn':var.get(u'true'),u'labelSet':PyJs_Object_139_,u'inFunctionBody':Js(False),u'inIteration':Js(False),u'inSwitch':Js(False),u'lastCommentStart':(-Js(1.0)),u'curlyStack':Js([])})
-        var.put(u'state', PyJs_Object_138_)
-        var.put(u'sourceType', Js(u'script'))
+        PyJs_Object_144_ = Js({})
+        PyJs_Object_143_ = Js({u'allowIn':var.get(u'true'),u'allowYield':var.get(u'true'),u'labelSet':PyJs_Object_144_,u'inFunctionBody':Js(False),u'inIteration':Js(False),u'inSwitch':Js(False),u'lastCommentStart':(-Js(1.0)),u'curlyStack':Js([]),u'sourceType':Js(u'script')})
+        var.put(u'state', PyJs_Object_143_)
         var.put(u'strict', Js(False))
-        PyJs_Object_140_ = Js({})
-        var.put(u'extra', PyJs_Object_140_)
+        PyJs_Object_145_ = Js({})
+        var.put(u'extra', PyJs_Object_145_)
         if PyJsStrictNeq(var.get(u'options',throw=False).typeof(),Js(u'undefined')):
             var.get(u'extra').put(u'range', (PyJsStrictEq(var.get(u'options').get(u'range').typeof(),Js(u'boolean')) and var.get(u'options').get(u'range')))
             var.get(u'extra').put(u'loc', (PyJsStrictEq(var.get(u'options').get(u'loc').typeof(),Js(u'boolean')) and var.get(u'options').get(u'loc')))
@@ -2908,7 +3089,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 var.get(u'extra').put(u'trailingComments', Js([]))
                 var.get(u'extra').put(u'leadingComments', Js([]))
             if PyJsStrictEq(var.get(u'options').get(u'sourceType'),Js(u'module')):
-                var.put(u'sourceType', var.get(u'options').get(u'sourceType'))
+                var.get(u'state').put(u'sourceType', var.get(u'options').get(u'sourceType'))
                 var.put(u'strict', var.get(u'true'))
         try:
             var.put(u'program', var.get(u'parseProgram')())
@@ -2920,20 +3101,20 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
             if PyJsStrictNeq(var.get(u'extra').get(u'errors').typeof(),Js(u'undefined')):
                 var.get(u'program').put(u'errors', var.get(u'extra').get(u'errors'))
         except PyJsException as PyJsTempException:
-            PyJsHolder_65_98464870 = var.own.get(u'e')
+            PyJsHolder_65_26356063 = var.own.get(u'e')
             var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
             try:
                 PyJsTempException = JsToPyException(var.get(u'e'))
                 raise PyJsTempException
             finally:
-                if PyJsHolder_65_98464870 is not None:
-                    var.own[u'e'] = PyJsHolder_65_98464870
+                if PyJsHolder_65_26356063 is not None:
+                    var.own[u'e'] = PyJsHolder_65_26356063
                 else:
                     del var.own[u'e']
-                del PyJsHolder_65_98464870
+                del PyJsHolder_65_26356063
         finally:
-            PyJs_Object_141_ = Js({})
-            var.put(u'extra', PyJs_Object_141_)
+            PyJs_Object_146_ = Js({})
+            var.put(u'extra', PyJs_Object_146_)
         return var.get(u'program')
     PyJsHoisted_parse_.func_name = u'parse'
     var.put(u'parse', PyJsHoisted_parse_)
@@ -2959,6 +3140,23 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     PyJsHoisted_WrappingNode_.func_name = u'WrappingNode'
     var.put(u'WrappingNode', PyJsHoisted_WrappingNode_)
     @Js
+    def PyJsHoisted_parseObjectInitializer_(this, arguments, var=var):
+        var = Scope({u'this':this, u'arguments':arguments}, var)
+        var.registers([u'node', u'hasProto', u'properties'])
+        var.put(u'properties', Js([]))
+        PyJs_Object_117_ = Js({u'value':Js(False)})
+        var.put(u'hasProto', PyJs_Object_117_)
+        var.put(u'node', var.get(u'Node').create())
+        var.get(u'expect')(Js(u'{'))
+        while var.get(u'match')(Js(u'}')).neg():
+            var.get(u'properties').callprop(u'push', var.get(u'parseObjectProperty')(var.get(u'hasProto')))
+            if var.get(u'match')(Js(u'}')).neg():
+                var.get(u'expectCommaSeparator')()
+        var.get(u'expect')(Js(u'}'))
+        return var.get(u'node').callprop(u'finishObjectExpression', var.get(u'properties'))
+    PyJsHoisted_parseObjectInitializer_.func_name = u'parseObjectInitializer'
+    var.put(u'parseObjectInitializer', PyJsHoisted_parseObjectInitializer_)
+    @Js
     def PyJsHoisted_getIdentifier_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
         var.registers([u'start', u'ch'])
@@ -2968,7 +3166,11 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
             var.put(u'ch', var.get(u'source').callprop(u'charCodeAt', var.get(u'index')))
             if PyJsStrictEq(var.get(u'ch'),Js(92)):
                 var.put(u'index', var.get(u'start'))
-                return var.get(u'getEscapedIdentifier')()
+                return var.get(u'getComplexIdentifier')()
+            else:
+                if ((var.get(u'ch')>=Js(55296)) and (var.get(u'ch')<Js(57343))):
+                    var.put(u'index', var.get(u'start'))
+                    return var.get(u'getComplexIdentifier')()
             if var.get(u'isIdentifierPart')(var.get(u'ch')):
                 var.put(u'index',var.get(u'index')+Js(1))
             else:
@@ -3005,35 +3207,42 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     PyJsHoisted_parseSwitchCase_.func_name = u'parseSwitchCase'
     var.put(u'parseSwitchCase', PyJsHoisted_parseSwitchCase_)
     @Js
-    def PyJsHoisted_parsePropertyPattern_(this, arguments, var=var):
-        var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'node', u'init', u'computed', u'key'])
+    def PyJsHoisted_parsePropertyPattern_(params, this, arguments, var=var):
+        var = Scope({u'this':this, u'params':params, u'arguments':arguments}, var)
+        var.registers([u'node', u'computed', u'init', u'params', u'key', u'keyToken'])
         var.put(u'node', var.get(u'Node').create())
         var.put(u'computed', var.get(u'match')(Js(u'[')))
         if PyJsStrictEq(var.get(u'lookahead').get(u'type'),var.get(u'Token').get(u'Identifier')):
+            var.put(u'keyToken', var.get(u'lookahead'))
             var.put(u'key', var.get(u'parseVariableIdentifier')())
             if var.get(u'match')(Js(u'=')):
+                var.get(u'params').callprop(u'push', var.get(u'keyToken'))
                 var.get(u'lex')()
                 var.put(u'init', var.get(u'parseAssignmentExpression')())
-                return var.get(u'node').callprop(u'finishProperty', Js(u'init'), var.get(u'key'), Js(False), var.get(u'WrappingNode').create(var.get(u'key')).callprop(u'finishAssignmentPattern', var.get(u'key'), var.get(u'init')), Js(False), Js(False))
+                return var.get(u'node').callprop(u'finishProperty', Js(u'init'), var.get(u'key'), Js(False), var.get(u'WrappingNode').create(var.get(u'keyToken')).callprop(u'finishAssignmentPattern', var.get(u'key'), var.get(u'init')), Js(False), Js(False))
             else:
                 if var.get(u'match')(Js(u':')).neg():
+                    var.get(u'params').callprop(u'push', var.get(u'keyToken'))
                     return var.get(u'node').callprop(u'finishProperty', Js(u'init'), var.get(u'key'), Js(False), var.get(u'key'), Js(False), var.get(u'true'))
         else:
-            var.put(u'key', var.get(u'parseObjectPropertyKey')())
+            var.put(u'key', var.get(u'parseObjectPropertyKey')(var.get(u'params')))
         var.get(u'expect')(Js(u':'))
-        var.put(u'init', var.get(u'parsePatternWithDefault')())
+        var.put(u'init', var.get(u'parsePatternWithDefault')(var.get(u'params')))
         return var.get(u'node').callprop(u'finishProperty', Js(u'init'), var.get(u'key'), var.get(u'computed'), var.get(u'init'), Js(False), Js(False))
     PyJsHoisted_parsePropertyPattern_.func_name = u'parsePropertyPattern'
     var.put(u'parsePropertyPattern', PyJsHoisted_parsePropertyPattern_)
     @Js
     def PyJsHoisted_parseFunctionDeclaration_(node, identifierIsOptional, this, arguments, var=var):
         var = Scope({u'node':node, u'identifierIsOptional':identifierIsOptional, u'this':this, u'arguments':arguments}, var)
-        var.registers([u'body', u'tmp', u'previousStrict', u'node', u'identifierIsOptional', u'message', u'stricted', u'token', u'params', u'defaults', u'firstRestricted', u'id'])
+        var.registers([u'body', u'tmp', u'previousStrict', u'node', u'identifierIsOptional', u'isGenerator', u'message', u'stricted', u'token', u'params', u'defaults', u'previousAllowYield', u'firstRestricted', u'id'])
         var.put(u'id', var.get(u"null"))
         var.put(u'params', Js([]))
         var.put(u'defaults', Js([]))
+        var.put(u'previousAllowYield', var.get(u'state').get(u'allowYield'))
         var.get(u'expectKeyword')(Js(u'function'))
+        var.put(u'isGenerator', var.get(u'match')(Js(u'*')))
+        if var.get(u'isGenerator'):
+            var.get(u'lex')()
         if (var.get(u'identifierIsOptional').neg() or var.get(u'match')(Js(u'(')).neg()):
             var.put(u'token', var.get(u'lookahead'))
             var.put(u'id', var.get(u'parseVariableIdentifier')())
@@ -3048,6 +3257,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                     if var.get(u'isStrictModeReservedWord')(var.get(u'token').get(u'value')):
                         var.put(u'firstRestricted', var.get(u'token'))
                         var.put(u'message', var.get(u'Messages').get(u'StrictReservedWord'))
+        var.get(u'state').put(u'allowYield', var.get(u'isGenerator').neg())
         var.put(u'tmp', var.get(u'parseParams')(var.get(u'firstRestricted')))
         var.put(u'params', var.get(u'tmp').get(u'params'))
         var.put(u'defaults', var.get(u'tmp').get(u'defaults'))
@@ -3062,7 +3272,8 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         if (var.get(u'strict') and var.get(u'stricted')):
             var.get(u'tolerateUnexpectedToken')(var.get(u'stricted'), var.get(u'message'))
         var.put(u'strict', var.get(u'previousStrict'))
-        return var.get(u'node').callprop(u'finishFunctionDeclaration', var.get(u'id'), var.get(u'params'), var.get(u'defaults'), var.get(u'body'))
+        var.get(u'state').put(u'allowYield', var.get(u'previousAllowYield'))
+        return var.get(u'node').callprop(u'finishFunctionDeclaration', var.get(u'id'), var.get(u'params'), var.get(u'defaults'), var.get(u'body'), var.get(u'isGenerator'))
     PyJsHoisted_parseFunctionDeclaration_.func_name = u'parseFunctionDeclaration'
     var.put(u'parseFunctionDeclaration', PyJsHoisted_parseFunctionDeclaration_)
     @Js
@@ -3107,10 +3318,10 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         if var.get(u'matchContextualKeyword')(Js(u'from')):
             var.get(u'throwError')(var.get(u'Messages').get(u'UnexpectedToken'), var.get(u'lookahead').get(u'value'))
         if var.get(u'match')(Js(u'{')):
-            var.put(u'expression', var.get(u'parseObjectInitialiser')())
+            var.put(u'expression', var.get(u'parseObjectInitializer')())
         else:
             if var.get(u'match')(Js(u'[')):
-                var.put(u'expression', var.get(u'parseArrayInitialiser')())
+                var.put(u'expression', var.get(u'parseArrayInitializer')())
             else:
                 var.put(u'expression', var.get(u'parseAssignmentExpression')())
         var.get(u'consumeSemicolon')()
@@ -3118,13 +3329,14 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     PyJsHoisted_parseExportDefaultDeclaration_.func_name = u'parseExportDefaultDeclaration'
     var.put(u'parseExportDefaultDeclaration', PyJsHoisted_parseExportDefaultDeclaration_)
     @Js
-    def PyJsHoisted_parseRestElement_(this, arguments, var=var):
-        var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'node', u'param'])
+    def PyJsHoisted_parseRestElement_(params, this, arguments, var=var):
+        var = Scope({u'this':this, u'params':params, u'arguments':arguments}, var)
+        var.registers([u'node', u'params', u'param'])
         var.put(u'node', var.get(u'Node').create())
         var.get(u'lex')()
         if var.get(u'match')(Js(u'{')):
             var.get(u'throwError')(var.get(u'Messages').get(u'ObjectPatternAsRestParameter'))
+        var.get(u'params').callprop(u'push', var.get(u'lookahead'))
         var.put(u'param', var.get(u'parseVariableIdentifier')())
         if var.get(u'match')(Js(u'=')):
             var.get(u'throwError')(var.get(u'Messages').get(u'DefaultRestParameter'))
@@ -3301,17 +3513,6 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     PyJsHoisted_parseLexicalDeclaration_.func_name = u'parseLexicalDeclaration'
     var.put(u'parseLexicalDeclaration', PyJsHoisted_parseLexicalDeclaration_)
     @Js
-    def PyJsHoisted_checkProto_(key, computed, hasProto, this, arguments, var=var):
-        var = Scope({u'this':this, u'hasProto':hasProto, u'computed':computed, u'key':key, u'arguments':arguments}, var)
-        var.registers([u'hasProto', u'computed', u'key'])
-        if (PyJsStrictEq(var.get(u'computed'),Js(False)) and ((PyJsStrictEq(var.get(u'key').get(u'type'),var.get(u'Syntax').get(u'Identifier')) and PyJsStrictEq(var.get(u'key').get(u'name'),Js(u'__proto__'))) or (PyJsStrictEq(var.get(u'key').get(u'type'),var.get(u'Syntax').get(u'Literal')) and PyJsStrictEq(var.get(u'key').get(u'value'),Js(u'__proto__'))))):
-            if var.get(u'hasProto').get(u'value'):
-                var.get(u'tolerateError')(var.get(u'Messages').get(u'DuplicateProtoProperty'))
-            else:
-                var.get(u'hasProto').put(u'value', var.get(u'true'))
-    PyJsHoisted_checkProto_.func_name = u'checkProto'
-    var.put(u'checkProto', PyJsHoisted_checkProto_)
-    @Js
     def PyJsHoisted_checkPatternParam_(options, param, this, arguments, var=var):
         var = Scope({u'this':this, u'options':options, u'param':param, u'arguments':arguments}, var)
         var.registers([u'i', u'options', u'param'])
@@ -3336,9 +3537,14 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 #for JS loop
                 var.put(u'i', Js(0.0))
                 while (var.get(u'i')<var.get(u'param').get(u'elements').get(u'length')):
-                    if PyJsStrictNeq(var.get(u'param').get(u'elements').get(var.get(u'i')),var.get(u"null")):
-                        var.get(u'checkPatternParam')(var.get(u'options'), var.get(u'param').get(u'elements').get(var.get(u'i')))
-                    (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
+                    try:
+                        if PyJsStrictNeq(var.get(u'param').get(u'elements').get(var.get(u'i')),var.get(u"null")):
+                            var.get(u'checkPatternParam')(var.get(u'options'), var.get(u'param').get(u'elements').get(var.get(u'i')))
+                    finally:
+                            (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
+                break
+            if SWITCHED or PyJsStrictEq(CONDITION, var.get(u'Syntax').get(u'YieldExpression')):
+                SWITCHED = True
                 break
             if True:
                 SWITCHED = True
@@ -3346,17 +3552,19 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 #for JS loop
                 var.put(u'i', Js(0.0))
                 while (var.get(u'i')<var.get(u'param').get(u'properties').get(u'length')):
-                    var.get(u'checkPatternParam')(var.get(u'options'), var.get(u'param').get(u'properties').get(var.get(u'i')).get(u'value'))
-                    (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
+                    try:
+                        var.get(u'checkPatternParam')(var.get(u'options'), var.get(u'param').get(u'properties').get(var.get(u'i')).get(u'value'))
+                    finally:
+                            (var.put(u'i',var.get(u'i')+Js(1))-Js(1))
                 break
             SWITCHED = True
             break
     PyJsHoisted_checkPatternParam_.func_name = u'checkPatternParam'
     var.put(u'checkPatternParam', PyJsHoisted_checkPatternParam_)
     @Js
-    def PyJsHoisted_parsePropertyFunction_(node, paramInfo, this, arguments, var=var):
-        var = Scope({u'node':node, u'this':this, u'paramInfo':paramInfo, u'arguments':arguments}, var)
-        var.registers([u'body', u'node', u'previousStrict', u'paramInfo'])
+    def PyJsHoisted_parsePropertyFunction_(node, paramInfo, isGenerator, this, arguments, var=var):
+        var = Scope({u'node':node, u'this':this, u'paramInfo':paramInfo, u'isGenerator':isGenerator, u'arguments':arguments}, var)
+        var.registers([u'body', u'node', u'previousStrict', u'isGenerator', u'paramInfo'])
         pass
         var.put(u'isAssignmentTarget', var.put(u'isBindingElement', Js(False)))
         var.put(u'previousStrict', var.get(u'strict'))
@@ -3366,7 +3574,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         if (var.get(u'strict') and var.get(u'paramInfo').get(u'stricted')):
             var.get(u'tolerateUnexpectedToken')(var.get(u'paramInfo').get(u'stricted'), var.get(u'paramInfo').get(u'message'))
         var.put(u'strict', var.get(u'previousStrict'))
-        return var.get(u'node').callprop(u'finishFunctionExpression', var.get(u"null"), var.get(u'paramInfo').get(u'params'), var.get(u'paramInfo').get(u'defaults'), var.get(u'body'))
+        return var.get(u'node').callprop(u'finishFunctionExpression', var.get(u"null"), var.get(u'paramInfo').get(u'params'), var.get(u'paramInfo').get(u'defaults'), var.get(u'body'), var.get(u'isGenerator'))
     PyJsHoisted_parsePropertyFunction_.func_name = u'parsePropertyFunction'
     var.put(u'parsePropertyFunction', PyJsHoisted_parsePropertyFunction_)
     @Js
@@ -3459,18 +3667,21 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     @Js
     def PyJsHoisted_parseArrowFunctionExpression_(options, node, this, arguments, var=var):
         var = Scope({u'node':node, u'this':this, u'options':options, u'arguments':arguments}, var)
-        var.registers([u'body', u'node', u'previousStrict', u'options'])
+        var.registers([u'body', u'node', u'previousStrict', u'options', u'previousAllowYield'])
         pass
         if var.get(u'hasLineTerminator'):
             var.get(u'tolerateUnexpectedToken')(var.get(u'lookahead'))
         var.get(u'expect')(Js(u'=>'))
         var.put(u'previousStrict', var.get(u'strict'))
+        var.put(u'previousAllowYield', var.get(u'state').get(u'allowYield'))
+        var.get(u'state').put(u'allowYield', var.get(u'true'))
         var.put(u'body', var.get(u'parseConciseBody')())
         if (var.get(u'strict') and var.get(u'options').get(u'firstRestricted')):
             var.get(u'throwUnexpectedToken')(var.get(u'options').get(u'firstRestricted'), var.get(u'options').get(u'message'))
         if (var.get(u'strict') and var.get(u'options').get(u'stricted')):
             var.get(u'tolerateUnexpectedToken')(var.get(u'options').get(u'stricted'), var.get(u'options').get(u'message'))
         var.put(u'strict', var.get(u'previousStrict'))
+        var.get(u'state').put(u'allowYield', var.get(u'previousAllowYield'))
         return var.get(u'node').callprop(u'finishArrowFunctionExpression', var.get(u'options').get(u'params'), var.get(u'options').get(u'defaults'), var.get(u'body'), PyJsStrictNeq(var.get(u'body').get(u'type'),var.get(u'Syntax').get(u'BlockStatement')))
     PyJsHoisted_parseArrowFunctionExpression_.func_name = u'parseArrowFunctionExpression'
     var.put(u'parseArrowFunctionExpression', PyJsHoisted_parseArrowFunctionExpression_)
@@ -3481,13 +3692,13 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         pass
         var.put(u'args', var.get(u'Array').get(u'prototype').get(u'slice').callprop(u'call', var.get(u'arguments'), Js(1.0)))
         @Js
-        def PyJs_anonymous_109_(whole, idx, this, arguments, var=var):
+        def PyJs_anonymous_112_(whole, idx, this, arguments, var=var):
             var = Scope({u'this':this, u'whole':whole, u'arguments':arguments, u'idx':idx}, var)
             var.registers([u'whole', u'idx'])
             var.get(u'assert')((var.get(u'idx')<var.get(u'args').get(u'length')), Js(u'Message reference must be in range'))
             return var.get(u'args').get(var.get(u'idx'))
-        PyJs_anonymous_109_.func_name = u'anonymous'
-        var.put(u'msg', var.get(u'messageFormat').callprop(u'replace', JsRegExp(u'/%(\\d)/g'), PyJs_anonymous_109_))
+        PyJs_anonymous_112_._set_name(u'anonymous')
+        var.put(u'msg', var.get(u'messageFormat').callprop(u'replace', JsRegExp(u'/%(d)/g'), PyJs_anonymous_112_))
         PyJsTempException = JsToPyException(var.get(u'createError')(var.get(u'lastLineNumber'), var.get(u'lastIndex'), var.get(u'msg')))
         raise PyJsTempException
     PyJsHoisted_throwError_.func_name = u'throwError'
@@ -3495,7 +3706,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     @Js
     def PyJsHoisted_scanUnicodeCodePointEscape_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([u'code', u'ch', u'cu2', u'cu1'])
+        var.registers([u'code', u'ch'])
         pass
         var.put(u'ch', var.get(u'source').get(var.get(u'index')))
         var.put(u'code', Js(0.0))
@@ -3508,11 +3719,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
             var.put(u'code', ((var.get(u'code')*Js(16.0))+Js(u'0123456789abcdef').callprop(u'indexOf', var.get(u'ch').callprop(u'toLowerCase'))))
         if ((var.get(u'code')>Js(1114111)) or PyJsStrictNeq(var.get(u'ch'),Js(u'}'))):
             var.get(u'throwUnexpectedToken')()
-        if (var.get(u'code')<=Js(65535)):
-            return var.get(u'String').callprop(u'fromCharCode', var.get(u'code'))
-        var.put(u'cu1', (((var.get(u'code')-Js(65536))>>Js(10.0))+Js(55296)))
-        var.put(u'cu2', (((var.get(u'code')-Js(65536))&Js(1023.0))+Js(56320)))
-        return var.get(u'String').callprop(u'fromCharCode', var.get(u'cu1'), var.get(u'cu2'))
+        return var.get(u'fromCodePoint')(var.get(u'code'))
     PyJsHoisted_scanUnicodeCodePointEscape_.func_name = u'scanUnicodeCodePointEscape'
     var.put(u'scanUnicodeCodePointEscape', PyJsHoisted_scanUnicodeCodePointEscape_)
     @Js
@@ -3543,8 +3750,8 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     def PyJsHoisted_scanRegExp_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
         var.registers([u'body', u'start', u'flags', u'value'])
-        var.put(u'scanning', var.get(u'true'))
         pass
+        var.put(u'scanning', var.get(u'true'))
         var.put(u'lookahead', var.get(u"null"))
         var.get(u'skipComment')()
         var.put(u'start', var.get(u'index'))
@@ -3571,18 +3778,16 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     PyJsHoisted_parseImportDefaultSpecifier_.func_name = u'parseImportDefaultSpecifier'
     var.put(u'parseImportDefaultSpecifier', PyJsHoisted_parseImportDefaultSpecifier_)
     @Js
-    def PyJsHoisted_parsePattern_(this, arguments, var=var):
-        var = Scope({u'this':this, u'arguments':arguments}, var)
-        var.registers([])
-        if PyJsStrictEq(var.get(u'lookahead').get(u'type'),var.get(u'Token').get(u'Identifier')):
-            return var.get(u'parseVariableIdentifier')()
+    def PyJsHoisted_parsePattern_(params, this, arguments, var=var):
+        var = Scope({u'this':this, u'params':params, u'arguments':arguments}, var)
+        var.registers([u'params'])
+        if var.get(u'match')(Js(u'[')):
+            return var.get(u'parseArrayPattern')(var.get(u'params'))
         else:
-            if var.get(u'match')(Js(u'[')):
-                return var.get(u'parseArrayPattern')()
-            else:
-                if var.get(u'match')(Js(u'{')):
-                    return var.get(u'parseObjectPattern')()
-        var.get(u'throwUnexpectedToken')(var.get(u'lookahead'))
+            if var.get(u'match')(Js(u'{')):
+                return var.get(u'parseObjectPattern')(var.get(u'params'))
+        var.get(u'params').callprop(u'push', var.get(u'lookahead'))
+        return var.get(u'parseVariableIdentifier')()
     PyJsHoisted_parsePattern_.func_name = u'parsePattern'
     var.put(u'parsePattern', PyJsHoisted_parsePattern_)
     @Js
@@ -3591,20 +3796,30 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.registers([u'node', u'token'])
         var.put(u'node', var.get(u'Node').create())
         var.put(u'token', var.get(u'lex')())
-        if PyJsStrictNeq(var.get(u'token').get(u'type'),var.get(u'Token').get(u'Identifier')):
-            if ((var.get(u'strict') and PyJsStrictEq(var.get(u'token').get(u'type'),var.get(u'Token').get(u'Keyword'))) and var.get(u'isStrictModeReservedWord')(var.get(u'token').get(u'value'))):
+        if (PyJsStrictEq(var.get(u'token').get(u'type'),var.get(u'Token').get(u'Keyword')) and PyJsStrictEq(var.get(u'token').get(u'value'),Js(u'yield'))):
+            if var.get(u'strict'):
                 var.get(u'tolerateUnexpectedToken')(var.get(u'token'), var.get(u'Messages').get(u'StrictReservedWord'))
-            else:
+            if var.get(u'state').get(u'allowYield').neg():
                 var.get(u'throwUnexpectedToken')(var.get(u'token'))
+        else:
+            if PyJsStrictNeq(var.get(u'token').get(u'type'),var.get(u'Token').get(u'Identifier')):
+                if ((var.get(u'strict') and PyJsStrictEq(var.get(u'token').get(u'type'),var.get(u'Token').get(u'Keyword'))) and var.get(u'isStrictModeReservedWord')(var.get(u'token').get(u'value'))):
+                    var.get(u'tolerateUnexpectedToken')(var.get(u'token'), var.get(u'Messages').get(u'StrictReservedWord'))
+                else:
+                    var.get(u'throwUnexpectedToken')(var.get(u'token'))
+            else:
+                if ((PyJsStrictEq(var.get(u'state').get(u'sourceType'),Js(u'module')) and PyJsStrictEq(var.get(u'token').get(u'type'),var.get(u'Token').get(u'Identifier'))) and PyJsStrictEq(var.get(u'token').get(u'value'),Js(u'await'))):
+                    var.get(u'tolerateUnexpectedToken')(var.get(u'token'))
         return var.get(u'node').callprop(u'finishIdentifier', var.get(u'token').get(u'value'))
     PyJsHoisted_parseVariableIdentifier_.func_name = u'parseVariableIdentifier'
     var.put(u'parseVariableIdentifier', PyJsHoisted_parseVariableIdentifier_)
     @Js
     def PyJsHoisted_parseForStatement_(node, this, arguments, var=var):
         var = Scope({u'node':node, u'this':this, u'arguments':arguments}, var)
-        var.registers([u'body', u'oldInIteration', u'kind', u'right', u'node', u'previousAllowIn', u'declarations', u'update', u'init', u'initSeq', u'test', u'initStartToken', u'left'])
+        var.registers([u'body', u'oldInIteration', u'kind', u'right', u'node', u'previousAllowIn', u'declarations', u'update', u'init', u'initSeq', u'test', u'forIn', u'initStartToken', u'left'])
         var.put(u'previousAllowIn', var.get(u'state').get(u'allowIn'))
         var.put(u'init', var.put(u'test', var.put(u'update', var.get(u"null"))))
+        var.put(u'forIn', var.get(u'true'))
         var.get(u'expectKeyword')(Js(u'for'))
         var.get(u'expect')(Js(u'('))
         if var.get(u'match')(Js(u';')):
@@ -3622,14 +3837,21 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                     var.put(u'right', var.get(u'parseExpression')())
                     var.put(u'init', var.get(u"null"))
                 else:
-                    var.get(u'expect')(Js(u';'))
+                    if ((PyJsStrictEq(var.get(u'init').get(u'declarations').get(u'length'),Js(1.0)) and PyJsStrictEq(var.get(u'init').get(u'declarations').get(u'0').get(u'init'),var.get(u"null"))) and var.get(u'matchContextualKeyword')(Js(u'of'))):
+                        var.get(u'lex')()
+                        var.put(u'left', var.get(u'init'))
+                        var.put(u'right', var.get(u'parseAssignmentExpression')())
+                        var.put(u'init', var.get(u"null"))
+                        var.put(u'forIn', Js(False))
+                    else:
+                        var.get(u'expect')(Js(u';'))
             else:
                 if (var.get(u'matchKeyword')(Js(u'const')) or var.get(u'matchKeyword')(Js(u'let'))):
                     var.put(u'init', var.get(u'Node').create())
                     var.put(u'kind', var.get(u'lex')().get(u'value'))
                     var.get(u'state').put(u'allowIn', Js(False))
-                    PyJs_Object_126_ = Js({u'inFor':var.get(u'true')})
-                    var.put(u'declarations', var.get(u'parseBindingList')(var.get(u'kind'), PyJs_Object_126_))
+                    PyJs_Object_130_ = Js({u'inFor':var.get(u'true')})
+                    var.put(u'declarations', var.get(u'parseBindingList')(var.get(u'kind'), PyJs_Object_130_))
                     var.get(u'state').put(u'allowIn', var.get(u'previousAllowIn'))
                     if ((PyJsStrictEq(var.get(u'declarations').get(u'length'),Js(1.0)) and PyJsStrictEq(var.get(u'declarations').get(u'0').get(u'init'),var.get(u"null"))) and var.get(u'matchKeyword')(Js(u'in'))):
                         var.put(u'init', var.get(u'init').callprop(u'finishLexicalDeclaration', var.get(u'declarations'), var.get(u'kind')))
@@ -3638,8 +3860,16 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                         var.put(u'right', var.get(u'parseExpression')())
                         var.put(u'init', var.get(u"null"))
                     else:
-                        var.get(u'consumeSemicolon')()
-                        var.put(u'init', var.get(u'init').callprop(u'finishLexicalDeclaration', var.get(u'declarations'), var.get(u'kind')))
+                        if ((PyJsStrictEq(var.get(u'declarations').get(u'length'),Js(1.0)) and PyJsStrictEq(var.get(u'declarations').get(u'0').get(u'init'),var.get(u"null"))) and var.get(u'matchContextualKeyword')(Js(u'of'))):
+                            var.put(u'init', var.get(u'init').callprop(u'finishLexicalDeclaration', var.get(u'declarations'), var.get(u'kind')))
+                            var.get(u'lex')()
+                            var.put(u'left', var.get(u'init'))
+                            var.put(u'right', var.get(u'parseAssignmentExpression')())
+                            var.put(u'init', var.get(u"null"))
+                            var.put(u'forIn', Js(False))
+                        else:
+                            var.get(u'consumeSemicolon')()
+                            var.put(u'init', var.get(u'init').callprop(u'finishLexicalDeclaration', var.get(u'declarations'), var.get(u'kind')))
                 else:
                     var.put(u'initStartToken', var.get(u'lookahead'))
                     var.get(u'state').put(u'allowIn', Js(False))
@@ -3654,13 +3884,23 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                         var.put(u'right', var.get(u'parseExpression')())
                         var.put(u'init', var.get(u"null"))
                     else:
-                        if var.get(u'match')(Js(u',')):
-                            var.put(u'initSeq', Js([var.get(u'init')]))
-                            while var.get(u'match')(Js(u',')):
-                                var.get(u'lex')()
-                                var.get(u'initSeq').callprop(u'push', var.get(u'isolateCoverGrammar')(var.get(u'parseAssignmentExpression')))
-                            var.put(u'init', var.get(u'WrappingNode').create(var.get(u'initStartToken')).callprop(u'finishSequenceExpression', var.get(u'initSeq')))
-                        var.get(u'expect')(Js(u';'))
+                        if var.get(u'matchContextualKeyword')(Js(u'of')):
+                            if var.get(u'isAssignmentTarget').neg():
+                                var.get(u'tolerateError')(var.get(u'Messages').get(u'InvalidLHSInForLoop'))
+                            var.get(u'lex')()
+                            var.get(u'reinterpretExpressionAsPattern')(var.get(u'init'))
+                            var.put(u'left', var.get(u'init'))
+                            var.put(u'right', var.get(u'parseAssignmentExpression')())
+                            var.put(u'init', var.get(u"null"))
+                            var.put(u'forIn', Js(False))
+                        else:
+                            if var.get(u'match')(Js(u',')):
+                                var.put(u'initSeq', Js([var.get(u'init')]))
+                                while var.get(u'match')(Js(u',')):
+                                    var.get(u'lex')()
+                                    var.get(u'initSeq').callprop(u'push', var.get(u'isolateCoverGrammar')(var.get(u'parseAssignmentExpression')))
+                                var.put(u'init', var.get(u'WrappingNode').create(var.get(u'initStartToken')).callprop(u'finishSequenceExpression', var.get(u'initSeq')))
+                            var.get(u'expect')(Js(u';'))
         if PyJsStrictEq(var.get(u'left',throw=False).typeof(),Js(u'undefined')):
             if var.get(u'match')(Js(u';')).neg():
                 var.put(u'test', var.get(u'parseExpression')())
@@ -3672,14 +3912,14 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u'state').put(u'inIteration', var.get(u'true'))
         var.put(u'body', var.get(u'isolateCoverGrammar')(var.get(u'parseStatement')))
         var.get(u'state').put(u'inIteration', var.get(u'oldInIteration'))
-        return (var.get(u'node').callprop(u'finishForStatement', var.get(u'init'), var.get(u'test'), var.get(u'update'), var.get(u'body')) if PyJsStrictEq(var.get(u'left',throw=False).typeof(),Js(u'undefined')) else var.get(u'node').callprop(u'finishForInStatement', var.get(u'left'), var.get(u'right'), var.get(u'body')))
+        return (var.get(u'node').callprop(u'finishForStatement', var.get(u'init'), var.get(u'test'), var.get(u'update'), var.get(u'body')) if PyJsStrictEq(var.get(u'left',throw=False).typeof(),Js(u'undefined')) else (var.get(u'node').callprop(u'finishForInStatement', var.get(u'left'), var.get(u'right'), var.get(u'body')) if var.get(u'forIn') else var.get(u'node').callprop(u'finishForOfStatement', var.get(u'left'), var.get(u'right'), var.get(u'body'))))
     PyJsHoisted_parseForStatement_.func_name = u'parseForStatement'
     var.put(u'parseForStatement', PyJsHoisted_parseForStatement_)
     @Js
     def PyJsHoisted_isIdentifierPart_(ch, this, arguments, var=var):
         var = Scope({u'this':this, u'ch':ch, u'arguments':arguments}, var)
         var.registers([u'ch'])
-        return ((((((PyJsStrictEq(var.get(u'ch'),Js(36)) or PyJsStrictEq(var.get(u'ch'),Js(95))) or ((var.get(u'ch')>=Js(65)) and (var.get(u'ch')<=Js(90)))) or ((var.get(u'ch')>=Js(97)) and (var.get(u'ch')<=Js(122)))) or ((var.get(u'ch')>=Js(48)) and (var.get(u'ch')<=Js(57)))) or PyJsStrictEq(var.get(u'ch'),Js(92))) or ((var.get(u'ch')>=Js(128)) and var.get(u'Regex').get(u'NonAsciiIdentifierPart').callprop(u'test', var.get(u'String').callprop(u'fromCharCode', var.get(u'ch')))))
+        return ((((((PyJsStrictEq(var.get(u'ch'),Js(36)) or PyJsStrictEq(var.get(u'ch'),Js(95))) or ((var.get(u'ch')>=Js(65)) and (var.get(u'ch')<=Js(90)))) or ((var.get(u'ch')>=Js(97)) and (var.get(u'ch')<=Js(122)))) or ((var.get(u'ch')>=Js(48)) and (var.get(u'ch')<=Js(57)))) or PyJsStrictEq(var.get(u'ch'),Js(92))) or ((var.get(u'ch')>=Js(128)) and var.get(u'Regex').get(u'NonAsciiIdentifierPart').callprop(u'test', var.get(u'fromCodePoint')(var.get(u'ch')))))
     PyJsHoisted_isIdentifierPart_.func_name = u'isIdentifierPart'
     var.put(u'isIdentifierPart', PyJsHoisted_isIdentifierPart_)
     @Js
@@ -3747,8 +3987,8 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     @Js
     def PyJsHoisted_tryParseMethodDefinition_(token, key, computed, node, this, arguments, var=var):
         var = Scope({u'node':node, u'token':token, u'computed':computed, u'key':key, u'this':this, u'arguments':arguments}, var)
-        var.registers([u'node', u'computed', u'value', u'token', u'key', u'methodNode', u'options'])
-        pass
+        var.registers([u'node', u'computed', u'value', u'token', u'params', u'key', u'previousAllowYield', u'methodNode', u'options'])
+        var.put(u'previousAllowYield', var.get(u'state').get(u'allowYield'))
         if PyJsStrictEq(var.get(u'token').get(u'type'),var.get(u'Token').get(u'Identifier')):
             if (PyJsStrictEq(var.get(u'token').get(u'value'),Js(u'get')) and var.get(u'lookaheadPropertyName')()):
                 var.put(u'computed', var.get(u'match')(Js(u'[')))
@@ -3756,8 +3996,10 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 var.put(u'methodNode', var.get(u'Node').create())
                 var.get(u'expect')(Js(u'('))
                 var.get(u'expect')(Js(u')'))
-                PyJs_Object_111_ = Js({u'params':Js([]),u'defaults':Js([]),u'stricted':var.get(u"null"),u'firstRestricted':var.get(u"null"),u'message':var.get(u"null")})
-                var.put(u'value', var.get(u'parsePropertyFunction')(var.get(u'methodNode'), PyJs_Object_111_))
+                var.get(u'state').put(u'allowYield', Js(False))
+                PyJs_Object_114_ = Js({u'params':Js([]),u'defaults':Js([]),u'stricted':var.get(u"null"),u'firstRestricted':var.get(u"null"),u'message':var.get(u"null")})
+                var.put(u'value', var.get(u'parsePropertyFunction')(var.get(u'methodNode'), PyJs_Object_114_, Js(False)))
+                var.get(u'state').put(u'allowYield', var.get(u'previousAllowYield'))
                 return var.get(u'node').callprop(u'finishProperty', Js(u'get'), var.get(u'key'), var.get(u'computed'), var.get(u'value'), Js(False), Js(False))
             else:
                 if (PyJsStrictEq(var.get(u'token').get(u'value'),Js(u'set')) and var.get(u'lookaheadPropertyName')()):
@@ -3765,19 +4007,35 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                     var.put(u'key', var.get(u'parseObjectPropertyKey')())
                     var.put(u'methodNode', var.get(u'Node').create())
                     var.get(u'expect')(Js(u'('))
-                    PyJs_Object_113_ = Js({})
-                    PyJs_Object_112_ = Js({u'params':Js([]),u'defaultCount':Js(0.0),u'defaults':Js([]),u'firstRestricted':var.get(u"null"),u'paramSet':PyJs_Object_113_})
-                    var.put(u'options', PyJs_Object_112_)
+                    PyJs_Object_116_ = Js({})
+                    PyJs_Object_115_ = Js({u'params':Js([]),u'defaultCount':Js(0.0),u'defaults':Js([]),u'firstRestricted':var.get(u"null"),u'paramSet':PyJs_Object_116_})
+                    var.put(u'options', PyJs_Object_115_)
                     if var.get(u'match')(Js(u')')):
                         var.get(u'tolerateUnexpectedToken')(var.get(u'lookahead'))
                     else:
+                        var.get(u'state').put(u'allowYield', Js(False))
                         var.get(u'parseParam')(var.get(u'options'))
+                        var.get(u'state').put(u'allowYield', var.get(u'previousAllowYield'))
                         if PyJsStrictEq(var.get(u'options').get(u'defaultCount'),Js(0.0)):
                             var.get(u'options').put(u'defaults', Js([]))
                     var.get(u'expect')(Js(u')'))
-                    var.put(u'value', var.get(u'parsePropertyFunction')(var.get(u'methodNode'), var.get(u'options')))
+                    var.get(u'state').put(u'allowYield', Js(False))
+                    var.put(u'value', var.get(u'parsePropertyFunction')(var.get(u'methodNode'), var.get(u'options'), Js(False)))
+                    var.get(u'state').put(u'allowYield', var.get(u'previousAllowYield'))
                     return var.get(u'node').callprop(u'finishProperty', Js(u'set'), var.get(u'key'), var.get(u'computed'), var.get(u'value'), Js(False), Js(False))
-        if var.get(u'match')(Js(u'(')):
+        else:
+            if ((PyJsStrictEq(var.get(u'token').get(u'type'),var.get(u'Token').get(u'Punctuator')) and PyJsStrictEq(var.get(u'token').get(u'value'),Js(u'*'))) and var.get(u'lookaheadPropertyName')()):
+                var.put(u'computed', var.get(u'match')(Js(u'[')))
+                var.put(u'key', var.get(u'parseObjectPropertyKey')())
+                var.put(u'methodNode', var.get(u'Node').create())
+                var.get(u'state').put(u'allowYield', var.get(u'true'))
+                var.put(u'params', var.get(u'parseParams')())
+                var.get(u'state').put(u'allowYield', var.get(u'previousAllowYield'))
+                var.get(u'state').put(u'allowYield', Js(False))
+                var.put(u'value', var.get(u'parsePropertyFunction')(var.get(u'methodNode'), var.get(u'params'), var.get(u'true')))
+                var.get(u'state').put(u'allowYield', var.get(u'previousAllowYield'))
+                return var.get(u'node').callprop(u'finishProperty', Js(u'init'), var.get(u'key'), var.get(u'computed'), var.get(u'value'), var.get(u'true'), Js(False))
+        if (var.get(u'key') and var.get(u'match')(Js(u'('))):
             var.put(u'value', var.get(u'parsePropertyMethodFunction')())
             return var.get(u'node').callprop(u'finishProperty', Js(u'init'), var.get(u'key'), var.get(u'computed'), var.get(u'value'), var.get(u'true'), Js(False))
         return var.get(u"null")
@@ -3799,12 +4057,18 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 var.put(u'token', var.get(u'lookahead'))
                 var.put(u'isStatic', Js(False))
                 var.put(u'computed', var.get(u'match')(Js(u'[')))
-                var.put(u'key', var.get(u'parseObjectPropertyKey')())
-                if (PyJsStrictEq(var.get(u'key').get(u'name'),Js(u'static')) and var.get(u'lookaheadPropertyName')()):
-                    var.put(u'token', var.get(u'lookahead'))
-                    var.put(u'isStatic', var.get(u'true'))
-                    var.put(u'computed', var.get(u'match')(Js(u'[')))
+                if var.get(u'match')(Js(u'*')):
+                    var.get(u'lex')()
+                else:
                     var.put(u'key', var.get(u'parseObjectPropertyKey')())
+                    if (PyJsStrictEq(var.get(u'key').get(u'name'),Js(u'static')) and (var.get(u'lookaheadPropertyName')() or var.get(u'match')(Js(u'*')))):
+                        var.put(u'token', var.get(u'lookahead'))
+                        var.put(u'isStatic', var.get(u'true'))
+                        var.put(u'computed', var.get(u'match')(Js(u'[')))
+                        if var.get(u'match')(Js(u'*')):
+                            var.get(u'lex')()
+                        else:
+                            var.put(u'key', var.get(u'parseObjectPropertyKey')())
                 var.put(u'method', var.get(u'tryParseMethodDefinition')(var.get(u'token'), var.get(u'key'), var.get(u'computed'), var.get(u'method')))
                 if var.get(u'method'):
                     var.get(u'method').put(u'static', var.get(u'isStatic'))
@@ -3840,18 +4104,20 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         #for JS loop
         var.put(u'i', Js(0.0))
         while (var.get(u'i')<var.get(u'extra').get(u'tokens').get(u'length')):
-            var.put(u'entry', var.get(u'extra').get(u'tokens').get(var.get(u'i')))
-            PyJs_Object_131_ = Js({u'type':var.get(u'entry').get(u'type'),u'value':var.get(u'entry').get(u'value')})
-            var.put(u'token', PyJs_Object_131_)
-            if var.get(u'entry').get(u'regex'):
-                PyJs_Object_132_ = Js({u'pattern':var.get(u'entry').get(u'regex').get(u'pattern'),u'flags':var.get(u'entry').get(u'regex').get(u'flags')})
-                var.get(u'token').put(u'regex', PyJs_Object_132_)
-            if var.get(u'extra').get(u'range'):
-                var.get(u'token').put(u'range', var.get(u'entry').get(u'range'))
-            if var.get(u'extra').get(u'loc'):
-                var.get(u'token').put(u'loc', var.get(u'entry').get(u'loc'))
-            var.get(u'tokens').callprop(u'push', var.get(u'token'))
-            var.put(u'i',var.get(u'i')+Js(1))
+            try:
+                var.put(u'entry', var.get(u'extra').get(u'tokens').get(var.get(u'i')))
+                PyJs_Object_136_ = Js({u'type':var.get(u'entry').get(u'type'),u'value':var.get(u'entry').get(u'value')})
+                var.put(u'token', PyJs_Object_136_)
+                if var.get(u'entry').get(u'regex'):
+                    PyJs_Object_137_ = Js({u'pattern':var.get(u'entry').get(u'regex').get(u'pattern'),u'flags':var.get(u'entry').get(u'regex').get(u'flags')})
+                    var.get(u'token').put(u'regex', PyJs_Object_137_)
+                if var.get(u'extra').get(u'range'):
+                    var.get(u'token').put(u'range', var.get(u'entry').get(u'range'))
+                if var.get(u'extra').get(u'loc'):
+                    var.get(u'token').put(u'loc', var.get(u'entry').get(u'loc'))
+                var.get(u'tokens').callprop(u'push', var.get(u'token'))
+            finally:
+                    var.put(u'i',var.get(u'i')+Js(1))
         var.get(u'extra').put(u'tokens', var.get(u'tokens'))
     PyJsHoisted_filterTokenLocation_.func_name = u'filterTokenLocation'
     var.put(u'filterTokenLocation', PyJsHoisted_filterTokenLocation_)
@@ -3872,14 +4138,16 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     var.get(u'TokenName').put(var.get(u'Token').get(u'RegularExpression'), Js(u'RegularExpression'))
     var.get(u'TokenName').put(var.get(u'Token').get(u'Template'), Js(u'Template'))
     var.put(u'FnExprTokens', Js([Js(u'('), Js(u'{'), Js(u'['), Js(u'in'), Js(u'typeof'), Js(u'instanceof'), Js(u'new'), Js(u'return'), Js(u'case'), Js(u'delete'), Js(u'throw'), Js(u'void'), Js(u'='), Js(u'+='), Js(u'-='), Js(u'*='), Js(u'/='), Js(u'%='), Js(u'<<='), Js(u'>>='), Js(u'>>>='), Js(u'&='), Js(u'|='), Js(u'^='), Js(u','), Js(u'+'), Js(u'-'), Js(u'*'), Js(u'/'), Js(u'%'), Js(u'++'), Js(u'--'), Js(u'<<'), Js(u'>>'), Js(u'>>>'), Js(u'&'), Js(u'|'), Js(u'^'), Js(u'!'), Js(u'~'), Js(u'&&'), Js(u'||'), Js(u'?'), Js(u':'), Js(u'==='), Js(u'=='), Js(u'>='), Js(u'<='), Js(u'<'), Js(u'>'), Js(u'!='), Js(u'!==')]))
-    PyJs_Object_3_ = Js({u'AssignmentExpression':Js(u'AssignmentExpression'),u'AssignmentPattern':Js(u'AssignmentPattern'),u'ArrayExpression':Js(u'ArrayExpression'),u'ArrayPattern':Js(u'ArrayPattern'),u'ArrowFunctionExpression':Js(u'ArrowFunctionExpression'),u'BlockStatement':Js(u'BlockStatement'),u'BinaryExpression':Js(u'BinaryExpression'),u'BreakStatement':Js(u'BreakStatement'),u'CallExpression':Js(u'CallExpression'),u'CatchClause':Js(u'CatchClause'),u'ClassBody':Js(u'ClassBody'),u'ClassDeclaration':Js(u'ClassDeclaration'),u'ClassExpression':Js(u'ClassExpression'),u'ConditionalExpression':Js(u'ConditionalExpression'),u'ContinueStatement':Js(u'ContinueStatement'),u'DoWhileStatement':Js(u'DoWhileStatement'),u'DebuggerStatement':Js(u'DebuggerStatement'),u'EmptyStatement':Js(u'EmptyStatement'),u'ExportAllDeclaration':Js(u'ExportAllDeclaration'),u'ExportDefaultDeclaration':Js(u'ExportDefaultDeclaration'),u'ExportNamedDeclaration':Js(u'ExportNamedDeclaration'),u'ExportSpecifier':Js(u'ExportSpecifier'),u'ExpressionStatement':Js(u'ExpressionStatement'),u'ForStatement':Js(u'ForStatement'),u'ForInStatement':Js(u'ForInStatement'),u'FunctionDeclaration':Js(u'FunctionDeclaration'),u'FunctionExpression':Js(u'FunctionExpression'),u'Identifier':Js(u'Identifier'),u'IfStatement':Js(u'IfStatement'),u'ImportDeclaration':Js(u'ImportDeclaration'),u'ImportDefaultSpecifier':Js(u'ImportDefaultSpecifier'),u'ImportNamespaceSpecifier':Js(u'ImportNamespaceSpecifier'),u'ImportSpecifier':Js(u'ImportSpecifier'),u'Literal':Js(u'Literal'),u'LabeledStatement':Js(u'LabeledStatement'),u'LogicalExpression':Js(u'LogicalExpression'),u'MemberExpression':Js(u'MemberExpression'),u'MethodDefinition':Js(u'MethodDefinition'),u'NewExpression':Js(u'NewExpression'),u'ObjectExpression':Js(u'ObjectExpression'),u'ObjectPattern':Js(u'ObjectPattern'),u'Program':Js(u'Program'),u'Property':Js(u'Property'),u'RestElement':Js(u'RestElement'),u'ReturnStatement':Js(u'ReturnStatement'),u'SequenceExpression':Js(u'SequenceExpression'),u'SpreadElement':Js(u'SpreadElement'),u'Super':Js(u'Super'),u'SwitchCase':Js(u'SwitchCase'),u'SwitchStatement':Js(u'SwitchStatement'),u'TaggedTemplateExpression':Js(u'TaggedTemplateExpression'),u'TemplateElement':Js(u'TemplateElement'),u'TemplateLiteral':Js(u'TemplateLiteral'),u'ThisExpression':Js(u'ThisExpression'),u'ThrowStatement':Js(u'ThrowStatement'),u'TryStatement':Js(u'TryStatement'),u'UnaryExpression':Js(u'UnaryExpression'),u'UpdateExpression':Js(u'UpdateExpression'),u'VariableDeclaration':Js(u'VariableDeclaration'),u'VariableDeclarator':Js(u'VariableDeclarator'),u'WhileStatement':Js(u'WhileStatement'),u'WithStatement':Js(u'WithStatement')})
+    PyJs_Object_3_ = Js({u'AssignmentExpression':Js(u'AssignmentExpression'),u'AssignmentPattern':Js(u'AssignmentPattern'),u'ArrayExpression':Js(u'ArrayExpression'),u'ArrayPattern':Js(u'ArrayPattern'),u'ArrowFunctionExpression':Js(u'ArrowFunctionExpression'),u'BlockStatement':Js(u'BlockStatement'),u'BinaryExpression':Js(u'BinaryExpression'),u'BreakStatement':Js(u'BreakStatement'),u'CallExpression':Js(u'CallExpression'),u'CatchClause':Js(u'CatchClause'),u'ClassBody':Js(u'ClassBody'),u'ClassDeclaration':Js(u'ClassDeclaration'),u'ClassExpression':Js(u'ClassExpression'),u'ConditionalExpression':Js(u'ConditionalExpression'),u'ContinueStatement':Js(u'ContinueStatement'),u'DoWhileStatement':Js(u'DoWhileStatement'),u'DebuggerStatement':Js(u'DebuggerStatement'),u'EmptyStatement':Js(u'EmptyStatement'),u'ExportAllDeclaration':Js(u'ExportAllDeclaration'),u'ExportDefaultDeclaration':Js(u'ExportDefaultDeclaration'),u'ExportNamedDeclaration':Js(u'ExportNamedDeclaration'),u'ExportSpecifier':Js(u'ExportSpecifier'),u'ExpressionStatement':Js(u'ExpressionStatement'),u'ForStatement':Js(u'ForStatement'),u'ForOfStatement':Js(u'ForOfStatement'),u'ForInStatement':Js(u'ForInStatement'),u'FunctionDeclaration':Js(u'FunctionDeclaration'),u'FunctionExpression':Js(u'FunctionExpression'),u'Identifier':Js(u'Identifier'),u'IfStatement':Js(u'IfStatement'),u'ImportDeclaration':Js(u'ImportDeclaration'),u'ImportDefaultSpecifier':Js(u'ImportDefaultSpecifier'),u'ImportNamespaceSpecifier':Js(u'ImportNamespaceSpecifier'),u'ImportSpecifier':Js(u'ImportSpecifier'),u'Literal':Js(u'Literal'),u'LabeledStatement':Js(u'LabeledStatement'),u'LogicalExpression':Js(u'LogicalExpression'),u'MemberExpression':Js(u'MemberExpression'),u'MetaProperty':Js(u'MetaProperty'),u'MethodDefinition':Js(u'MethodDefinition'),u'NewExpression':Js(u'NewExpression'),u'ObjectExpression':Js(u'ObjectExpression'),u'ObjectPattern':Js(u'ObjectPattern'),u'Program':Js(u'Program'),u'Property':Js(u'Property'),u'RestElement':Js(u'RestElement'),u'ReturnStatement':Js(u'ReturnStatement'),u'SequenceExpression':Js(u'SequenceExpression'),u'SpreadElement':Js(u'SpreadElement'),u'Super':Js(u'Super'),u'SwitchCase':Js(u'SwitchCase'),u'SwitchStatement':Js(u'SwitchStatement'),u'TaggedTemplateExpression':Js(u'TaggedTemplateExpression'),u'TemplateElement':Js(u'TemplateElement'),u'TemplateLiteral':Js(u'TemplateLiteral'),u'ThisExpression':Js(u'ThisExpression'),u'ThrowStatement':Js(u'ThrowStatement'),u'TryStatement':Js(u'TryStatement'),u'UnaryExpression':Js(u'UnaryExpression'),u'UpdateExpression':Js(u'UpdateExpression'),u'VariableDeclaration':Js(u'VariableDeclaration'),u'VariableDeclarator':Js(u'VariableDeclarator'),u'WhileStatement':Js(u'WhileStatement'),u'WithStatement':Js(u'WithStatement'),u'YieldExpression':Js(u'YieldExpression')})
     var.put(u'Syntax', PyJs_Object_3_)
     PyJs_Object_4_ = Js({u'ArrowParameterPlaceHolder':Js(u'ArrowParameterPlaceHolder')})
     var.put(u'PlaceHolders', PyJs_Object_4_)
-    PyJs_Object_5_ = Js({u'UnexpectedToken':Js(u'Unexpected token %0'),u'UnexpectedNumber':Js(u'Unexpected number'),u'UnexpectedString':Js(u'Unexpected string'),u'UnexpectedIdentifier':Js(u'Unexpected identifier'),u'UnexpectedReserved':Js(u'Unexpected reserved word'),u'UnexpectedTemplate':Js(u'Unexpected quasi %0'),u'UnexpectedEOS':Js(u'Unexpected end of input'),u'NewlineAfterThrow':Js(u'Illegal newline after throw'),u'InvalidRegExp':Js(u'Invalid regular expression'),u'UnterminatedRegExp':Js(u'Invalid regular expression: missing /'),u'InvalidLHSInAssignment':Js(u'Invalid left-hand side in assignment'),u'InvalidLHSInForIn':Js(u'Invalid left-hand side in for-in'),u'MultipleDefaultsInSwitch':Js(u'More than one default clause in switch statement'),u'NoCatchOrFinally':Js(u'Missing catch or finally after try'),u'UnknownLabel':Js(u"Undefined label '%0'"),u'Redeclaration':Js(u"%0 '%1' has already been declared"),u'IllegalContinue':Js(u'Illegal continue statement'),u'IllegalBreak':Js(u'Illegal break statement'),u'IllegalReturn':Js(u'Illegal return statement'),u'StrictModeWith':Js(u'Strict mode code may not include a with statement'),u'StrictCatchVariable':Js(u'Catch variable may not be eval or arguments in strict mode'),u'StrictVarName':Js(u'Variable name may not be eval or arguments in strict mode'),u'StrictParamName':Js(u'Parameter name eval or arguments is not allowed in strict mode'),u'StrictParamDupe':Js(u'Strict mode function may not have duplicate parameter names'),u'StrictFunctionName':Js(u'Function name may not be eval or arguments in strict mode'),u'StrictOctalLiteral':Js(u'Octal literals are not allowed in strict mode.'),u'StrictDelete':Js(u'Delete of an unqualified identifier in strict mode.'),u'StrictLHSAssignment':Js(u'Assignment to eval or arguments is not allowed in strict mode'),u'StrictLHSPostfix':Js(u'Postfix increment/decrement may not have eval or arguments operand in strict mode'),u'StrictLHSPrefix':Js(u'Prefix increment/decrement may not have eval or arguments operand in strict mode'),u'StrictReservedWord':Js(u'Use of future reserved word in strict mode'),u'TemplateOctalLiteral':Js(u'Octal literals are not allowed in template strings.'),u'ParameterAfterRestParameter':Js(u'Rest parameter must be last formal parameter'),u'DefaultRestParameter':Js(u'Unexpected token ='),u'ObjectPatternAsRestParameter':Js(u'Unexpected token {'),u'DuplicateProtoProperty':Js(u'Duplicate __proto__ fields are not allowed in object literals'),u'ConstructorSpecialMethod':Js(u'Class constructor may not be an accessor'),u'DuplicateConstructor':Js(u'A class may only have one constructor'),u'StaticPrototype':Js(u'Classes may not have static property named prototype'),u'MissingFromClause':Js(u'Unexpected token'),u'NoAsAfterImportNamespace':Js(u'Unexpected token'),u'InvalidModuleSpecifier':Js(u'Unexpected token'),u'IllegalImportDeclaration':Js(u'Unexpected token'),u'IllegalExportDeclaration':Js(u'Unexpected token')})
+    PyJs_Object_5_ = Js({u'UnexpectedToken':Js(u'Unexpected token %0'),u'UnexpectedNumber':Js(u'Unexpected number'),u'UnexpectedString':Js(u'Unexpected string'),u'UnexpectedIdentifier':Js(u'Unexpected identifier'),u'UnexpectedReserved':Js(u'Unexpected reserved word'),u'UnexpectedTemplate':Js(u'Unexpected quasi %0'),u'UnexpectedEOS':Js(u'Unexpected end of input'),u'NewlineAfterThrow':Js(u'Illegal newline after throw'),u'InvalidRegExp':Js(u'Invalid regular expression'),u'UnterminatedRegExp':Js(u'Invalid regular expression: missing /'),u'InvalidLHSInAssignment':Js(u'Invalid left-hand side in assignment'),u'InvalidLHSInForIn':Js(u'Invalid left-hand side in for-in'),u'InvalidLHSInForLoop':Js(u'Invalid left-hand side in for-loop'),u'MultipleDefaultsInSwitch':Js(u'More than one default clause in switch statement'),u'NoCatchOrFinally':Js(u'Missing catch or finally after try'),u'UnknownLabel':Js(u"Undefined label '%0'"),u'Redeclaration':Js(u"%0 '%1' has already been declared"),u'IllegalContinue':Js(u'Illegal continue statement'),u'IllegalBreak':Js(u'Illegal break statement'),u'IllegalReturn':Js(u'Illegal return statement'),u'StrictModeWith':Js(u'Strict mode code may not include a with statement'),u'StrictCatchVariable':Js(u'Catch variable may not be eval or arguments in strict mode'),u'StrictVarName':Js(u'Variable name may not be eval or arguments in strict mode'),u'StrictParamName':Js(u'Parameter name eval or arguments is not allowed in strict mode'),u'StrictParamDupe':Js(u'Strict mode function may not have duplicate parameter names'),u'StrictFunctionName':Js(u'Function name may not be eval or arguments in strict mode'),u'StrictOctalLiteral':Js(u'Octal literals are not allowed in strict mode.'),u'StrictDelete':Js(u'Delete of an unqualified identifier in strict mode.'),u'StrictLHSAssignment':Js(u'Assignment to eval or arguments is not allowed in strict mode'),u'StrictLHSPostfix':Js(u'Postfix increment/decrement may not have eval or arguments operand in strict mode'),u'StrictLHSPrefix':Js(u'Prefix increment/decrement may not have eval or arguments operand in strict mode'),u'StrictReservedWord':Js(u'Use of future reserved word in strict mode'),u'TemplateOctalLiteral':Js(u'Octal literals are not allowed in template strings.'),u'ParameterAfterRestParameter':Js(u'Rest parameter must be last formal parameter'),u'DefaultRestParameter':Js(u'Unexpected token ='),u'ObjectPatternAsRestParameter':Js(u'Unexpected token {'),u'DuplicateProtoProperty':Js(u'Duplicate __proto__ fields are not allowed in object literals'),u'ConstructorSpecialMethod':Js(u'Class constructor may not be an accessor'),u'DuplicateConstructor':Js(u'A class may only have one constructor'),u'StaticPrototype':Js(u'Classes may not have static property named prototype'),u'MissingFromClause':Js(u'Unexpected token'),u'NoAsAfterImportNamespace':Js(u'Unexpected token'),u'InvalidModuleSpecifier':Js(u'Unexpected token'),u'IllegalImportDeclaration':Js(u'Unexpected token'),u'IllegalExportDeclaration':Js(u'Unexpected token'),u'DuplicateBinding':Js(u'Duplicate binding %0')})
     var.put(u'Messages', PyJs_Object_5_)
-    PyJs_Object_6_ = Js({u'NonAsciiIdentifierStart':var.get(u'RegExp').create(Js(u'[\xaa\xb5\xba\xc0-\xd6\xd8-\xf6\xf8-\u02c1\u02c6-\u02d1\u02e0-\u02e4\u02ec\u02ee\u0370-\u0374\u0376\u0377\u037a-\u037d\u037f\u0386\u0388-\u038a\u038c\u038e-\u03a1\u03a3-\u03f5\u03f7-\u0481\u048a-\u052f\u0531-\u0556\u0559\u0561-\u0587\u05d0-\u05ea\u05f0-\u05f2\u0620-\u064a\u066e\u066f\u0671-\u06d3\u06d5\u06e5\u06e6\u06ee\u06ef\u06fa-\u06fc\u06ff\u0710\u0712-\u072f\u074d-\u07a5\u07b1\u07ca-\u07ea\u07f4\u07f5\u07fa\u0800-\u0815\u081a\u0824\u0828\u0840-\u0858\u08a0-\u08b2\u0904-\u0939\u093d\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098c\u098f\u0990\u0993-\u09a8\u09aa-\u09b0\u09b2\u09b6-\u09b9\u09bd\u09ce\u09dc\u09dd\u09df-\u09e1\u09f0\u09f1\u0a05-\u0a0a\u0a0f\u0a10\u0a13-\u0a28\u0a2a-\u0a30\u0a32\u0a33\u0a35\u0a36\u0a38\u0a39\u0a59-\u0a5c\u0a5e\u0a72-\u0a74\u0a85-\u0a8d\u0a8f-\u0a91\u0a93-\u0aa8\u0aaa-\u0ab0\u0ab2\u0ab3\u0ab5-\u0ab9\u0abd\u0ad0\u0ae0\u0ae1\u0b05-\u0b0c\u0b0f\u0b10\u0b13-\u0b28\u0b2a-\u0b30\u0b32\u0b33\u0b35-\u0b39\u0b3d\u0b5c\u0b5d\u0b5f-\u0b61\u0b71\u0b83\u0b85-\u0b8a\u0b8e-\u0b90\u0b92-\u0b95\u0b99\u0b9a\u0b9c\u0b9e\u0b9f\u0ba3\u0ba4\u0ba8-\u0baa\u0bae-\u0bb9\u0bd0\u0c05-\u0c0c\u0c0e-\u0c10\u0c12-\u0c28\u0c2a-\u0c39\u0c3d\u0c58\u0c59\u0c60\u0c61\u0c85-\u0c8c\u0c8e-\u0c90\u0c92-\u0ca8\u0caa-\u0cb3\u0cb5-\u0cb9\u0cbd\u0cde\u0ce0\u0ce1\u0cf1\u0cf2\u0d05-\u0d0c\u0d0e-\u0d10\u0d12-\u0d3a\u0d3d\u0d4e\u0d60\u0d61\u0d7a-\u0d7f\u0d85-\u0d96\u0d9a-\u0db1\u0db3-\u0dbb\u0dbd\u0dc0-\u0dc6\u0e01-\u0e30\u0e32\u0e33\u0e40-\u0e46\u0e81\u0e82\u0e84\u0e87\u0e88\u0e8a\u0e8d\u0e94-\u0e97\u0e99-\u0e9f\u0ea1-\u0ea3\u0ea5\u0ea7\u0eaa\u0eab\u0ead-\u0eb0\u0eb2\u0eb3\u0ebd\u0ec0-\u0ec4\u0ec6\u0edc-\u0edf\u0f00\u0f40-\u0f47\u0f49-\u0f6c\u0f88-\u0f8c\u1000-\u102a\u103f\u1050-\u1055\u105a-\u105d\u1061\u1065\u1066\u106e-\u1070\u1075-\u1081\u108e\u10a0-\u10c5\u10c7\u10cd\u10d0-\u10fa\u10fc-\u1248\u124a-\u124d\u1250-\u1256\u1258\u125a-\u125d\u1260-\u1288\u128a-\u128d\u1290-\u12b0\u12b2-\u12b5\u12b8-\u12be\u12c0\u12c2-\u12c5\u12c8-\u12d6\u12d8-\u1310\u1312-\u1315\u1318-\u135a\u1380-\u138f\u13a0-\u13f4\u1401-\u166c\u166f-\u167f\u1681-\u169a\u16a0-\u16ea\u16ee-\u16f8\u1700-\u170c\u170e-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176c\u176e-\u1770\u1780-\u17b3\u17d7\u17dc\u1820-\u1877\u1880-\u18a8\u18aa\u18b0-\u18f5\u1900-\u191e\u1950-\u196d\u1970-\u1974\u1980-\u19ab\u19c1-\u19c7\u1a00-\u1a16\u1a20-\u1a54\u1aa7\u1b05-\u1b33\u1b45-\u1b4b\u1b83-\u1ba0\u1bae\u1baf\u1bba-\u1be5\u1c00-\u1c23\u1c4d-\u1c4f\u1c5a-\u1c7d\u1ce9-\u1cec\u1cee-\u1cf1\u1cf5\u1cf6\u1d00-\u1dbf\u1e00-\u1f15\u1f18-\u1f1d\u1f20-\u1f45\u1f48-\u1f4d\u1f50-\u1f57\u1f59\u1f5b\u1f5d\u1f5f-\u1f7d\u1f80-\u1fb4\u1fb6-\u1fbc\u1fbe\u1fc2-\u1fc4\u1fc6-\u1fcc\u1fd0-\u1fd3\u1fd6-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ff4\u1ff6-\u1ffc\u2071\u207f\u2090-\u209c\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2139\u213c-\u213f\u2145-\u2149\u214e\u2160-\u2188\u2c00-\u2c2e\u2c30-\u2c5e\u2c60-\u2ce4\u2ceb-\u2cee\u2cf2\u2cf3\u2d00-\u2d25\u2d27\u2d2d\u2d30-\u2d67\u2d6f\u2d80-\u2d96\u2da0-\u2da6\u2da8-\u2dae\u2db0-\u2db6\u2db8-\u2dbe\u2dc0-\u2dc6\u2dc8-\u2dce\u2dd0-\u2dd6\u2dd8-\u2dde\u2e2f\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303c\u3041-\u3096\u309d-\u309f\u30a1-\u30fa\u30fc-\u30ff\u3105-\u312d\u3131-\u318e\u31a0-\u31ba\u31f0-\u31ff\u3400-\u4db5\u4e00-\u9fcc\ua000-\ua48c\ua4d0-\ua4fd\ua500-\ua60c\ua610-\ua61f\ua62a\ua62b\ua640-\ua66e\ua67f-\ua69d\ua6a0-\ua6ef\ua717-\ua71f\ua722-\ua788\ua78b-\ua78e\ua790-\ua7ad\ua7b0\ua7b1\ua7f7-\ua801\ua803-\ua805\ua807-\ua80a\ua80c-\ua822\ua840-\ua873\ua882-\ua8b3\ua8f2-\ua8f7\ua8fb\ua90a-\ua925\ua930-\ua946\ua960-\ua97c\ua984-\ua9b2\ua9cf\ua9e0-\ua9e4\ua9e6-\ua9ef\ua9fa-\ua9fe\uaa00-\uaa28\uaa40-\uaa42\uaa44-\uaa4b\uaa60-\uaa76\uaa7a\uaa7e-\uaaaf\uaab1\uaab5\uaab6\uaab9-\uaabd\uaac0\uaac2\uaadb-\uaadd\uaae0-\uaaea\uaaf2-\uaaf4\uab01-\uab06\uab09-\uab0e\uab11-\uab16\uab20-\uab26\uab28-\uab2e\uab30-\uab5a\uab5c-\uab5f\uab64\uab65\uabc0-\uabe2\uac00-\ud7a3\ud7b0-\ud7c6\ud7cb-\ud7fb\uf900-\ufa6d\ufa70-\ufad9\ufb00-\ufb06\ufb13-\ufb17\ufb1d\ufb1f-\ufb28\ufb2a-\ufb36\ufb38-\ufb3c\ufb3e\ufb40\ufb41\ufb43\ufb44\ufb46-\ufbb1\ufbd3-\ufd3d\ufd50-\ufd8f\ufd92-\ufdc7\ufdf0-\ufdfb\ufe70-\ufe74\ufe76-\ufefc\uff21-\uff3a\uff41-\uff5a\uff66-\uffbe\uffc2-\uffc7\uffca-\uffcf\uffd2-\uffd7\uffda-\uffdc]')),u'NonAsciiIdentifierPart':var.get(u'RegExp').create(Js(u'[\xaa\xb5\xba\xc0-\xd6\xd8-\xf6\xf8-\u02c1\u02c6-\u02d1\u02e0-\u02e4\u02ec\u02ee\u0300-\u0374\u0376\u0377\u037a-\u037d\u037f\u0386\u0388-\u038a\u038c\u038e-\u03a1\u03a3-\u03f5\u03f7-\u0481\u0483-\u0487\u048a-\u052f\u0531-\u0556\u0559\u0561-\u0587\u0591-\u05bd\u05bf\u05c1\u05c2\u05c4\u05c5\u05c7\u05d0-\u05ea\u05f0-\u05f2\u0610-\u061a\u0620-\u0669\u066e-\u06d3\u06d5-\u06dc\u06df-\u06e8\u06ea-\u06fc\u06ff\u0710-\u074a\u074d-\u07b1\u07c0-\u07f5\u07fa\u0800-\u082d\u0840-\u085b\u08a0-\u08b2\u08e4-\u0963\u0966-\u096f\u0971-\u0983\u0985-\u098c\u098f\u0990\u0993-\u09a8\u09aa-\u09b0\u09b2\u09b6-\u09b9\u09bc-\u09c4\u09c7\u09c8\u09cb-\u09ce\u09d7\u09dc\u09dd\u09df-\u09e3\u09e6-\u09f1\u0a01-\u0a03\u0a05-\u0a0a\u0a0f\u0a10\u0a13-\u0a28\u0a2a-\u0a30\u0a32\u0a33\u0a35\u0a36\u0a38\u0a39\u0a3c\u0a3e-\u0a42\u0a47\u0a48\u0a4b-\u0a4d\u0a51\u0a59-\u0a5c\u0a5e\u0a66-\u0a75\u0a81-\u0a83\u0a85-\u0a8d\u0a8f-\u0a91\u0a93-\u0aa8\u0aaa-\u0ab0\u0ab2\u0ab3\u0ab5-\u0ab9\u0abc-\u0ac5\u0ac7-\u0ac9\u0acb-\u0acd\u0ad0\u0ae0-\u0ae3\u0ae6-\u0aef\u0b01-\u0b03\u0b05-\u0b0c\u0b0f\u0b10\u0b13-\u0b28\u0b2a-\u0b30\u0b32\u0b33\u0b35-\u0b39\u0b3c-\u0b44\u0b47\u0b48\u0b4b-\u0b4d\u0b56\u0b57\u0b5c\u0b5d\u0b5f-\u0b63\u0b66-\u0b6f\u0b71\u0b82\u0b83\u0b85-\u0b8a\u0b8e-\u0b90\u0b92-\u0b95\u0b99\u0b9a\u0b9c\u0b9e\u0b9f\u0ba3\u0ba4\u0ba8-\u0baa\u0bae-\u0bb9\u0bbe-\u0bc2\u0bc6-\u0bc8\u0bca-\u0bcd\u0bd0\u0bd7\u0be6-\u0bef\u0c00-\u0c03\u0c05-\u0c0c\u0c0e-\u0c10\u0c12-\u0c28\u0c2a-\u0c39\u0c3d-\u0c44\u0c46-\u0c48\u0c4a-\u0c4d\u0c55\u0c56\u0c58\u0c59\u0c60-\u0c63\u0c66-\u0c6f\u0c81-\u0c83\u0c85-\u0c8c\u0c8e-\u0c90\u0c92-\u0ca8\u0caa-\u0cb3\u0cb5-\u0cb9\u0cbc-\u0cc4\u0cc6-\u0cc8\u0cca-\u0ccd\u0cd5\u0cd6\u0cde\u0ce0-\u0ce3\u0ce6-\u0cef\u0cf1\u0cf2\u0d01-\u0d03\u0d05-\u0d0c\u0d0e-\u0d10\u0d12-\u0d3a\u0d3d-\u0d44\u0d46-\u0d48\u0d4a-\u0d4e\u0d57\u0d60-\u0d63\u0d66-\u0d6f\u0d7a-\u0d7f\u0d82\u0d83\u0d85-\u0d96\u0d9a-\u0db1\u0db3-\u0dbb\u0dbd\u0dc0-\u0dc6\u0dca\u0dcf-\u0dd4\u0dd6\u0dd8-\u0ddf\u0de6-\u0def\u0df2\u0df3\u0e01-\u0e3a\u0e40-\u0e4e\u0e50-\u0e59\u0e81\u0e82\u0e84\u0e87\u0e88\u0e8a\u0e8d\u0e94-\u0e97\u0e99-\u0e9f\u0ea1-\u0ea3\u0ea5\u0ea7\u0eaa\u0eab\u0ead-\u0eb9\u0ebb-\u0ebd\u0ec0-\u0ec4\u0ec6\u0ec8-\u0ecd\u0ed0-\u0ed9\u0edc-\u0edf\u0f00\u0f18\u0f19\u0f20-\u0f29\u0f35\u0f37\u0f39\u0f3e-\u0f47\u0f49-\u0f6c\u0f71-\u0f84\u0f86-\u0f97\u0f99-\u0fbc\u0fc6\u1000-\u1049\u1050-\u109d\u10a0-\u10c5\u10c7\u10cd\u10d0-\u10fa\u10fc-\u1248\u124a-\u124d\u1250-\u1256\u1258\u125a-\u125d\u1260-\u1288\u128a-\u128d\u1290-\u12b0\u12b2-\u12b5\u12b8-\u12be\u12c0\u12c2-\u12c5\u12c8-\u12d6\u12d8-\u1310\u1312-\u1315\u1318-\u135a\u135d-\u135f\u1380-\u138f\u13a0-\u13f4\u1401-\u166c\u166f-\u167f\u1681-\u169a\u16a0-\u16ea\u16ee-\u16f8\u1700-\u170c\u170e-\u1714\u1720-\u1734\u1740-\u1753\u1760-\u176c\u176e-\u1770\u1772\u1773\u1780-\u17d3\u17d7\u17dc\u17dd\u17e0-\u17e9\u180b-\u180d\u1810-\u1819\u1820-\u1877\u1880-\u18aa\u18b0-\u18f5\u1900-\u191e\u1920-\u192b\u1930-\u193b\u1946-\u196d\u1970-\u1974\u1980-\u19ab\u19b0-\u19c9\u19d0-\u19d9\u1a00-\u1a1b\u1a20-\u1a5e\u1a60-\u1a7c\u1a7f-\u1a89\u1a90-\u1a99\u1aa7\u1ab0-\u1abd\u1b00-\u1b4b\u1b50-\u1b59\u1b6b-\u1b73\u1b80-\u1bf3\u1c00-\u1c37\u1c40-\u1c49\u1c4d-\u1c7d\u1cd0-\u1cd2\u1cd4-\u1cf6\u1cf8\u1cf9\u1d00-\u1df5\u1dfc-\u1f15\u1f18-\u1f1d\u1f20-\u1f45\u1f48-\u1f4d\u1f50-\u1f57\u1f59\u1f5b\u1f5d\u1f5f-\u1f7d\u1f80-\u1fb4\u1fb6-\u1fbc\u1fbe\u1fc2-\u1fc4\u1fc6-\u1fcc\u1fd0-\u1fd3\u1fd6-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ff4\u1ff6-\u1ffc\u200c\u200d\u203f\u2040\u2054\u2071\u207f\u2090-\u209c\u20d0-\u20dc\u20e1\u20e5-\u20f0\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2139\u213c-\u213f\u2145-\u2149\u214e\u2160-\u2188\u2c00-\u2c2e\u2c30-\u2c5e\u2c60-\u2ce4\u2ceb-\u2cf3\u2d00-\u2d25\u2d27\u2d2d\u2d30-\u2d67\u2d6f\u2d7f-\u2d96\u2da0-\u2da6\u2da8-\u2dae\u2db0-\u2db6\u2db8-\u2dbe\u2dc0-\u2dc6\u2dc8-\u2dce\u2dd0-\u2dd6\u2dd8-\u2dde\u2de0-\u2dff\u2e2f\u3005-\u3007\u3021-\u302f\u3031-\u3035\u3038-\u303c\u3041-\u3096\u3099\u309a\u309d-\u309f\u30a1-\u30fa\u30fc-\u30ff\u3105-\u312d\u3131-\u318e\u31a0-\u31ba\u31f0-\u31ff\u3400-\u4db5\u4e00-\u9fcc\ua000-\ua48c\ua4d0-\ua4fd\ua500-\ua60c\ua610-\ua62b\ua640-\ua66f\ua674-\ua67d\ua67f-\ua69d\ua69f-\ua6f1\ua717-\ua71f\ua722-\ua788\ua78b-\ua78e\ua790-\ua7ad\ua7b0\ua7b1\ua7f7-\ua827\ua840-\ua873\ua880-\ua8c4\ua8d0-\ua8d9\ua8e0-\ua8f7\ua8fb\ua900-\ua92d\ua930-\ua953\ua960-\ua97c\ua980-\ua9c0\ua9cf-\ua9d9\ua9e0-\ua9fe\uaa00-\uaa36\uaa40-\uaa4d\uaa50-\uaa59\uaa60-\uaa76\uaa7a-\uaac2\uaadb-\uaadd\uaae0-\uaaef\uaaf2-\uaaf6\uab01-\uab06\uab09-\uab0e\uab11-\uab16\uab20-\uab26\uab28-\uab2e\uab30-\uab5a\uab5c-\uab5f\uab64\uab65\uabc0-\uabea\uabec\uabed\uabf0-\uabf9\uac00-\ud7a3\ud7b0-\ud7c6\ud7cb-\ud7fb\uf900-\ufa6d\ufa70-\ufad9\ufb00-\ufb06\ufb13-\ufb17\ufb1d-\ufb28\ufb2a-\ufb36\ufb38-\ufb3c\ufb3e\ufb40\ufb41\ufb43\ufb44\ufb46-\ufbb1\ufbd3-\ufd3d\ufd50-\ufd8f\ufd92-\ufdc7\ufdf0-\ufdfb\ufe00-\ufe0f\ufe20-\ufe2d\ufe33\ufe34\ufe4d-\ufe4f\ufe70-\ufe74\ufe76-\ufefc\uff10-\uff19\uff21-\uff3a\uff3f\uff41-\uff5a\uff66-\uffbe\uffc2-\uffc7\uffca-\uffcf\uffd2-\uffd7\uffda-\uffdc]'))})
+    PyJs_Object_6_ = Js({u'NonAsciiIdentifierStart':JsRegExp(u'/[\xaa\xb5\xba\xc0-\xd6\xd8-\xf6\xf8-\u02c1\u02c6-\u02d1\u02e0-\u02e4\u02ec\u02ee\u0370-\u0374\u0376\u0377\u037a-\u037d\u037f\u0386\u0388-\u038a\u038c\u038e-\u03a1\u03a3-\u03f5\u03f7-\u0481\u048a-\u052f\u0531-\u0556\u0559\u0561-\u0587\u05d0-\u05ea\u05f0-\u05f2\u0620-\u064a\u066e\u066f\u0671-\u06d3\u06d5\u06e5\u06e6\u06ee\u06ef\u06fa-\u06fc\u06ff\u0710\u0712-\u072f\u074d-\u07a5\u07b1\u07ca-\u07ea\u07f4\u07f5\u07fa\u0800-\u0815\u081a\u0824\u0828\u0840-\u0858\u08a0-\u08b2\u0904-\u0939\u093d\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098c\u098f\u0990\u0993-\u09a8\u09aa-\u09b0\u09b2\u09b6-\u09b9\u09bd\u09ce\u09dc\u09dd\u09df-\u09e1\u09f0\u09f1\u0a05-\u0a0a\u0a0f\u0a10\u0a13-\u0a28\u0a2a-\u0a30\u0a32\u0a33\u0a35\u0a36\u0a38\u0a39\u0a59-\u0a5c\u0a5e\u0a72-\u0a74\u0a85-\u0a8d\u0a8f-\u0a91\u0a93-\u0aa8\u0aaa-\u0ab0\u0ab2\u0ab3\u0ab5-\u0ab9\u0abd\u0ad0\u0ae0\u0ae1\u0b05-\u0b0c\u0b0f\u0b10\u0b13-\u0b28\u0b2a-\u0b30\u0b32\u0b33\u0b35-\u0b39\u0b3d\u0b5c\u0b5d\u0b5f-\u0b61\u0b71\u0b83\u0b85-\u0b8a\u0b8e-\u0b90\u0b92-\u0b95\u0b99\u0b9a\u0b9c\u0b9e\u0b9f\u0ba3\u0ba4\u0ba8-\u0baa\u0bae-\u0bb9\u0bd0\u0c05-\u0c0c\u0c0e-\u0c10\u0c12-\u0c28\u0c2a-\u0c39\u0c3d\u0c58\u0c59\u0c60\u0c61\u0c85-\u0c8c\u0c8e-\u0c90\u0c92-\u0ca8\u0caa-\u0cb3\u0cb5-\u0cb9\u0cbd\u0cde\u0ce0\u0ce1\u0cf1\u0cf2\u0d05-\u0d0c\u0d0e-\u0d10\u0d12-\u0d3a\u0d3d\u0d4e\u0d60\u0d61\u0d7a-\u0d7f\u0d85-\u0d96\u0d9a-\u0db1\u0db3-\u0dbb\u0dbd\u0dc0-\u0dc6\u0e01-\u0e30\u0e32\u0e33\u0e40-\u0e46\u0e81\u0e82\u0e84\u0e87\u0e88\u0e8a\u0e8d\u0e94-\u0e97\u0e99-\u0e9f\u0ea1-\u0ea3\u0ea5\u0ea7\u0eaa\u0eab\u0ead-\u0eb0\u0eb2\u0eb3\u0ebd\u0ec0-\u0ec4\u0ec6\u0edc-\u0edf\u0f00\u0f40-\u0f47\u0f49-\u0f6c\u0f88-\u0f8c\u1000-\u102a\u103f\u1050-\u1055\u105a-\u105d\u1061\u1065\u1066\u106e-\u1070\u1075-\u1081\u108e\u10a0-\u10c5\u10c7\u10cd\u10d0-\u10fa\u10fc-\u1248\u124a-\u124d\u1250-\u1256\u1258\u125a-\u125d\u1260-\u1288\u128a-\u128d\u1290-\u12b0\u12b2-\u12b5\u12b8-\u12be\u12c0\u12c2-\u12c5\u12c8-\u12d6\u12d8-\u1310\u1312-\u1315\u1318-\u135a\u1380-\u138f\u13a0-\u13f4\u1401-\u166c\u166f-\u167f\u1681-\u169a\u16a0-\u16ea\u16ee-\u16f8\u1700-\u170c\u170e-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176c\u176e-\u1770\u1780-\u17b3\u17d7\u17dc\u1820-\u1877\u1880-\u18a8\u18aa\u18b0-\u18f5\u1900-\u191e\u1950-\u196d\u1970-\u1974\u1980-\u19ab\u19c1-\u19c7\u1a00-\u1a16\u1a20-\u1a54\u1aa7\u1b05-\u1b33\u1b45-\u1b4b\u1b83-\u1ba0\u1bae\u1baf\u1bba-\u1be5\u1c00-\u1c23\u1c4d-\u1c4f\u1c5a-\u1c7d\u1ce9-\u1cec\u1cee-\u1cf1\u1cf5\u1cf6\u1d00-\u1dbf\u1e00-\u1f15\u1f18-\u1f1d\u1f20-\u1f45\u1f48-\u1f4d\u1f50-\u1f57\u1f59\u1f5b\u1f5d\u1f5f-\u1f7d\u1f80-\u1fb4\u1fb6-\u1fbc\u1fbe\u1fc2-\u1fc4\u1fc6-\u1fcc\u1fd0-\u1fd3\u1fd6-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ff4\u1ff6-\u1ffc\u2071\u207f\u2090-\u209c\u2102\u2107\u210a-\u2113\u2115\u2118-\u211d\u2124\u2126\u2128\u212a-\u2139\u213c-\u213f\u2145-\u2149\u214e\u2160-\u2188\u2c00-\u2c2e\u2c30-\u2c5e\u2c60-\u2ce4\u2ceb-\u2cee\u2cf2\u2cf3\u2d00-\u2d25\u2d27\u2d2d\u2d30-\u2d67\u2d6f\u2d80-\u2d96\u2da0-\u2da6\u2da8-\u2dae\u2db0-\u2db6\u2db8-\u2dbe\u2dc0-\u2dc6\u2dc8-\u2dce\u2dd0-\u2dd6\u2dd8-\u2dde\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303c\u3041-\u3096\u309b-\u309f\u30a1-\u30fa\u30fc-\u30ff\u3105-\u312d\u3131-\u318e\u31a0-\u31ba\u31f0-\u31ff\u3400-\u4db5\u4e00-\u9fcc\ua000-\ua48c\ua4d0-\ua4fd\ua500-\ua60c\ua610-\ua61f\ua62a\ua62b\ua640-\ua66e\ua67f-\ua69d\ua6a0-\ua6ef\ua717-\ua71f\ua722-\ua788\ua78b-\ua78e\ua790-\ua7ad\ua7b0\ua7b1\ua7f7-\ua801\ua803-\ua805\ua807-\ua80a\ua80c-\ua822\ua840-\ua873\ua882-\ua8b3\ua8f2-\ua8f7\ua8fb\ua90a-\ua925\ua930-\ua946\ua960-\ua97c\ua984-\ua9b2\ua9cf\ua9e0-\ua9e4\ua9e6-\ua9ef\ua9fa-\ua9fe\uaa00-\uaa28\uaa40-\uaa42\uaa44-\uaa4b\uaa60-\uaa76\uaa7a\uaa7e-\uaaaf\uaab1\uaab5\uaab6\uaab9-\uaabd\uaac0\uaac2\uaadb-\uaadd\uaae0-\uaaea\uaaf2-\uaaf4\uab01-\uab06\uab09-\uab0e\uab11-\uab16\uab20-\uab26\uab28-\uab2e\uab30-\uab5a\uab5c-\uab5f\uab64\uab65\uabc0-\uabe2\uac00-\ud7a3\ud7b0-\ud7c6\ud7cb-\ud7fb\uf900-\ufa6d\ufa70-\ufad9\ufb00-\ufb06\ufb13-\ufb17\ufb1d\ufb1f-\ufb28\ufb2a-\ufb36\ufb38-\ufb3c\ufb3e\ufb40\ufb41\ufb43\ufb44\ufb46-\ufbb1\ufbd3-\ufd3d\ufd50-\ufd8f\ufd92-\ufdc7\ufdf0-\ufdfb\ufe70-\ufe74\ufe76-\ufefc\uff21-\uff3a\uff41-\uff5a\uff66-\uffbe\uffc2-\uffc7\uffca-\uffcf\uffd2-\uffd7\uffda-\uffdc]|\ud800[\udc00-\udc0b\udc0d-\udc26\udc28-\udc3a\udc3c\udc3d\udc3f-\udc4d\udc50-\udc5d\udc80-\udcfa\udd40-\udd74\ude80-\ude9c\udea0-\uded0\udf00-\udf1f\udf30-\udf4a\udf50-\udf75\udf80-\udf9d\udfa0-\udfc3\udfc8-\udfcf\udfd1-\udfd5]|\ud801[\udc00-\udc9d\udd00-\udd27\udd30-\udd63\ude00-\udf36\udf40-\udf55\udf60-\udf67]|\ud802[\udc00-\udc05\udc08\udc0a-\udc35\udc37\udc38\udc3c\udc3f-\udc55\udc60-\udc76\udc80-\udc9e\udd00-\udd15\udd20-\udd39\udd80-\uddb7\uddbe\uddbf\ude00\ude10-\ude13\ude15-\ude17\ude19-\ude33\ude60-\ude7c\ude80-\ude9c\udec0-\udec7\udec9-\udee4\udf00-\udf35\udf40-\udf55\udf60-\udf72\udf80-\udf91]|\ud803[\udc00-\udc48]|\ud804[\udc03-\udc37\udc83-\udcaf\udcd0-\udce8\udd03-\udd26\udd50-\udd72\udd76\udd83-\uddb2\uddc1-\uddc4\uddda\ude00-\ude11\ude13-\ude2b\udeb0-\udede\udf05-\udf0c\udf0f\udf10\udf13-\udf28\udf2a-\udf30\udf32\udf33\udf35-\udf39\udf3d\udf5d-\udf61]|\ud805[\udc80-\udcaf\udcc4\udcc5\udcc7\udd80-\uddae\ude00-\ude2f\ude44\ude80-\udeaa]|\ud806[\udca0-\udcdf\udcff\udec0-\udef8]|\ud808[\udc00-\udf98]|\ud809[\udc00-\udc6e]|[\ud80c\ud840-\ud868\ud86a-\ud86c][\udc00-\udfff]|\ud80d[\udc00-\udc2e]|\ud81a[\udc00-\ude38\ude40-\ude5e\uded0-\udeed\udf00-\udf2f\udf40-\udf43\udf63-\udf77\udf7d-\udf8f]|\ud81b[\udf00-\udf44\udf50\udf93-\udf9f]|\ud82c[\udc00\udc01]|\ud82f[\udc00-\udc6a\udc70-\udc7c\udc80-\udc88\udc90-\udc99]|\ud835[\udc00-\udc54\udc56-\udc9c\udc9e\udc9f\udca2\udca5\udca6\udca9-\udcac\udcae-\udcb9\udcbb\udcbd-\udcc3\udcc5-\udd05\udd07-\udd0a\udd0d-\udd14\udd16-\udd1c\udd1e-\udd39\udd3b-\udd3e\udd40-\udd44\udd46\udd4a-\udd50\udd52-\udea5\udea8-\udec0\udec2-\udeda\udedc-\udefa\udefc-\udf14\udf16-\udf34\udf36-\udf4e\udf50-\udf6e\udf70-\udf88\udf8a-\udfa8\udfaa-\udfc2\udfc4-\udfcb]|\ud83a[\udc00-\udcc4]|\ud83b[\ude00-\ude03\ude05-\ude1f\ude21\ude22\ude24\ude27\ude29-\ude32\ude34-\ude37\ude39\ude3b\ude42\ude47\ude49\ude4b\ude4d-\ude4f\ude51\ude52\ude54\ude57\ude59\ude5b\ude5d\ude5f\ude61\ude62\ude64\ude67-\ude6a\ude6c-\ude72\ude74-\ude77\ude79-\ude7c\ude7e\ude80-\ude89\ude8b-\ude9b\udea1-\udea3\udea5-\udea9\udeab-\udebb]|\ud869[\udc00-\uded6\udf00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]|\ud87e[\udc00-\ude1d]/'),u'NonAsciiIdentifierPart':JsRegExp(u'/[\xaa\xb5\xb7\xba\xc0-\xd6\xd8-\xf6\xf8-\u02c1\u02c6-\u02d1\u02e0-\u02e4\u02ec\u02ee\u0300-\u0374\u0376\u0377\u037a-\u037d\u037f\u0386-\u038a\u038c\u038e-\u03a1\u03a3-\u03f5\u03f7-\u0481\u0483-\u0487\u048a-\u052f\u0531-\u0556\u0559\u0561-\u0587\u0591-\u05bd\u05bf\u05c1\u05c2\u05c4\u05c5\u05c7\u05d0-\u05ea\u05f0-\u05f2\u0610-\u061a\u0620-\u0669\u066e-\u06d3\u06d5-\u06dc\u06df-\u06e8\u06ea-\u06fc\u06ff\u0710-\u074a\u074d-\u07b1\u07c0-\u07f5\u07fa\u0800-\u082d\u0840-\u085b\u08a0-\u08b2\u08e4-\u0963\u0966-\u096f\u0971-\u0983\u0985-\u098c\u098f\u0990\u0993-\u09a8\u09aa-\u09b0\u09b2\u09b6-\u09b9\u09bc-\u09c4\u09c7\u09c8\u09cb-\u09ce\u09d7\u09dc\u09dd\u09df-\u09e3\u09e6-\u09f1\u0a01-\u0a03\u0a05-\u0a0a\u0a0f\u0a10\u0a13-\u0a28\u0a2a-\u0a30\u0a32\u0a33\u0a35\u0a36\u0a38\u0a39\u0a3c\u0a3e-\u0a42\u0a47\u0a48\u0a4b-\u0a4d\u0a51\u0a59-\u0a5c\u0a5e\u0a66-\u0a75\u0a81-\u0a83\u0a85-\u0a8d\u0a8f-\u0a91\u0a93-\u0aa8\u0aaa-\u0ab0\u0ab2\u0ab3\u0ab5-\u0ab9\u0abc-\u0ac5\u0ac7-\u0ac9\u0acb-\u0acd\u0ad0\u0ae0-\u0ae3\u0ae6-\u0aef\u0b01-\u0b03\u0b05-\u0b0c\u0b0f\u0b10\u0b13-\u0b28\u0b2a-\u0b30\u0b32\u0b33\u0b35-\u0b39\u0b3c-\u0b44\u0b47\u0b48\u0b4b-\u0b4d\u0b56\u0b57\u0b5c\u0b5d\u0b5f-\u0b63\u0b66-\u0b6f\u0b71\u0b82\u0b83\u0b85-\u0b8a\u0b8e-\u0b90\u0b92-\u0b95\u0b99\u0b9a\u0b9c\u0b9e\u0b9f\u0ba3\u0ba4\u0ba8-\u0baa\u0bae-\u0bb9\u0bbe-\u0bc2\u0bc6-\u0bc8\u0bca-\u0bcd\u0bd0\u0bd7\u0be6-\u0bef\u0c00-\u0c03\u0c05-\u0c0c\u0c0e-\u0c10\u0c12-\u0c28\u0c2a-\u0c39\u0c3d-\u0c44\u0c46-\u0c48\u0c4a-\u0c4d\u0c55\u0c56\u0c58\u0c59\u0c60-\u0c63\u0c66-\u0c6f\u0c81-\u0c83\u0c85-\u0c8c\u0c8e-\u0c90\u0c92-\u0ca8\u0caa-\u0cb3\u0cb5-\u0cb9\u0cbc-\u0cc4\u0cc6-\u0cc8\u0cca-\u0ccd\u0cd5\u0cd6\u0cde\u0ce0-\u0ce3\u0ce6-\u0cef\u0cf1\u0cf2\u0d01-\u0d03\u0d05-\u0d0c\u0d0e-\u0d10\u0d12-\u0d3a\u0d3d-\u0d44\u0d46-\u0d48\u0d4a-\u0d4e\u0d57\u0d60-\u0d63\u0d66-\u0d6f\u0d7a-\u0d7f\u0d82\u0d83\u0d85-\u0d96\u0d9a-\u0db1\u0db3-\u0dbb\u0dbd\u0dc0-\u0dc6\u0dca\u0dcf-\u0dd4\u0dd6\u0dd8-\u0ddf\u0de6-\u0def\u0df2\u0df3\u0e01-\u0e3a\u0e40-\u0e4e\u0e50-\u0e59\u0e81\u0e82\u0e84\u0e87\u0e88\u0e8a\u0e8d\u0e94-\u0e97\u0e99-\u0e9f\u0ea1-\u0ea3\u0ea5\u0ea7\u0eaa\u0eab\u0ead-\u0eb9\u0ebb-\u0ebd\u0ec0-\u0ec4\u0ec6\u0ec8-\u0ecd\u0ed0-\u0ed9\u0edc-\u0edf\u0f00\u0f18\u0f19\u0f20-\u0f29\u0f35\u0f37\u0f39\u0f3e-\u0f47\u0f49-\u0f6c\u0f71-\u0f84\u0f86-\u0f97\u0f99-\u0fbc\u0fc6\u1000-\u1049\u1050-\u109d\u10a0-\u10c5\u10c7\u10cd\u10d0-\u10fa\u10fc-\u1248\u124a-\u124d\u1250-\u1256\u1258\u125a-\u125d\u1260-\u1288\u128a-\u128d\u1290-\u12b0\u12b2-\u12b5\u12b8-\u12be\u12c0\u12c2-\u12c5\u12c8-\u12d6\u12d8-\u1310\u1312-\u1315\u1318-\u135a\u135d-\u135f\u1369-\u1371\u1380-\u138f\u13a0-\u13f4\u1401-\u166c\u166f-\u167f\u1681-\u169a\u16a0-\u16ea\u16ee-\u16f8\u1700-\u170c\u170e-\u1714\u1720-\u1734\u1740-\u1753\u1760-\u176c\u176e-\u1770\u1772\u1773\u1780-\u17d3\u17d7\u17dc\u17dd\u17e0-\u17e9\u180b-\u180d\u1810-\u1819\u1820-\u1877\u1880-\u18aa\u18b0-\u18f5\u1900-\u191e\u1920-\u192b\u1930-\u193b\u1946-\u196d\u1970-\u1974\u1980-\u19ab\u19b0-\u19c9\u19d0-\u19da\u1a00-\u1a1b\u1a20-\u1a5e\u1a60-\u1a7c\u1a7f-\u1a89\u1a90-\u1a99\u1aa7\u1ab0-\u1abd\u1b00-\u1b4b\u1b50-\u1b59\u1b6b-\u1b73\u1b80-\u1bf3\u1c00-\u1c37\u1c40-\u1c49\u1c4d-\u1c7d\u1cd0-\u1cd2\u1cd4-\u1cf6\u1cf8\u1cf9\u1d00-\u1df5\u1dfc-\u1f15\u1f18-\u1f1d\u1f20-\u1f45\u1f48-\u1f4d\u1f50-\u1f57\u1f59\u1f5b\u1f5d\u1f5f-\u1f7d\u1f80-\u1fb4\u1fb6-\u1fbc\u1fbe\u1fc2-\u1fc4\u1fc6-\u1fcc\u1fd0-\u1fd3\u1fd6-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ff4\u1ff6-\u1ffc\u200c\u200d\u203f\u2040\u2054\u2071\u207f\u2090-\u209c\u20d0-\u20dc\u20e1\u20e5-\u20f0\u2102\u2107\u210a-\u2113\u2115\u2118-\u211d\u2124\u2126\u2128\u212a-\u2139\u213c-\u213f\u2145-\u2149\u214e\u2160-\u2188\u2c00-\u2c2e\u2c30-\u2c5e\u2c60-\u2ce4\u2ceb-\u2cf3\u2d00-\u2d25\u2d27\u2d2d\u2d30-\u2d67\u2d6f\u2d7f-\u2d96\u2da0-\u2da6\u2da8-\u2dae\u2db0-\u2db6\u2db8-\u2dbe\u2dc0-\u2dc6\u2dc8-\u2dce\u2dd0-\u2dd6\u2dd8-\u2dde\u2de0-\u2dff\u3005-\u3007\u3021-\u302f\u3031-\u3035\u3038-\u303c\u3041-\u3096\u3099-\u309f\u30a1-\u30fa\u30fc-\u30ff\u3105-\u312d\u3131-\u318e\u31a0-\u31ba\u31f0-\u31ff\u3400-\u4db5\u4e00-\u9fcc\ua000-\ua48c\ua4d0-\ua4fd\ua500-\ua60c\ua610-\ua62b\ua640-\ua66f\ua674-\ua67d\ua67f-\ua69d\ua69f-\ua6f1\ua717-\ua71f\ua722-\ua788\ua78b-\ua78e\ua790-\ua7ad\ua7b0\ua7b1\ua7f7-\ua827\ua840-\ua873\ua880-\ua8c4\ua8d0-\ua8d9\ua8e0-\ua8f7\ua8fb\ua900-\ua92d\ua930-\ua953\ua960-\ua97c\ua980-\ua9c0\ua9cf-\ua9d9\ua9e0-\ua9fe\uaa00-\uaa36\uaa40-\uaa4d\uaa50-\uaa59\uaa60-\uaa76\uaa7a-\uaac2\uaadb-\uaadd\uaae0-\uaaef\uaaf2-\uaaf6\uab01-\uab06\uab09-\uab0e\uab11-\uab16\uab20-\uab26\uab28-\uab2e\uab30-\uab5a\uab5c-\uab5f\uab64\uab65\uabc0-\uabea\uabec\uabed\uabf0-\uabf9\uac00-\ud7a3\ud7b0-\ud7c6\ud7cb-\ud7fb\uf900-\ufa6d\ufa70-\ufad9\ufb00-\ufb06\ufb13-\ufb17\ufb1d-\ufb28\ufb2a-\ufb36\ufb38-\ufb3c\ufb3e\ufb40\ufb41\ufb43\ufb44\ufb46-\ufbb1\ufbd3-\ufd3d\ufd50-\ufd8f\ufd92-\ufdc7\ufdf0-\ufdfb\ufe00-\ufe0f\ufe20-\ufe2d\ufe33\ufe34\ufe4d-\ufe4f\ufe70-\ufe74\ufe76-\ufefc\uff10-\uff19\uff21-\uff3a\uff3f\uff41-\uff5a\uff66-\uffbe\uffc2-\uffc7\uffca-\uffcf\uffd2-\uffd7\uffda-\uffdc]|\ud800[\udc00-\udc0b\udc0d-\udc26\udc28-\udc3a\udc3c\udc3d\udc3f-\udc4d\udc50-\udc5d\udc80-\udcfa\udd40-\udd74\uddfd\ude80-\ude9c\udea0-\uded0\udee0\udf00-\udf1f\udf30-\udf4a\udf50-\udf7a\udf80-\udf9d\udfa0-\udfc3\udfc8-\udfcf\udfd1-\udfd5]|\ud801[\udc00-\udc9d\udca0-\udca9\udd00-\udd27\udd30-\udd63\ude00-\udf36\udf40-\udf55\udf60-\udf67]|\ud802[\udc00-\udc05\udc08\udc0a-\udc35\udc37\udc38\udc3c\udc3f-\udc55\udc60-\udc76\udc80-\udc9e\udd00-\udd15\udd20-\udd39\udd80-\uddb7\uddbe\uddbf\ude00-\ude03\ude05\ude06\ude0c-\ude13\ude15-\ude17\ude19-\ude33\ude38-\ude3a\ude3f\ude60-\ude7c\ude80-\ude9c\udec0-\udec7\udec9-\udee6\udf00-\udf35\udf40-\udf55\udf60-\udf72\udf80-\udf91]|\ud803[\udc00-\udc48]|\ud804[\udc00-\udc46\udc66-\udc6f\udc7f-\udcba\udcd0-\udce8\udcf0-\udcf9\udd00-\udd34\udd36-\udd3f\udd50-\udd73\udd76\udd80-\uddc4\uddd0-\uddda\ude00-\ude11\ude13-\ude37\udeb0-\udeea\udef0-\udef9\udf01-\udf03\udf05-\udf0c\udf0f\udf10\udf13-\udf28\udf2a-\udf30\udf32\udf33\udf35-\udf39\udf3c-\udf44\udf47\udf48\udf4b-\udf4d\udf57\udf5d-\udf63\udf66-\udf6c\udf70-\udf74]|\ud805[\udc80-\udcc5\udcc7\udcd0-\udcd9\udd80-\uddb5\uddb8-\uddc0\ude00-\ude40\ude44\ude50-\ude59\ude80-\udeb7\udec0-\udec9]|\ud806[\udca0-\udce9\udcff\udec0-\udef8]|\ud808[\udc00-\udf98]|\ud809[\udc00-\udc6e]|[\ud80c\ud840-\ud868\ud86a-\ud86c][\udc00-\udfff]|\ud80d[\udc00-\udc2e]|\ud81a[\udc00-\ude38\ude40-\ude5e\ude60-\ude69\uded0-\udeed\udef0-\udef4\udf00-\udf36\udf40-\udf43\udf50-\udf59\udf63-\udf77\udf7d-\udf8f]|\ud81b[\udf00-\udf44\udf50-\udf7e\udf8f-\udf9f]|\ud82c[\udc00\udc01]|\ud82f[\udc00-\udc6a\udc70-\udc7c\udc80-\udc88\udc90-\udc99\udc9d\udc9e]|\ud834[\udd65-\udd69\udd6d-\udd72\udd7b-\udd82\udd85-\udd8b\uddaa-\uddad\ude42-\ude44]|\ud835[\udc00-\udc54\udc56-\udc9c\udc9e\udc9f\udca2\udca5\udca6\udca9-\udcac\udcae-\udcb9\udcbb\udcbd-\udcc3\udcc5-\udd05\udd07-\udd0a\udd0d-\udd14\udd16-\udd1c\udd1e-\udd39\udd3b-\udd3e\udd40-\udd44\udd46\udd4a-\udd50\udd52-\udea5\udea8-\udec0\udec2-\udeda\udedc-\udefa\udefc-\udf14\udf16-\udf34\udf36-\udf4e\udf50-\udf6e\udf70-\udf88\udf8a-\udfa8\udfaa-\udfc2\udfc4-\udfcb\udfce-\udfff]|\ud83a[\udc00-\udcc4\udcd0-\udcd6]|\ud83b[\ude00-\ude03\ude05-\ude1f\ude21\ude22\ude24\ude27\ude29-\ude32\ude34-\ude37\ude39\ude3b\ude42\ude47\ude49\ude4b\ude4d-\ude4f\ude51\ude52\ude54\ude57\ude59\ude5b\ude5d\ude5f\ude61\ude62\ude64\ude67-\ude6a\ude6c-\ude72\ude74-\ude77\ude79-\ude7c\ude7e\ude80-\ude89\ude8b-\ude9b\udea1-\udea3\udea5-\udea9\udeab-\udebb]|\ud869[\udc00-\uded6\udf00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]|\ud87e[\udc00-\ude1d]|\udb40[\udd00-\uddef]/')})
     var.put(u'Regex', PyJs_Object_6_)
+    pass
+    pass
     pass
     pass
     pass
@@ -3940,41 +4208,55 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
             #for JS loop
             var.put(u'i', (var.get(u'extra').get(u'trailingComments').get(u'length')-Js(1.0)))
             while (var.get(u'i')>=Js(0.0)):
-                var.put(u'comment', var.get(u'extra').get(u'trailingComments').get(var.get(u'i')))
-                if (var.get(u'comment').get(u'range').get(u'0')>=var.get(u"this").get(u'range').get(u'1')):
-                    var.get(u'trailingComments').callprop(u'unshift', var.get(u'comment'))
-                    var.get(u'extra').get(u'trailingComments').callprop(u'splice', var.get(u'i'), Js(1.0))
-                var.put(u'i',var.get(u'i')-Js(1))
+                try:
+                    var.put(u'comment', var.get(u'extra').get(u'trailingComments').get(var.get(u'i')))
+                    if (var.get(u'comment').get(u'range').get(u'0')>=var.get(u"this").get(u'range').get(u'1')):
+                        var.get(u'trailingComments').callprop(u'unshift', var.get(u'comment'))
+                        var.get(u'extra').get(u'trailingComments').callprop(u'splice', var.get(u'i'), Js(1.0))
+                finally:
+                        var.put(u'i',var.get(u'i')-Js(1))
             var.get(u'extra').put(u'trailingComments', Js([]))
         else:
             if ((var.get(u'last') and var.get(u'last').get(u'trailingComments')) and (var.get(u'last').get(u'trailingComments').get(u'0').get(u'range').get(u'0')>=var.get(u"this").get(u'range').get(u'1'))):
                 var.put(u'trailingComments', var.get(u'last').get(u'trailingComments'))
                 var.get(u'last').delete(u'trailingComments')
-        if var.get(u'last'):
-            while (var.get(u'last') and (var.get(u'last').get(u'range').get(u'0')>=var.get(u"this").get(u'range').get(u'0'))):
-                var.put(u'lastChild', var.get(u'last'))
-                var.put(u'last', var.get(u'bottomRight').callprop(u'pop'))
+        while (var.get(u'last') and (var.get(u'last').get(u'range').get(u'0')>=var.get(u"this").get(u'range').get(u'0'))):
+            var.put(u'lastChild', var.get(u'bottomRight').callprop(u'pop'))
+            var.put(u'last', var.get(u'bottomRight').get((var.get(u'bottomRight').get(u'length')-Js(1.0))))
         if var.get(u'lastChild'):
-            if (var.get(u'lastChild').get(u'leadingComments') and (var.get(u'lastChild').get(u'leadingComments').get((var.get(u'lastChild').get(u'leadingComments').get(u'length')-Js(1.0))).get(u'range').get(u'1')<=var.get(u"this").get(u'range').get(u'0'))):
-                var.get(u"this").put(u'leadingComments', var.get(u'lastChild').get(u'leadingComments'))
-                var.get(u'lastChild').put(u'leadingComments', var.get(u'undefined'))
+            if var.get(u'lastChild').get(u'leadingComments'):
+                var.put(u'leadingComments', Js([]))
+                #for JS loop
+                var.put(u'i', (var.get(u'lastChild').get(u'leadingComments').get(u'length')-Js(1.0)))
+                while (var.get(u'i')>=Js(0.0)):
+                    try:
+                        var.put(u'comment', var.get(u'lastChild').get(u'leadingComments').get(var.get(u'i')))
+                        if (var.get(u'comment').get(u'range').get(u'1')<=var.get(u"this").get(u'range').get(u'0')):
+                            var.get(u'leadingComments').callprop(u'unshift', var.get(u'comment'))
+                            var.get(u'lastChild').get(u'leadingComments').callprop(u'splice', var.get(u'i'), Js(1.0))
+                    finally:
+                            var.put(u'i',var.get(u'i')-Js(1))
+                if var.get(u'lastChild').get(u'leadingComments').get(u'length').neg():
+                    var.get(u'lastChild').put(u'leadingComments', var.get(u'undefined'))
         else:
             if (var.get(u'extra').get(u'leadingComments').get(u'length')>Js(0.0)):
                 var.put(u'leadingComments', Js([]))
                 #for JS loop
                 var.put(u'i', (var.get(u'extra').get(u'leadingComments').get(u'length')-Js(1.0)))
                 while (var.get(u'i')>=Js(0.0)):
-                    var.put(u'comment', var.get(u'extra').get(u'leadingComments').get(var.get(u'i')))
-                    if (var.get(u'comment').get(u'range').get(u'1')<=var.get(u"this").get(u'range').get(u'0')):
-                        var.get(u'leadingComments').callprop(u'unshift', var.get(u'comment'))
-                        var.get(u'extra').get(u'leadingComments').callprop(u'splice', var.get(u'i'), Js(1.0))
-                    var.put(u'i',var.get(u'i')-Js(1))
+                    try:
+                        var.put(u'comment', var.get(u'extra').get(u'leadingComments').get(var.get(u'i')))
+                        if (var.get(u'comment').get(u'range').get(u'1')<=var.get(u"this").get(u'range').get(u'0')):
+                            var.get(u'leadingComments').callprop(u'unshift', var.get(u'comment'))
+                            var.get(u'extra').get(u'leadingComments').callprop(u'splice', var.get(u'i'), Js(1.0))
+                    finally:
+                            var.put(u'i',var.get(u'i')-Js(1))
         if (var.get(u'leadingComments') and (var.get(u'leadingComments').get(u'length')>Js(0.0))):
             var.get(u"this").put(u'leadingComments', var.get(u'leadingComments'))
         if (var.get(u'trailingComments') and (var.get(u'trailingComments').get(u'length')>Js(0.0))):
             var.get(u"this").put(u'trailingComments', var.get(u'trailingComments'))
         var.get(u'bottomRight').callprop(u'push', var.get(u"this"))
-    PyJs_anonymous_45_.func_name = u'anonymous'
+    PyJs_anonymous_45_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_46_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
@@ -3988,7 +4270,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
                 var.get(u"this").get(u'loc').put(u'source', var.get(u'extra').get(u'source'))
         if var.get(u'extra').get(u'attachComment'):
             var.get(u"this").callprop(u'processComment')
-    PyJs_anonymous_46_.func_name = u'anonymous'
+    PyJs_anonymous_46_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_48_(elements, this, arguments, var=var):
         var = Scope({u'this':this, u'elements':elements, u'arguments':arguments}, var)
@@ -3997,7 +4279,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'elements', var.get(u'elements'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_48_.func_name = u'anonymous'
+    PyJs_anonymous_48_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_49_(elements, this, arguments, var=var):
         var = Scope({u'this':this, u'elements':elements, u'arguments':arguments}, var)
@@ -4006,7 +4288,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'elements', var.get(u'elements'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_49_.func_name = u'anonymous'
+    PyJs_anonymous_49_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_50_(params, defaults, body, expression, this, arguments, var=var):
         var = Scope({u'body':body, u'params':params, u'arguments':arguments, u'defaults':defaults, u'this':this, u'expression':expression}, var)
@@ -4020,7 +4302,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'expression', var.get(u'expression'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_50_.func_name = u'anonymous'
+    PyJs_anonymous_50_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_51_(operator, left, right, this, arguments, var=var):
         var = Scope({u'operator':operator, u'this':this, u'right':right, u'arguments':arguments, u'left':left}, var)
@@ -4031,7 +4313,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'right', var.get(u'right'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_51_.func_name = u'anonymous'
+    PyJs_anonymous_51_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_52_(left, right, this, arguments, var=var):
         var = Scope({u'this':this, u'right':right, u'arguments':arguments, u'left':left}, var)
@@ -4041,7 +4323,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'right', var.get(u'right'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_52_.func_name = u'anonymous'
+    PyJs_anonymous_52_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_53_(operator, left, right, this, arguments, var=var):
         var = Scope({u'operator':operator, u'this':this, u'right':right, u'arguments':arguments, u'left':left}, var)
@@ -4052,7 +4334,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'right', var.get(u'right'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_53_.func_name = u'anonymous'
+    PyJs_anonymous_53_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_54_(body, this, arguments, var=var):
         var = Scope({u'body':body, u'this':this, u'arguments':arguments}, var)
@@ -4061,7 +4343,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'body', var.get(u'body'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_54_.func_name = u'anonymous'
+    PyJs_anonymous_54_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_55_(label, this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments, u'label':label}, var)
@@ -4070,7 +4352,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'label', var.get(u'label'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_55_.func_name = u'anonymous'
+    PyJs_anonymous_55_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_56_(callee, args, this, arguments, var=var):
         var = Scope({u'this':this, u'args':args, u'callee':callee, u'arguments':arguments}, var)
@@ -4080,7 +4362,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'arguments', var.get(u'args'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_56_.func_name = u'anonymous'
+    PyJs_anonymous_56_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_57_(param, body, this, arguments, var=var):
         var = Scope({u'body':body, u'this':this, u'arguments':arguments, u'param':param}, var)
@@ -4090,7 +4372,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'body', var.get(u'body'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_57_.func_name = u'anonymous'
+    PyJs_anonymous_57_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_58_(body, this, arguments, var=var):
         var = Scope({u'body':body, u'this':this, u'arguments':arguments}, var)
@@ -4099,7 +4381,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'body', var.get(u'body'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_58_.func_name = u'anonymous'
+    PyJs_anonymous_58_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_59_(id, superClass, body, this, arguments, var=var):
         var = Scope({u'body':body, u'this':this, u'id':id, u'arguments':arguments, u'superClass':superClass}, var)
@@ -4110,7 +4392,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'body', var.get(u'body'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_59_.func_name = u'anonymous'
+    PyJs_anonymous_59_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_60_(id, superClass, body, this, arguments, var=var):
         var = Scope({u'body':body, u'this':this, u'id':id, u'arguments':arguments, u'superClass':superClass}, var)
@@ -4121,7 +4403,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'body', var.get(u'body'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_60_.func_name = u'anonymous'
+    PyJs_anonymous_60_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_61_(test, consequent, alternate, this, arguments, var=var):
         var = Scope({u'test':test, u'this':this, u'alternate':alternate, u'arguments':arguments, u'consequent':consequent}, var)
@@ -4132,7 +4414,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'alternate', var.get(u'alternate'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_61_.func_name = u'anonymous'
+    PyJs_anonymous_61_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_62_(label, this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments, u'label':label}, var)
@@ -4141,7 +4423,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'label', var.get(u'label'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_62_.func_name = u'anonymous'
+    PyJs_anonymous_62_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_63_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
@@ -4149,7 +4431,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'DebuggerStatement'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_63_.func_name = u'anonymous'
+    PyJs_anonymous_63_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_64_(body, test, this, arguments, var=var):
         var = Scope({u'body':body, u'test':test, u'this':this, u'arguments':arguments}, var)
@@ -4159,7 +4441,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'test', var.get(u'test'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_64_.func_name = u'anonymous'
+    PyJs_anonymous_64_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_65_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
@@ -4167,7 +4449,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'EmptyStatement'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_65_.func_name = u'anonymous'
+    PyJs_anonymous_65_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_66_(expression, this, arguments, var=var):
         var = Scope({u'this':this, u'expression':expression, u'arguments':arguments}, var)
@@ -4176,7 +4458,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'expression', var.get(u'expression'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_66_.func_name = u'anonymous'
+    PyJs_anonymous_66_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_67_(init, test, update, body, this, arguments, var=var):
         var = Scope({u'body':body, u'this':this, u'init':init, u'arguments':arguments, u'test':test, u'update':update}, var)
@@ -4188,9 +4470,20 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'body', var.get(u'body'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_67_.func_name = u'anonymous'
+    PyJs_anonymous_67_._set_name(u'anonymous')
     @Js
     def PyJs_anonymous_68_(left, right, body, this, arguments, var=var):
+        var = Scope({u'body':body, u'this':this, u'right':right, u'arguments':arguments, u'left':left}, var)
+        var.registers([u'body', u'right', u'left'])
+        var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ForOfStatement'))
+        var.get(u"this").put(u'left', var.get(u'left'))
+        var.get(u"this").put(u'right', var.get(u'right'))
+        var.get(u"this").put(u'body', var.get(u'body'))
+        var.get(u"this").callprop(u'finish')
+        return var.get(u"this")
+    PyJs_anonymous_68_._set_name(u'anonymous')
+    @Js
+    def PyJs_anonymous_69_(left, right, body, this, arguments, var=var):
         var = Scope({u'body':body, u'this':this, u'right':right, u'arguments':arguments, u'left':left}, var)
         var.registers([u'body', u'right', u'left'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ForInStatement'))
@@ -4200,46 +4493,46 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'each', Js(False))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_68_.func_name = u'anonymous'
+    PyJs_anonymous_69_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_69_(id, params, defaults, body, this, arguments, var=var):
-        var = Scope({u'body':body, u'params':params, u'arguments':arguments, u'defaults':defaults, u'this':this, u'id':id}, var)
-        var.registers([u'body', u'params', u'id', u'defaults'])
+    def PyJs_anonymous_70_(id, params, defaults, body, generator, this, arguments, var=var):
+        var = Scope({u'body':body, u'params':params, u'defaults':defaults, u'generator':generator, u'this':this, u'id':id, u'arguments':arguments}, var)
+        var.registers([u'body', u'generator', u'params', u'id', u'defaults'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'FunctionDeclaration'))
         var.get(u"this").put(u'id', var.get(u'id'))
         var.get(u"this").put(u'params', var.get(u'params'))
         var.get(u"this").put(u'defaults', var.get(u'defaults'))
         var.get(u"this").put(u'body', var.get(u'body'))
-        var.get(u"this").put(u'generator', Js(False))
+        var.get(u"this").put(u'generator', var.get(u'generator'))
         var.get(u"this").put(u'expression', Js(False))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_69_.func_name = u'anonymous'
+    PyJs_anonymous_70_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_70_(id, params, defaults, body, this, arguments, var=var):
-        var = Scope({u'body':body, u'params':params, u'arguments':arguments, u'defaults':defaults, u'this':this, u'id':id}, var)
-        var.registers([u'body', u'params', u'id', u'defaults'])
+    def PyJs_anonymous_71_(id, params, defaults, body, generator, this, arguments, var=var):
+        var = Scope({u'body':body, u'params':params, u'defaults':defaults, u'generator':generator, u'this':this, u'id':id, u'arguments':arguments}, var)
+        var.registers([u'body', u'generator', u'params', u'id', u'defaults'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'FunctionExpression'))
         var.get(u"this").put(u'id', var.get(u'id'))
         var.get(u"this").put(u'params', var.get(u'params'))
         var.get(u"this").put(u'defaults', var.get(u'defaults'))
         var.get(u"this").put(u'body', var.get(u'body'))
-        var.get(u"this").put(u'generator', Js(False))
+        var.get(u"this").put(u'generator', var.get(u'generator'))
         var.get(u"this").put(u'expression', Js(False))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_70_.func_name = u'anonymous'
+    PyJs_anonymous_71_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_71_(name, this, arguments, var=var):
+    def PyJs_anonymous_72_(name, this, arguments, var=var):
         var = Scope({u'this':this, u'name':name, u'arguments':arguments}, var)
         var.registers([u'name'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'Identifier'))
         var.get(u"this").put(u'name', var.get(u'name'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_71_.func_name = u'anonymous'
+    PyJs_anonymous_72_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_72_(test, consequent, alternate, this, arguments, var=var):
+    def PyJs_anonymous_73_(test, consequent, alternate, this, arguments, var=var):
         var = Scope({u'test':test, u'this':this, u'alternate':alternate, u'arguments':arguments, u'consequent':consequent}, var)
         var.registers([u'test', u'alternate', u'consequent'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'IfStatement'))
@@ -4248,9 +4541,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'alternate', var.get(u'alternate'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_72_.func_name = u'anonymous'
+    PyJs_anonymous_73_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_73_(label, body, this, arguments, var=var):
+    def PyJs_anonymous_74_(label, body, this, arguments, var=var):
         var = Scope({u'body':body, u'this':this, u'arguments':arguments, u'label':label}, var)
         var.registers([u'body', u'label'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'LabeledStatement'))
@@ -4258,9 +4551,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'body', var.get(u'body'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_73_.func_name = u'anonymous'
+    PyJs_anonymous_74_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_74_(token, this, arguments, var=var):
+    def PyJs_anonymous_75_(token, this, arguments, var=var):
         var = Scope({u'this':this, u'token':token, u'arguments':arguments}, var)
         var.registers([u'token'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'Literal'))
@@ -4270,9 +4563,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
             var.get(u"this").put(u'regex', var.get(u'token').get(u'regex'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_74_.func_name = u'anonymous'
+    PyJs_anonymous_75_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_75_(accessor, object, property, this, arguments, var=var):
+    def PyJs_anonymous_76_(accessor, object, property, this, arguments, var=var):
         var = Scope({u'this':this, u'property':property, u'object':object, u'accessor':accessor, u'arguments':arguments}, var)
         var.registers([u'property', u'object', u'accessor'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'MemberExpression'))
@@ -4281,9 +4574,19 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'property', var.get(u'property'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_75_.func_name = u'anonymous'
+    PyJs_anonymous_76_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_76_(callee, args, this, arguments, var=var):
+    def PyJs_anonymous_77_(meta, property, this, arguments, var=var):
+        var = Scope({u'this':this, u'property':property, u'meta':meta, u'arguments':arguments}, var)
+        var.registers([u'property', u'meta'])
+        var.get(u"this").put(u'type', var.get(u'Syntax').get(u'MetaProperty'))
+        var.get(u"this").put(u'meta', var.get(u'meta'))
+        var.get(u"this").put(u'property', var.get(u'property'))
+        var.get(u"this").callprop(u'finish')
+        return var.get(u"this")
+    PyJs_anonymous_77_._set_name(u'anonymous')
+    @Js
+    def PyJs_anonymous_78_(callee, args, this, arguments, var=var):
         var = Scope({u'this':this, u'args':args, u'callee':callee, u'arguments':arguments}, var)
         var.registers([u'args', u'callee'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'NewExpression'))
@@ -4291,27 +4594,27 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'arguments', var.get(u'args'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_76_.func_name = u'anonymous'
+    PyJs_anonymous_78_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_77_(properties, this, arguments, var=var):
+    def PyJs_anonymous_79_(properties, this, arguments, var=var):
         var = Scope({u'this':this, u'properties':properties, u'arguments':arguments}, var)
         var.registers([u'properties'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ObjectExpression'))
         var.get(u"this").put(u'properties', var.get(u'properties'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_77_.func_name = u'anonymous'
+    PyJs_anonymous_79_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_78_(properties, this, arguments, var=var):
+    def PyJs_anonymous_80_(properties, this, arguments, var=var):
         var = Scope({u'this':this, u'properties':properties, u'arguments':arguments}, var)
         var.registers([u'properties'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ObjectPattern'))
         var.get(u"this").put(u'properties', var.get(u'properties'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_78_.func_name = u'anonymous'
+    PyJs_anonymous_80_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_79_(operator, argument, this, arguments, var=var):
+    def PyJs_anonymous_81_(operator, argument, this, arguments, var=var):
         var = Scope({u'operator':operator, u'this':this, u'argument':argument, u'arguments':arguments}, var)
         var.registers([u'operator', u'argument'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'UpdateExpression'))
@@ -4320,20 +4623,19 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'prefix', Js(False))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_79_.func_name = u'anonymous'
+    PyJs_anonymous_81_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_80_(body, this, arguments, var=var):
-        var = Scope({u'body':body, u'this':this, u'arguments':arguments}, var)
-        var.registers([u'body'])
+    def PyJs_anonymous_82_(body, sourceType, this, arguments, var=var):
+        var = Scope({u'body':body, u'this':this, u'sourceType':sourceType, u'arguments':arguments}, var)
+        var.registers([u'body', u'sourceType'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'Program'))
         var.get(u"this").put(u'body', var.get(u'body'))
-        if PyJsStrictEq(var.get(u'sourceType'),Js(u'module')):
-            var.get(u"this").put(u'sourceType', var.get(u'sourceType'))
+        var.get(u"this").put(u'sourceType', var.get(u'sourceType'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_80_.func_name = u'anonymous'
+    PyJs_anonymous_82_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_81_(kind, key, computed, value, method, shorthand, this, arguments, var=var):
+    def PyJs_anonymous_83_(kind, key, computed, value, method, shorthand, this, arguments, var=var):
         var = Scope({u'kind':kind, u'shorthand':shorthand, u'computed':computed, u'this':this, u'value':value, u'arguments':arguments, u'key':key, u'method':method}, var)
         var.registers([u'kind', u'shorthand', u'computed', u'value', u'key', u'method'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'Property'))
@@ -4345,45 +4647,45 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'shorthand', var.get(u'shorthand'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_81_.func_name = u'anonymous'
+    PyJs_anonymous_83_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_82_(argument, this, arguments, var=var):
+    def PyJs_anonymous_84_(argument, this, arguments, var=var):
         var = Scope({u'this':this, u'argument':argument, u'arguments':arguments}, var)
         var.registers([u'argument'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'RestElement'))
         var.get(u"this").put(u'argument', var.get(u'argument'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_82_.func_name = u'anonymous'
+    PyJs_anonymous_84_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_83_(argument, this, arguments, var=var):
+    def PyJs_anonymous_85_(argument, this, arguments, var=var):
         var = Scope({u'this':this, u'argument':argument, u'arguments':arguments}, var)
         var.registers([u'argument'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ReturnStatement'))
         var.get(u"this").put(u'argument', var.get(u'argument'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_83_.func_name = u'anonymous'
+    PyJs_anonymous_85_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_84_(expressions, this, arguments, var=var):
+    def PyJs_anonymous_86_(expressions, this, arguments, var=var):
         var = Scope({u'this':this, u'expressions':expressions, u'arguments':arguments}, var)
         var.registers([u'expressions'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'SequenceExpression'))
         var.get(u"this").put(u'expressions', var.get(u'expressions'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_84_.func_name = u'anonymous'
+    PyJs_anonymous_86_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_85_(argument, this, arguments, var=var):
+    def PyJs_anonymous_87_(argument, this, arguments, var=var):
         var = Scope({u'this':this, u'argument':argument, u'arguments':arguments}, var)
         var.registers([u'argument'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'SpreadElement'))
         var.get(u"this").put(u'argument', var.get(u'argument'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_85_.func_name = u'anonymous'
+    PyJs_anonymous_87_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_86_(test, consequent, this, arguments, var=var):
+    def PyJs_anonymous_88_(test, consequent, this, arguments, var=var):
         var = Scope({u'test':test, u'this':this, u'arguments':arguments, u'consequent':consequent}, var)
         var.registers([u'test', u'consequent'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'SwitchCase'))
@@ -4391,17 +4693,17 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'consequent', var.get(u'consequent'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_86_.func_name = u'anonymous'
+    PyJs_anonymous_88_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_87_(this, arguments, var=var):
+    def PyJs_anonymous_89_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
         var.registers([])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'Super'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_87_.func_name = u'anonymous'
+    PyJs_anonymous_89_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_88_(discriminant, cases, this, arguments, var=var):
+    def PyJs_anonymous_90_(discriminant, cases, this, arguments, var=var):
         var = Scope({u'this':this, u'cases':cases, u'arguments':arguments, u'discriminant':discriminant}, var)
         var.registers([u'cases', u'discriminant'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'SwitchStatement'))
@@ -4409,9 +4711,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'cases', var.get(u'cases'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_88_.func_name = u'anonymous'
+    PyJs_anonymous_90_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_89_(tag, quasi, this, arguments, var=var):
+    def PyJs_anonymous_91_(tag, quasi, this, arguments, var=var):
         var = Scope({u'this':this, u'quasi':quasi, u'tag':tag, u'arguments':arguments}, var)
         var.registers([u'quasi', u'tag'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'TaggedTemplateExpression'))
@@ -4419,9 +4721,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'quasi', var.get(u'quasi'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_89_.func_name = u'anonymous'
+    PyJs_anonymous_91_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_90_(value, tail, this, arguments, var=var):
+    def PyJs_anonymous_92_(value, tail, this, arguments, var=var):
         var = Scope({u'this':this, u'tail':tail, u'arguments':arguments, u'value':value}, var)
         var.registers([u'tail', u'value'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'TemplateElement'))
@@ -4429,9 +4731,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'tail', var.get(u'tail'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_90_.func_name = u'anonymous'
+    PyJs_anonymous_92_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_91_(quasis, expressions, this, arguments, var=var):
+    def PyJs_anonymous_93_(quasis, expressions, this, arguments, var=var):
         var = Scope({u'quasis':quasis, u'this':this, u'expressions':expressions, u'arguments':arguments}, var)
         var.registers([u'quasis', u'expressions'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'TemplateLiteral'))
@@ -4439,26 +4741,26 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'expressions', var.get(u'expressions'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_91_.func_name = u'anonymous'
+    PyJs_anonymous_93_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_92_(this, arguments, var=var):
+    def PyJs_anonymous_94_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
         var.registers([])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ThisExpression'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_92_.func_name = u'anonymous'
+    PyJs_anonymous_94_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_93_(argument, this, arguments, var=var):
+    def PyJs_anonymous_95_(argument, this, arguments, var=var):
         var = Scope({u'this':this, u'argument':argument, u'arguments':arguments}, var)
         var.registers([u'argument'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ThrowStatement'))
         var.get(u"this").put(u'argument', var.get(u'argument'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_93_.func_name = u'anonymous'
+    PyJs_anonymous_95_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_94_(block, handler, finalizer, this, arguments, var=var):
+    def PyJs_anonymous_96_(block, handler, finalizer, this, arguments, var=var):
         var = Scope({u'this':this, u'finalizer':finalizer, u'handler':handler, u'arguments':arguments, u'block':block}, var)
         var.registers([u'finalizer', u'handler', u'block'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'TryStatement'))
@@ -4469,9 +4771,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'finalizer', var.get(u'finalizer'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_94_.func_name = u'anonymous'
+    PyJs_anonymous_96_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_95_(operator, argument, this, arguments, var=var):
+    def PyJs_anonymous_97_(operator, argument, this, arguments, var=var):
         var = Scope({u'operator':operator, u'this':this, u'argument':argument, u'arguments':arguments}, var)
         var.registers([u'operator', u'argument'])
         var.get(u"this").put(u'type', (var.get(u'Syntax').get(u'UpdateExpression') if (PyJsStrictEq(var.get(u'operator'),Js(u'++')) or PyJsStrictEq(var.get(u'operator'),Js(u'--'))) else var.get(u'Syntax').get(u'UnaryExpression')))
@@ -4480,9 +4782,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'prefix', var.get(u'true'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_95_.func_name = u'anonymous'
+    PyJs_anonymous_97_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_96_(declarations, this, arguments, var=var):
+    def PyJs_anonymous_98_(declarations, this, arguments, var=var):
         var = Scope({u'this':this, u'declarations':declarations, u'arguments':arguments}, var)
         var.registers([u'declarations'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'VariableDeclaration'))
@@ -4490,9 +4792,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'kind', Js(u'var'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_96_.func_name = u'anonymous'
+    PyJs_anonymous_98_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_97_(declarations, kind, this, arguments, var=var):
+    def PyJs_anonymous_99_(declarations, kind, this, arguments, var=var):
         var = Scope({u'this':this, u'kind':kind, u'declarations':declarations, u'arguments':arguments}, var)
         var.registers([u'kind', u'declarations'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'VariableDeclaration'))
@@ -4500,9 +4802,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'kind', var.get(u'kind'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_97_.func_name = u'anonymous'
+    PyJs_anonymous_99_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_98_(id, init, this, arguments, var=var):
+    def PyJs_anonymous_100_(id, init, this, arguments, var=var):
         var = Scope({u'this':this, u'init':init, u'id':id, u'arguments':arguments}, var)
         var.registers([u'init', u'id'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'VariableDeclarator'))
@@ -4510,9 +4812,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'init', var.get(u'init'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_98_.func_name = u'anonymous'
+    PyJs_anonymous_100_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_99_(test, body, this, arguments, var=var):
+    def PyJs_anonymous_101_(test, body, this, arguments, var=var):
         var = Scope({u'test':test, u'body':body, u'this':this, u'arguments':arguments}, var)
         var.registers([u'test', u'body'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'WhileStatement'))
@@ -4520,9 +4822,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'body', var.get(u'body'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_99_.func_name = u'anonymous'
+    PyJs_anonymous_101_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_100_(object, body, this, arguments, var=var):
+    def PyJs_anonymous_102_(object, body, this, arguments, var=var):
         var = Scope({u'body':body, u'this':this, u'object':object, u'arguments':arguments}, var)
         var.registers([u'body', u'object'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'WithStatement'))
@@ -4530,9 +4832,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'body', var.get(u'body'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_100_.func_name = u'anonymous'
+    PyJs_anonymous_102_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_101_(local, exported, this, arguments, var=var):
+    def PyJs_anonymous_103_(local, exported, this, arguments, var=var):
         var = Scope({u'this':this, u'local':local, u'exported':exported, u'arguments':arguments}, var)
         var.registers([u'local', u'exported'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ExportSpecifier'))
@@ -4540,27 +4842,27 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'local', var.get(u'local'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_101_.func_name = u'anonymous'
+    PyJs_anonymous_103_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_102_(local, this, arguments, var=var):
+    def PyJs_anonymous_104_(local, this, arguments, var=var):
         var = Scope({u'this':this, u'local':local, u'arguments':arguments}, var)
         var.registers([u'local'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ImportDefaultSpecifier'))
         var.get(u"this").put(u'local', var.get(u'local'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_102_.func_name = u'anonymous'
+    PyJs_anonymous_104_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_103_(local, this, arguments, var=var):
+    def PyJs_anonymous_105_(local, this, arguments, var=var):
         var = Scope({u'this':this, u'local':local, u'arguments':arguments}, var)
         var.registers([u'local'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ImportNamespaceSpecifier'))
         var.get(u"this").put(u'local', var.get(u'local'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_103_.func_name = u'anonymous'
+    PyJs_anonymous_105_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_104_(declaration, specifiers, src, this, arguments, var=var):
+    def PyJs_anonymous_106_(declaration, specifiers, src, this, arguments, var=var):
         var = Scope({u'this':this, u'specifiers':specifiers, u'src':src, u'arguments':arguments, u'declaration':declaration}, var)
         var.registers([u'specifiers', u'src', u'declaration'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ExportNamedDeclaration'))
@@ -4569,27 +4871,27 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'source', var.get(u'src'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_104_.func_name = u'anonymous'
+    PyJs_anonymous_106_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_105_(declaration, this, arguments, var=var):
+    def PyJs_anonymous_107_(declaration, this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments, u'declaration':declaration}, var)
         var.registers([u'declaration'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ExportDefaultDeclaration'))
         var.get(u"this").put(u'declaration', var.get(u'declaration'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_105_.func_name = u'anonymous'
+    PyJs_anonymous_107_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_106_(src, this, arguments, var=var):
+    def PyJs_anonymous_108_(src, this, arguments, var=var):
         var = Scope({u'this':this, u'src':src, u'arguments':arguments}, var)
         var.registers([u'src'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ExportAllDeclaration'))
         var.get(u"this").put(u'source', var.get(u'src'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_106_.func_name = u'anonymous'
+    PyJs_anonymous_108_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_107_(local, imported, this, arguments, var=var):
+    def PyJs_anonymous_109_(local, imported, this, arguments, var=var):
         var = Scope({u'this':this, u'imported':imported, u'local':local, u'arguments':arguments}, var)
         var.registers([u'imported', u'local'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ImportSpecifier'))
@@ -4597,9 +4899,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'imported', var.get(u'imported'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_107_.func_name = u'anonymous'
+    PyJs_anonymous_109_._set_name(u'anonymous')
     @Js
-    def PyJs_anonymous_108_(specifiers, src, this, arguments, var=var):
+    def PyJs_anonymous_110_(specifiers, src, this, arguments, var=var):
         var = Scope({u'this':this, u'specifiers':specifiers, u'arguments':arguments, u'src':src}, var)
         var.registers([u'specifiers', u'src'])
         var.get(u"this").put(u'type', var.get(u'Syntax').get(u'ImportDeclaration'))
@@ -4607,8 +4909,18 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         var.get(u"this").put(u'source', var.get(u'src'))
         var.get(u"this").callprop(u'finish')
         return var.get(u"this")
-    PyJs_anonymous_108_.func_name = u'anonymous'
-    PyJs_Object_44_ = Js({u'processComment':PyJs_anonymous_45_,u'finish':PyJs_anonymous_46_,u'finishArrayExpression':PyJs_anonymous_48_,u'finishArrayPattern':PyJs_anonymous_49_,u'finishArrowFunctionExpression':PyJs_anonymous_50_,u'finishAssignmentExpression':PyJs_anonymous_51_,u'finishAssignmentPattern':PyJs_anonymous_52_,u'finishBinaryExpression':PyJs_anonymous_53_,u'finishBlockStatement':PyJs_anonymous_54_,u'finishBreakStatement':PyJs_anonymous_55_,u'finishCallExpression':PyJs_anonymous_56_,u'finishCatchClause':PyJs_anonymous_57_,u'finishClassBody':PyJs_anonymous_58_,u'finishClassDeclaration':PyJs_anonymous_59_,u'finishClassExpression':PyJs_anonymous_60_,u'finishConditionalExpression':PyJs_anonymous_61_,u'finishContinueStatement':PyJs_anonymous_62_,u'finishDebuggerStatement':PyJs_anonymous_63_,u'finishDoWhileStatement':PyJs_anonymous_64_,u'finishEmptyStatement':PyJs_anonymous_65_,u'finishExpressionStatement':PyJs_anonymous_66_,u'finishForStatement':PyJs_anonymous_67_,u'finishForInStatement':PyJs_anonymous_68_,u'finishFunctionDeclaration':PyJs_anonymous_69_,u'finishFunctionExpression':PyJs_anonymous_70_,u'finishIdentifier':PyJs_anonymous_71_,u'finishIfStatement':PyJs_anonymous_72_,u'finishLabeledStatement':PyJs_anonymous_73_,u'finishLiteral':PyJs_anonymous_74_,u'finishMemberExpression':PyJs_anonymous_75_,u'finishNewExpression':PyJs_anonymous_76_,u'finishObjectExpression':PyJs_anonymous_77_,u'finishObjectPattern':PyJs_anonymous_78_,u'finishPostfixExpression':PyJs_anonymous_79_,u'finishProgram':PyJs_anonymous_80_,u'finishProperty':PyJs_anonymous_81_,u'finishRestElement':PyJs_anonymous_82_,u'finishReturnStatement':PyJs_anonymous_83_,u'finishSequenceExpression':PyJs_anonymous_84_,u'finishSpreadElement':PyJs_anonymous_85_,u'finishSwitchCase':PyJs_anonymous_86_,u'finishSuper':PyJs_anonymous_87_,u'finishSwitchStatement':PyJs_anonymous_88_,u'finishTaggedTemplateExpression':PyJs_anonymous_89_,u'finishTemplateElement':PyJs_anonymous_90_,u'finishTemplateLiteral':PyJs_anonymous_91_,u'finishThisExpression':PyJs_anonymous_92_,u'finishThrowStatement':PyJs_anonymous_93_,u'finishTryStatement':PyJs_anonymous_94_,u'finishUnaryExpression':PyJs_anonymous_95_,u'finishVariableDeclaration':PyJs_anonymous_96_,u'finishLexicalDeclaration':PyJs_anonymous_97_,u'finishVariableDeclarator':PyJs_anonymous_98_,u'finishWhileStatement':PyJs_anonymous_99_,u'finishWithStatement':PyJs_anonymous_100_,u'finishExportSpecifier':PyJs_anonymous_101_,u'finishImportDefaultSpecifier':PyJs_anonymous_102_,u'finishImportNamespaceSpecifier':PyJs_anonymous_103_,u'finishExportNamedDeclaration':PyJs_anonymous_104_,u'finishExportDefaultDeclaration':PyJs_anonymous_105_,u'finishExportAllDeclaration':PyJs_anonymous_106_,u'finishImportSpecifier':PyJs_anonymous_107_,u'finishImportDeclaration':PyJs_anonymous_108_})
+    PyJs_anonymous_110_._set_name(u'anonymous')
+    @Js
+    def PyJs_anonymous_111_(argument, delegate, this, arguments, var=var):
+        var = Scope({u'this':this, u'arguments':arguments, u'argument':argument, u'delegate':delegate}, var)
+        var.registers([u'argument', u'delegate'])
+        var.get(u"this").put(u'type', var.get(u'Syntax').get(u'YieldExpression'))
+        var.get(u"this").put(u'argument', var.get(u'argument'))
+        var.get(u"this").put(u'delegate', var.get(u'delegate'))
+        var.get(u"this").callprop(u'finish')
+        return var.get(u"this")
+    PyJs_anonymous_111_._set_name(u'anonymous')
+    PyJs_Object_44_ = Js({u'processComment':PyJs_anonymous_45_,u'finish':PyJs_anonymous_46_,u'finishArrayExpression':PyJs_anonymous_48_,u'finishArrayPattern':PyJs_anonymous_49_,u'finishArrowFunctionExpression':PyJs_anonymous_50_,u'finishAssignmentExpression':PyJs_anonymous_51_,u'finishAssignmentPattern':PyJs_anonymous_52_,u'finishBinaryExpression':PyJs_anonymous_53_,u'finishBlockStatement':PyJs_anonymous_54_,u'finishBreakStatement':PyJs_anonymous_55_,u'finishCallExpression':PyJs_anonymous_56_,u'finishCatchClause':PyJs_anonymous_57_,u'finishClassBody':PyJs_anonymous_58_,u'finishClassDeclaration':PyJs_anonymous_59_,u'finishClassExpression':PyJs_anonymous_60_,u'finishConditionalExpression':PyJs_anonymous_61_,u'finishContinueStatement':PyJs_anonymous_62_,u'finishDebuggerStatement':PyJs_anonymous_63_,u'finishDoWhileStatement':PyJs_anonymous_64_,u'finishEmptyStatement':PyJs_anonymous_65_,u'finishExpressionStatement':PyJs_anonymous_66_,u'finishForStatement':PyJs_anonymous_67_,u'finishForOfStatement':PyJs_anonymous_68_,u'finishForInStatement':PyJs_anonymous_69_,u'finishFunctionDeclaration':PyJs_anonymous_70_,u'finishFunctionExpression':PyJs_anonymous_71_,u'finishIdentifier':PyJs_anonymous_72_,u'finishIfStatement':PyJs_anonymous_73_,u'finishLabeledStatement':PyJs_anonymous_74_,u'finishLiteral':PyJs_anonymous_75_,u'finishMemberExpression':PyJs_anonymous_76_,u'finishMetaProperty':PyJs_anonymous_77_,u'finishNewExpression':PyJs_anonymous_78_,u'finishObjectExpression':PyJs_anonymous_79_,u'finishObjectPattern':PyJs_anonymous_80_,u'finishPostfixExpression':PyJs_anonymous_81_,u'finishProgram':PyJs_anonymous_82_,u'finishProperty':PyJs_anonymous_83_,u'finishRestElement':PyJs_anonymous_84_,u'finishReturnStatement':PyJs_anonymous_85_,u'finishSequenceExpression':PyJs_anonymous_86_,u'finishSpreadElement':PyJs_anonymous_87_,u'finishSwitchCase':PyJs_anonymous_88_,u'finishSuper':PyJs_anonymous_89_,u'finishSwitchStatement':PyJs_anonymous_90_,u'finishTaggedTemplateExpression':PyJs_anonymous_91_,u'finishTemplateElement':PyJs_anonymous_92_,u'finishTemplateLiteral':PyJs_anonymous_93_,u'finishThisExpression':PyJs_anonymous_94_,u'finishThrowStatement':PyJs_anonymous_95_,u'finishTryStatement':PyJs_anonymous_96_,u'finishUnaryExpression':PyJs_anonymous_97_,u'finishVariableDeclaration':PyJs_anonymous_98_,u'finishLexicalDeclaration':PyJs_anonymous_99_,u'finishVariableDeclarator':PyJs_anonymous_100_,u'finishWhileStatement':PyJs_anonymous_101_,u'finishWithStatement':PyJs_anonymous_102_,u'finishExportSpecifier':PyJs_anonymous_103_,u'finishImportDefaultSpecifier':PyJs_anonymous_104_,u'finishImportNamespaceSpecifier':PyJs_anonymous_105_,u'finishExportNamedDeclaration':PyJs_anonymous_106_,u'finishExportDefaultDeclaration':PyJs_anonymous_107_,u'finishExportAllDeclaration':PyJs_anonymous_108_,u'finishImportSpecifier':PyJs_anonymous_109_,u'finishImportDeclaration':PyJs_anonymous_110_,u'finishYieldExpression':PyJs_anonymous_111_})
     var.get(u'WrappingNode').put(u'prototype', var.get(u'Node').put(u'prototype', PyJs_Object_44_))
     pass
     pass
@@ -4717,15 +5029,15 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
     pass
     pass
     pass
-    var.get(u'exports').put(u'version', Js(u'2.2.0'))
+    var.get(u'exports').put(u'version', Js(u'2.5.0'))
     var.get(u'exports').put(u'tokenize', var.get(u'tokenize'))
     var.get(u'exports').put(u'parse', var.get(u'parse'))
     @Js
-    def PyJs_anonymous_142_(this, arguments, var=var):
+    def PyJs_anonymous_147_(this, arguments, var=var):
         var = Scope({u'this':this, u'arguments':arguments}, var)
         var.registers([u'name', u'types'])
-        PyJs_Object_143_ = Js({})
-        var.put(u'types', PyJs_Object_143_)
+        PyJs_Object_148_ = Js({})
+        var.put(u'types', PyJs_Object_148_)
         if PyJsStrictEq(var.get(u'Object').get(u'create').typeof(),Js(u'function')):
             var.put(u'types', var.get(u'Object').callprop(u'create', var.get(u"null")))
         for PyJsTemp in var.get(u'Syntax'):
@@ -4735,11 +5047,11 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
         if PyJsStrictEq(var.get(u'Object').get(u'freeze').typeof(),Js(u'function')):
             var.get(u'Object').callprop(u'freeze', var.get(u'types'))
         return var.get(u'types')
-    PyJs_anonymous_142_.func_name = u'anonymous'
-    var.get(u'exports').put(u'Syntax', PyJs_anonymous_142_())
-PyJs_anonymous_0_.func_name = u'anonymous'
+    PyJs_anonymous_147_._set_name(u'anonymous')
+    var.get(u'exports').put(u'Syntax', PyJs_anonymous_147_())
+PyJs_anonymous_0_._set_name(u'anonymous')
 @Js
-def PyJs_anonymous_144_(root, factory, this, arguments, var=var):
+def PyJs_anonymous_149_(root, factory, this, arguments, var=var):
     var = Scope({u'this':this, u'root':root, u'factory':factory, u'arguments':arguments}, var)
     var.registers([u'root', u'factory'])
     Js(u'use strict')
@@ -4749,12 +5061,21 @@ def PyJs_anonymous_144_(root, factory, this, arguments, var=var):
         if PyJsStrictNeq(var.get(u'exports',throw=False).typeof(),Js(u'undefined')):
             var.get(u'factory')(var.get(u'exports'))
         else:
-            PyJs_Object_145_ = Js({})
-            var.get(u'factory')(var.get(u'root').put(u'esprima', PyJs_Object_145_))
-PyJs_anonymous_144_.func_name = u'anonymous'
-PyJs_anonymous_144_(var.get(u"this"), PyJs_anonymous_0_)
+            PyJs_Object_150_ = Js({})
+            var.get(u'factory')(var.get(u'root').put(u'esprima', PyJs_Object_150_))
+PyJs_anonymous_149_._set_name(u'anonymous')
+PyJs_anonymous_149_(var.get(u"this"), PyJs_anonymous_0_)
 pass
 
 
 
+
 esprima = var.get('esprima').to_python()
+if __name__=='__main__':
+    import codecs
+    json = var['JSON'].to_python()
+    with codecs.open("esp.js", "r", "utf-8") as f:
+                d = f.read()
+    print 'Started'
+    print json.stringify(esprima.parse(d), None, 4)
+    print 'DONE'

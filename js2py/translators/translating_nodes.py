@@ -3,7 +3,6 @@ from pyjsparserdata import *
 from friendly_nodes import *
 import random
 
-
 class ForController:
     def __init__(self):
         self.inside = [False]
@@ -26,7 +25,6 @@ class ForController:
         return self.inside[-1]
 
 
-FOR_CONTROLLER = ForController()
 
 class InlineStack:
     NAME = 'PyJs_%s_%d_'
@@ -289,13 +287,10 @@ def BreakStatement(type, label):
 
 
 def ContinueStatement(type, label):
-    inc = ''
-    if FOR_CONTROLLER.is_inside() and FOR_CONTROLLER.update.strip():
-        inc = FOR_CONTROLLER.update.strip() + '\n'
     if label:
-        return inc + 'raise %s("Continued")\n' % (get_continue_label(label['name']))
+        return 'raise %s("Continued")\n' % (get_continue_label(label['name']))
     else:
-        return inc + 'continue\n'
+        return 'continue\n'
 
 def ReturnStatement(type, argument):
     return 'return %s\n' % (trans(argument) if argument else "var.get('undefined')")
@@ -310,26 +305,28 @@ def DebuggerStatement(type):
 
 
 def DoWhileStatement(type, body, test):
-    FOR_CONTROLLER.enter_other()
     inside = trans(body) + 'if not %s:\n' % trans(test) + indent('break\n')
     result = 'while 1:\n' + indent(inside)
-    FOR_CONTROLLER.leave_other()
     return result
 
 
 
 def ForStatement(type, init, test, update, body):
     update = indent(trans(update)) if update else ''
-    FOR_CONTROLLER.enter_for(update)
-    init = trans(init) + '\n' if init else ''
+    init = trans(init)  if init else ''
+    if not init.endswith('\n'):
+        init += '\n'
     test = trans(test) if test else '1'
-    result = '#for JS loop\n%swhile %s:\n%s%s\n' % (init, test, indent(trans(body)), update)
-    FOR_CONTROLLER.leave_for()
+    if not update:
+        result = '#for JS loop\n%swhile %s:\n%s%s\n' % (init, test, indent(trans(body)), update)
+    else:
+        result = '#for JS loop\n%swhile %s:\n' % (init, test)
+        body = 'try:\n%sfinally:\n    %s\n' % (indent(trans(body)), update)
+        result += indent(body)
     return result
 
 
 def ForInStatement(type, left, right, body, each):
-    FOR_CONTROLLER.enter_other()
     res =  'for PyJsTemp in %s:\n' % trans(right)
     if left['type']=="VariableDeclaration":
         addon = trans(left) # make sure variable is registered
@@ -345,7 +342,6 @@ def ForInStatement(type, left, right, body, each):
     else:
         raise RuntimeError('Unusual ForIn loop')
     res += indent('var.put(%s, PyJsTemp)\n' % repr(name) + trans(body))
-    FOR_CONTROLLER.leave_other()
     return res
 
 
@@ -457,9 +453,7 @@ def VariableDeclaration(type, declarations, kind):
 
 
 def WhileStatement(type, test, body):
-    FOR_CONTROLLER.enter_other()
     result = 'while %s:\n'%trans(test) + indent(trans(body))
-    FOR_CONTROLLER.leave_other()
     return result
 
 

@@ -8,6 +8,7 @@ from constructors.jsnumber import Number
 from constructors.jsboolean import Boolean
 from constructors.jsregexp import RegExp
 from constructors.jsarray import Array
+from prototypes.jsjson import JSON
 from host.console import console
 from host.jseval import Eval
 from host.jsfunctions import parseFloat, parseInt, isFinite, isNaN
@@ -28,11 +29,14 @@ builtins = ('true','false','null','undefined','Infinity',
             # also some built in functions like eval...
 
 def set_global_object(obj):
-    PyJs.GlobalObject = obj
+    obj.IS_CHILD_SCOPE = False
+    this = This({})
+    this.own = obj.own
+    this.prototype = obj.prototype
+    PyJs.GlobalObject = this
     # make this available
-    obj.put('this', obj)
-    # register this ( to make it not configurable)
     obj.register('this')
+    obj.put('this', this)
 
 
 
@@ -42,5 +46,6 @@ for name, error in ERRORS.iteritems():
     scope[name] = error
 #add eval
 scope['eval'] = Eval
+scope['JSON'] = Js({k:Js(v) for k,v in JSON.items()})
 JS_BUILTINS = {k:v for k,v in scope.iteritems()}
 

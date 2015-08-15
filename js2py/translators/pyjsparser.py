@@ -1,25 +1,22 @@
-  # Manual translation of esprima 2.2.0 to python 2.7. Translation to Python by Piotr Dabkowski
-  # GitHub:  https://github.com/PiotrDabkowski/pyjsparser
-  # Parser used in Js2Py project: https://github.com/PiotrDabkowski/Js2Py
-  #
-  # Copyright (c) jQuery Foundation, Inc. and Contributors, All Rights Reserved.
-  # Redistribution and use in source and binary forms, with or without
-  # modification, are permitted provided that the following conditions are met:
-  #   * Redistributions of source code must retain the above copyright
-  #     notice, this list of conditions and the following disclaimer.
-  #   * Redistributions in binary form must reproduce the above copyright
-  #     notice, this list of conditions and the following disclaimer in the
-  #     documentation and/or other materials provided with the distribution.
-  # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  # ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-  # DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-  # (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-  # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-  # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-  # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-  # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# The MIT License
+#
+# Copyright 2014, 2015 Piotr Dabkowski
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the 'Software'),
+# to deal in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so, subject
+# to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or
+# substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+# LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+#  OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 from __future__ import unicode_literals
 from pyjsparserdata import *
 from std_nodes import *
@@ -27,7 +24,7 @@ from pprint import pprint
 
 ESPRIMA_VERSION = '2.2.0'
 DEBUG = False
-# Small naming converntion changes
+# Small naming convention changes
 # len -> leng
 # id -> d
 # type -> typ
@@ -485,6 +482,67 @@ class PyJsParser:
             'end': self.index}
 
     # 7.8.4 String Literals
+
+    def _unescape_string(self, string):
+        '''Perform sctring escape - for regexp literals'''
+        self.index = 0
+        self.length = len(string)
+        self.source = string
+        self.lineNumber = 0
+        self.lineStart = 0
+        octal = False
+        st = ''
+        while (self.index < self.length):
+            ch = self.source[self.index]
+            self.index += 1
+            if ch == '\\':
+                ch = self.source[self.index]
+                self.index += 1
+                if (not isLineTerminator(ch)):
+                    if ch in 'ux':
+                        if (self.source[self.index] == '{'):
+                            self.index += 1
+                            st += self.scanUnicodeCodePointEscape()
+                        else:
+                            unescaped = self.scanHexEscape(ch)
+                            if (not unescaped):
+                                self.throwUnexpectedToken() # with throw I don't know whats the difference
+                            st += unescaped
+                    elif ch=='n':
+                        st += '\n';
+                    elif ch=='r':
+                        st += '\r';
+                    elif ch=='t':
+                        st += '\t';
+                    elif ch=='b':
+                        st += '\b';
+                    elif ch=='f':
+                        st += '\f';
+                    elif ch=='v':
+                        st += '\x0B'
+                    elif ch in '89':
+                        self.throwUnexpectedToken() # again with throw....
+                    else:
+                        if isOctalDigit(ch):
+                            octToDec = self.octalToDecimal(ch)
+                            octal = octToDec['octal'] or octal
+                            st += unichr(octToDec['code'])
+                        else:
+                            st += ch
+                else:
+                    self.lineNumber += 1
+                    if (ch == '\r' and self.source[self.index] == '\n'):
+                        self.index += 1
+                    self.lineStart = self.index
+            elif isLineTerminator(ch):
+                raise RuntimeError('Line terminator inside regexp. Did not expect that')
+            else:
+                st += ch
+        return st
+
+
+
+
 
     def scanStringLiteral(self):
         st = ''

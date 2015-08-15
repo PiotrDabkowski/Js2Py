@@ -136,9 +136,18 @@ class ArrayPrototype:
         return res
 
     def sort(cmpfn):
-        # I will implement it later because it seems to be a bit complicated
-        # I will have to use built in sort function for speed reasons
-        raise NotImplementedError()
+        if not this.Class in {'Array', 'Arguments'}:
+            return this.to_object() # do nothing
+        arr = [this.get(str(i)) for i in xrange(len(this))]
+        if not arr:
+            return this
+        if not cmpfn.is_callable():
+            cmpfn = None
+        cmp = lambda a,b: sort_compare(a, b, cmpfn)
+        arr.sort(cmp=cmp)
+        for i in xrange(len(arr)):
+            this.put(unicode(i), arr[i])
+        return this
 
     def splice(start, deleteCount):
         # 1-8
@@ -234,3 +243,36 @@ class ArrayPrototype:
 
     def reduceRight(callbackfn):
         raise NotImplementedError()
+
+
+def sort_compare(a, b, comp):
+    if a is None:
+        if b is None:
+            return 0
+        return 1
+    if b is None:
+        if a is None:
+            return 0
+        return -1
+    if a.is_undefined():
+        if b.is_undefined():
+            return 0
+        return 1
+    if b.is_undefined():
+        if a.is_undefined():
+            return 0
+        return -1
+    if comp is not None:
+        res = comp.call(a.undefined, (a, b))
+        return res.to_int()
+    x, y = a.to_string(), b.to_string()
+    if x<y:
+        return -1
+    elif x>y:
+        return 1
+    return 0
+
+
+
+
+

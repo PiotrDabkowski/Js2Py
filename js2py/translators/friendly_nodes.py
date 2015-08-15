@@ -1,3 +1,6 @@
+from pyjsparser import PyJsParser
+
+REGEXP_CONVERTER = PyJsParser()
 
 def indent(lines, ind=4):
     return ind*' '+lines.replace('\n', '\n'+ind*' ').rstrip(' ')
@@ -39,7 +42,9 @@ def indent(lines, ind=4):
     return ind*' '+lines.replace('\n', '\n'+ind*' ').rstrip(' ')
 
 def compose_regex(val):
-    return u'/%s/%s' % val
+    reg, flags = val
+    reg = REGEXP_CONVERTER._unescape_string(reg)
+    return u'/%s/%s' % (reg, flags)
 
 def float_repr(f):
     if int(f)==f:

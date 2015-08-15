@@ -528,8 +528,4 @@ def node_to_dict(node):
         return {k:node_to_dict(v) for k,v in node.iteritems()}
     elif not isinstance(node, BaseNode):
         return node
-    dic = {}
-    for e in dir(node):
-        if not (e.startswith('finish') or e.startswith('_')):
-            dic[e] = node_to_dict(getattr(node, e))
-    return dic
+    return {k:node_to_dict(v) for k, v in node.__dict__.iteritems()}
