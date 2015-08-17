@@ -1,30 +1,35 @@
 ES5Harness = {registerTest : function (t) {
-    console.log(t.id)
-    console.log(t.description)
+    result = t;
+    result.problem = false;
     if (t.precondition) {
         try {
             if (t.precondition()===true) {
-                console.log('Precondition PAILED')
+                result.preconditionResult = 'PASSED'
             } else {
-                console.log('Precondition FAILED')
+                result.preconditionResult = 'FAILED'
+                result.problem = true
             }
         } catch (e) {
-            console.log('Error in precondition check' + e)
+            result.precondition = 'ERROR in precondition check ' + e
+            result.problem = true
         }
     } else {
-        console.log('No precondition...')
+        result.preconditionResult = 'No precondition'
     }
     try {
         if (t.test() === true) {
             // report passed
-            console.log('PASSED +++++')
+            result.result = 'PASSED'
         } else {
             // report failed
-            console.log('FAILED -------------------------')
+            result.result = 'FAILED'
+            result.problem = true
         }
     } catch (e) {
-        console.log('ERROR: ' + e)
+        result.result = 'ERROR: ' + e
+        result.problem = true
     }
+    return result
 }
 }
 
@@ -64,5 +69,3 @@ function compareArray(aExpected, aActual) {
 
   return true;
 }
-
-

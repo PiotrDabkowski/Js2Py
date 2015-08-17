@@ -2,6 +2,7 @@
 from copy import copy
 import re
 #from translators import translator
+from js2py.translators.friendly_nodes import REGEXP_CONVERTER
 from utils.injector import fix_js_args
 from types import FunctionType, ModuleType, GeneratorType, ClassType, BuiltinFunctionType, MethodType, BuiltinMethodType, NoneType
 import traceback
@@ -320,29 +321,28 @@ class PyJs(object):
         
     def define_own_property(self, prop, desc): #Internal use only. External through Object
         # prop must be a Py string. Desc is either a descriptor or accessor.
-        #Messy method -  raw translation from Ecma spec to prevent any bugs.
+        #Messy method -  raw translation from Ecma spec to prevent any bugs. # todo check this
         current = self.get_own_property(prop)
 
         extensible = self.extensible
-        DEFAULT_DATA_DESC = {'value': undefined, #undefined
-                             'writable': False,
-                             'enumerable': False,
-                             'configurable': False}
-        DEFAULT_ACCESSOR_DESC = {'get': undefined, #undefined
-                                 'set': undefined, #undefined
-                                 'enumerable': False,
-                                 'configurable': False}
         if not current: #We are creating a new property
             if not extensible:
                 return False
             if is_data_descriptor(desc) or is_generic_descriptor(desc):
+                DEFAULT_DATA_DESC = {'value': undefined, #undefined
+                             'writable': False,
+                             'enumerable': False,
+                             'configurable': False}
                 DEFAULT_DATA_DESC.update(desc)
                 self.own[prop] = DEFAULT_DATA_DESC
             else:
+                DEFAULT_ACCESSOR_DESC = {'get': undefined, #undefined
+                                 'set': undefined, #undefined
+                                 'enumerable': False,
+                                 'configurable': False}
                 DEFAULT_ACCESSOR_DESC.update(desc)
                 self.own[prop] = DEFAULT_ACCESSOR_DESC
             return True
-        # todo make sure that == is a right comparison.
         if not desc or desc==current: #We dont need to change anything.
             return True
         configurable = current['configurable']  
@@ -368,7 +368,7 @@ class PyJs(object):
                 current['writable'] = False 
         elif is_data_descriptor(current) and is_data_descriptor(desc):
             if not configurable:
-                if not current['writable'] and desc['writable']:
+                if not current['writable'] and desc.get('writable'):
                     return False
             if not current['writable'] and 'value' in desc and current['value']!=desc['value']:
                 return False
@@ -777,7 +777,12 @@ class PyJs(object):
         if not self.is_callable():
             raise  MakeError('TypeError', '%s is not a function'%self.typeof())
         return self.call(self.GlobalObject, args) # todo  value of this
-    
+
+
+    def create(self, *args):
+        '''Generally not a constructor, raise an error'''
+        raise  MakeError('TypeError', '%s is not a constructor'%self.Class)
+
     def __unicode__(self):
         return self.to_string().value
 
@@ -1349,14 +1354,27 @@ class PyJsArray(PyJs):
                 new_desc['writable'] = True
             if not PyJs.define_own_property(self, prop, new_desc):
                 return False
-            while new_len<old_len:
-                old_len -= 1
-                if not self.delete(str(old_len)): # if failed to delete set len to current len and reject.
-                    new_desc['value'] = Js(old_len+1)
-                    if not new_writable:
-                        new_desc['writable'] = False
-                    PyJs.define_own_property(self, prop, new_desc)
-                    return False
+            if new_len<old_len:
+                # not very efficient for sparse arrays, so using different method for sparse:
+                if old_len>30*len(self.own):
+                    for ele in self.own.keys():
+                        if ele.isdigit() and int(ele)>=new_len:
+                            if not self.delete(ele): # if failed to delete set len to current len and reject.
+                                new_desc['value'] = Js(old_len+1)
+                                if not new_writable:
+                                    new_desc['writable'] = False
+                                PyJs.define_own_property(self, prop, new_desc)
+                                return False
+                    old_len = new_len
+                else: # standard method
+                    while new_len<old_len:
+                        old_len -= 1
+                        if not self.delete(str(int(old_len))): # if failed to delete set len to current len and reject.
+                            new_desc['value'] = Js(old_len+1)
+                            if not new_writable:
+                                new_desc['writable'] = False
+                            PyJs.define_own_property(self, prop, new_desc)
+                            return False
             if not new_writable:
                 self.own['length']['writable'] = False
             return True
@@ -1607,7 +1625,8 @@ def RegExp(pattern, flags):
     if pattern.is_undefined():
         pattern = ''
     else:
-        pattern = pattern.to_string().value
+
+        pattern = REGEXP_CONVERTER._unescape_string(pattern.to_string().value)
     flags = flags.to_string().value if not flags.is_undefined() else ''
     pattern  = '/%s/'%(pattern if pattern else '(?:)') + flags
     return JsRegExp(pattern)

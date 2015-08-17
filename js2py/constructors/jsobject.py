@@ -45,14 +45,15 @@ class ObjectMethods:
             raise MakeError('TypeError', 'Object prototype may only be an Object or null')
         temp = PyJsObject(prototype=(None if obj.is_null() else obj))
         if len(arguments)>1 and not arguments[1].is_undefined():
-            ObjectMethods.defineProperties.__func__(obj, arguments[1])
+            ObjectMethods.defineProperties.__func__(temp, arguments[1])
         return temp
 
     def defineProperty(obj, prop, attrs):
         if not obj.is_object():
             raise MakeError('TypeError', 'Object.defineProperty called on non-object')
         name = prop.to_string().value
-        obj.define_own_property(name, ToPropertyDescriptor(attrs))
+        if not obj.define_own_property(name, ToPropertyDescriptor(attrs)):
+            raise MakeError('TypeError', 'Cannot redefine property: %s' % name)
         return obj
 
     def defineProperties(obj, properties):
@@ -61,8 +62,8 @@ class ObjectMethods:
         props = properties.to_object()
         for name in props:
             desc = ToPropertyDescriptor(props.get(name.value))
-            if not obj.defineProperty(name.value, desc):
-                raise MakeError('TypeError', 'failed to define own property: %s'%name.value)
+            if not obj.define_own_property(name.value, desc):
+                raise MakeError('TypeError', 'Failed to define own property: %s'%name.value)
         return obj
 
     def seal(obj):

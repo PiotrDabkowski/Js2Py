@@ -2,7 +2,6 @@ import json
 indent = ''
 
 def parse(text):
-    print text
     reviver = arguments[1]
     s = text.to_string().value
     try:

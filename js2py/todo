@@ -1,9 +1,13 @@
 # TODO
-Fix function.call
 Check Object Constructor
 Complete list prototype
-Fix function apply/bind...
-Fix regexp compile
+Fix function bind...
+Fix regexp compile?
 Check prototypes:
    String: replace, split
+fix recursion error in json stringify
 
+
+Array constructor
+escape etc
+var obj = new Number(0); var x = new Array(obj); x

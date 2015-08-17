@@ -1517,7 +1517,7 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
             PyJs_anonymous_26_._set_name(u'anonymous')
             var.put(u'tmp', var.get(u'tmp').callprop(u'replace', JsRegExp(u'/\\u{([0-9a-fA-F]+)}|\\u([a-fA-F0-9]{4})/g'), PyJs_anonymous_26_).callprop(u'replace', JsRegExp(u'/[\ud800-\udbff][\udc00-\udfff]/g'), var.get(u'astralSubstitute')))
         try:
-            #var.get(u'RegExp')(var.get(u'tmp')) todo this somehow fails...
+            var.get(u'RegExp')(var.get(u'tmp')) 
             pass
         except PyJsException as PyJsTempException:
             PyJsHolder_65_32046955 = var.own.get(u'e')

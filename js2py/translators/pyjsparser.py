@@ -922,12 +922,13 @@ class PyJsParser:
 
     def createError(self, line, pos, description):
         self.log_err_case()
-        error = JsSyntaxError('Line ' + unicode(line) + ': ' + unicode(description));
-        error.index = pos
-        error.lineNumber = line
-        error.column = pos - (self.lineStart if self.scanning else self.lastLineStart) + 1
-        error.description = description
-        return error
+        from js2py.base import ERRORS, Js, JsToPyException
+        error = ERRORS['SyntaxError']('Line ' + unicode(line) + ': ' + unicode(description))
+        error.put('index',  Js(pos))
+        error.put('lineNumber', Js(line))
+        error.put('column', Js(pos - (self.lineStart if self.scanning else self.lastLineStart) + 1))
+        error.put('description',  Js(description))
+        return JsToPyException(error)
 
     # Throw an exception
 
