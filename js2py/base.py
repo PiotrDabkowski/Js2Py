@@ -28,6 +28,8 @@ def to_python(val):
             return v
     elif isinstance(val, (PyJsString, PyJsBoolean)):
         return val.value
+    elif isinstance(val, PyObjectWrapper):
+        return val.__dict__['obj']
     return JsObjectWrapper(val)
 
 def to_dict(js_obj, known=None): # fixed recursion error in self referencing objects
@@ -132,7 +134,8 @@ def Js(val):
     elif isinstance(val, JsObjectWrapper):
         return val.__dict__['_obj']
     else: # try to convert to js object
-        raise RuntimeError('Cant convert python type to js (%s)' % repr(val))
+        return py_wrap(val)
+        #raise RuntimeError('Cant convert python type to js (%s)' % repr(val))
         #try:
         #    obj = {}
         #    for name in dir(val):
@@ -384,12 +387,14 @@ class PyJs(object):
     #these methods will work only for Number class
     def is_infinity(self):
         assert self.Class=='Number'
-        return abs(self.value)==float('inf')
+        return self.value==float('inf') or self.value==-float('inf')
 
     def is_nan(self):
         assert self.Class=='Number'
         return self.value!=self.value #nan!=nan evaluates to true
 
+    def is_finite(self):
+        return not (self.is_nan() or self.is_infinity())
     #Type Conversions. to_type. All must return pyjs subclass instance
     
     def to_primitive(self, hint=None):
@@ -776,7 +781,7 @@ class PyJs(object):
         automatically!'''
         if not self.is_callable():
             raise  MakeError('TypeError', '%s is not a function'%self.typeof())
-        return self.call(self.GlobalObject, args) # todo  value of this
+        return self.call(self.GlobalObject, args)
 
 
     def create(self, *args):
@@ -1080,6 +1085,9 @@ class PyObjectWrapper(PyJs):
     def to_python(self):
         return self.obj
 
+    def to_py(self):
+        return self.obj
+
 
 def py_wrap(py):
     if isinstance(py, (FunctionType, BuiltinFunctionType, MethodType, BuiltinMethodType,
@@ -1179,7 +1187,10 @@ class PyJsFunction(PyJs):
         elif len(args)<arglen:
             args += (undefined,)*(arglen-len(args))
         args += this, arguments  #append extra params to the arg list
-        return Js(self.code(*args))
+        try:
+            return Js(self.code(*args))
+        except RuntimeError: # maximum recursion
+            raise MakeError('RangeError', 'Maximum call stack size exceeded')
         
     def has_instance(self, other):
         # I am not sure here so instanceof may not work lol.
@@ -1409,9 +1420,9 @@ class PyJsArguments(PyJs):
         self.extensible = True
         self.prototype = ObjectPrototype
         self.define_own_property('length', {'value': Js(len(args)), 'writable': True,
-                                            'enumerable': False, 'configurable': False})
+                                            'enumerable': False, 'configurable': True})
         self.define_own_property('callee', {'value': callee, 'writable': True,
-                                            'enumerable': False, 'configurable': False})
+                                            'enumerable': False, 'configurable': True})
         for i, e in enumerate(args):
             self.put(str(i), Js(e))
 

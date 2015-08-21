@@ -218,7 +218,7 @@ def UnaryExpression(type, operator, argument, prefix):
         if argument['type'] in {'Identifier', 'MemberExpression'}:
             # means that operation is valid
             return js_delete(a)
-        return a   # otherwise not valid, just perform expression
+        return 'PyJsComma(%s, Js(True))' % a   # otherwise not valid, just perform expression and return true.
     elif operator=='typeof':
         return js_typeof(a)
     return UNARY[operator](a)

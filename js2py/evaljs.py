@@ -52,9 +52,9 @@ class EvalJs(object):
         10
        You can run interactive javascript console with console method!"""
     def __init__(self, context=None):
-        self._context = {}
+        self.__dict__['_context'] = {}
         exec DEFAULT_HEADER in self._context
-        self._var = self._context['var'].to_python()
+        self.__dict__['_var'] = self._context['var'].to_python()
 
     def execute(self, js):
         """executes javascript js in current context"""
@@ -72,6 +72,12 @@ class EvalJs(object):
 
     def __getitem__(self, var):
         return getattr(self._var, var)
+
+    def __setattr__(self, var, val):
+        return setattr(self._var, var, val)
+
+    def __setitem__(self, var, val):
+        return setattr(self._var, var, val)
 
     def console(self):
         """starts to interact (starts interactive console) Something like code.InteractiveConsole"""

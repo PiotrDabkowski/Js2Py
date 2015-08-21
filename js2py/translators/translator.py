@@ -48,6 +48,7 @@ if __name__=='__main__':
         with codecs.open("esp.js", "r", "utf-8") as f:
             d = f.read()
             r = js2py.translate_js(d)
+            exec r in {}
             with open('res.py','wb') as f2:
                 f2.write(r)
 

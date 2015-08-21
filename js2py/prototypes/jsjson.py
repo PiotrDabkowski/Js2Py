@@ -18,7 +18,7 @@ def parse(text):
 
 def stringify(value, replacer, space):
     global indent
-    stack = []
+    stack = set([])
     indent = ''
     property_list = replacer_function = this.undefined
     if replacer.is_object():
@@ -28,7 +28,7 @@ def stringify(value, replacer, space):
             property_list = []
             for e in replacer:
                 v = replacer[e]
-                v = this.undefined
+                item = this.undefined
                 if v._type()=='Number':
                     item = v.to_string()
                 elif v._type()=='String':
@@ -92,8 +92,8 @@ def Str(key, holder, replacer_function, property_list, gap, stack, space):
 def jo(value, stack, gap, property_list, replacer_function, space):
     global indent
     if value in stack:
-        value.MakeError('TypeError', 'Converting circular structure to JSON')
-    stack.append(value)
+        raise value.MakeError('TypeError', 'Converting circular structure to JSON')
+    stack.add(value)
     stepback = indent
     indent += gap
     if not property_list.is_undefined():
@@ -107,14 +107,15 @@ def jo(value, stack, gap, property_list, replacer_function, space):
             member = json.dumps(p) + ':' + (' ' if gap else '')  + str_p.value # todo not sure here - what space character?
             partial.append(member)
     if not partial:
-        final = {}
-    if not gap:
-        final = '{%s}' % ','.join(partial)
+        final = '{}'
     else:
-        sep = ',\n'+indent
-        properties = sep.join(partial)
-        final = '{\n'+indent+properties+'\n'+stepback+'}'
-    stack.pop()
+        if not gap:
+            final = '{%s}' % ','.join(partial)
+        else:
+            sep = ',\n'+indent
+            properties = sep.join(partial)
+            final = '{\n'+indent+properties+'\n'+stepback+'}'
+    stack.remove(value)
     indent = stepback
     return final
 
@@ -122,8 +123,8 @@ def jo(value, stack, gap, property_list, replacer_function, space):
 def ja(value, stack, gap, property_list, replacer_function, space):
     global indent
     if value in stack:
-        value.MakeError('TypeError', 'Converting circular structure to JSON')
-    stack.append(value)
+        raise value.MakeError('TypeError', 'Converting circular structure to JSON')
+    stack.add(value)
     stepback = indent
     indent += gap
     partial = []
@@ -144,7 +145,7 @@ def ja(value, stack, gap, property_list, replacer_function, space):
             sep = ',\n'+indent
             properties = sep.join(partial)
             final = '[\n'+indent +properties+'\n'+stepback+']'
-    stack.pop()
+    stack.remove(value)
     indent = stepback
     return final
 

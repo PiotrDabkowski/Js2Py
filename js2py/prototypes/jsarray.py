@@ -2,6 +2,9 @@ def to_arr(this):
     """Returns Python array from Js array"""
     return [this.get(str(e)) for e in xrange(len(this))]
 
+
+ARR_STACK = set({})
+
 class ArrayPrototype:
     def toString():
         # this function is wrong but I will leave it here fore debugging purposes.
@@ -52,14 +55,21 @@ class ArrayPrototype:
         return A
 
     def join(separator):
+        ARR_STACK.add(this)
         array = this.to_object()
         arr_len = array.get('length').to_uint32()
         separator = ',' if separator.is_undefined() else separator.to_string().value
         elems = []
         for e in xrange(arr_len):
             elem = array.get(str(e))
-            elems.append(elem.to_string().value if not (elem.is_undefined() or elem.is_null()) else '')
-        return separator.join(elems)
+            if elem in ARR_STACK:
+                s = ''
+            else:
+                s = elem.to_string().value
+            elems.append(s if not (elem.is_undefined() or elem.is_null()) else '')
+        res =  separator.join(elems)
+        ARR_STACK.remove(this)
+        return res
 
     def pop(): #todo check
         array = this.to_object()
