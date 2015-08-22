@@ -1387,8 +1387,8 @@ STATS = {'not_implemented': 0,
          'error': 0,
          'passed': 0,
          'wrong': 0}
-PRINT_ERROR = False
-PRINT_WRONG = True
+PRINT_ERROR = 0
+PRINT_WRONG = 1
 
 def run_test_case(path):
     if path is None:

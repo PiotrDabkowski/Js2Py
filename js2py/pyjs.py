@@ -46,6 +46,6 @@ for name, error in ERRORS.iteritems():
     scope[name] = error
 #add eval
 scope['eval'] = Eval
-scope['JSON'] = Js({k:Js(v) for k,v in JSON.items()})
+scope['JSON'] = JSON
 JS_BUILTINS = {k:v for k,v in scope.iteritems()}
 

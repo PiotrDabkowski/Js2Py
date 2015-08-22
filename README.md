@@ -28,26 +28,43 @@ Simple Example:
     >>> add.constructor
     function Function() { [python code] }
     
-    >>> js = EvalJs()
-    >>> js.execute('var a = 10;function f(x) {return x*x};')
-    >>> js.f(9)
-    81
-    >>> js.a
+More advanced usage example:
+    
+    # Execute javascript in context:
+    >>> context = EvalJs()
+    >>> context.execute('var a = 10; function f(x) {return x*x};')
+    # Get value of variable a:
+    >>> context.a
     10
+    # context.f behaves just like js function so you can supply more than 1 argument. '9'*'9' in javascript is 81.
+    >>> context.f('9', 0)  
+    81    
+    # context.f has all attributes of normal javascript object (including __proto__ )
+    >>> context.f.toString()
+    u'function f(x) { [python code] }'
+    >>> context.f.constructor
+    function Function() { [python code] }
+   
+    # You can also set variables inside context:
+    >>> context.foo = [1,2,3]  # context.foo is now Js Array object and behaves just like javascript array!
+    >>> context.foo.push(4)  
+    4
+    >>> context.foo.to_list() # convert to python list
+    [1, 2, 3, 4]
+    
 
 <hr>
 
 ####Limitations
 
-It has few limitations which will be solved in the future:
+It has only 3 known limitations:
 <ul>
-<li>Date and JSON objects are not implemented</li>
+<li>"strict mode" is ignored</li>
 <li>with statement is not supported</li>
 <li>Indirect call to eval will is treated as direct call to eval (hence always evals in local scope)</li>
 </ul>
 
-You can help me to fix these problems if you want.
-
+Please let me know if you find any bugs - they will be fixed within 48 hours.
 
 <hr>
 
@@ -64,9 +81,9 @@ In Js2Py all JavaScript objects are a subclass of PyJs object. For example JS Nu
 js2py.eval_js and js2py.EvalJs automatically tries to convert PyJs type to builtin python type. So for example if you 
 execute:
 
-    >>> js2py.eval_js('"hello"')
+    >>> js2py.eval_js('var a = "hello"; a')
 
-you will get unicode type. However for complex types such conversion is impossoble and JsObjectWrapper
+eval_js will return unicode type (u"hello"). However for complex types such conversion is impossible and JsObjectWrapper is returned.
 See the conversion table JsType -> PyType:
 
     Boolean -> bool

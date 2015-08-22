@@ -131,8 +131,8 @@ Date.prototype.format = function (mask, utc) {
 };
 
 
-today = new Date(4393494334343434).toISOString();
-
+today = new Date(4393494334343434);
+today.toISOString
 '''
 
 #c.execute(a)

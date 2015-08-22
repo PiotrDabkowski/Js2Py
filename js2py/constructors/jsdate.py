@@ -143,150 +143,150 @@ def check_date(obj):
 
 
 class DateProto:
-    def toString(self):
+    def toString():
         check_date(this)
         if this.value is NaN:
             return 'Invalid Date'
         offset = (UTCToLocal(this.value) - this.value)/msPerHour
         return this.local_strftime('%a %b %d %Y %H:%M:%S GMT') + '%s00 (%s)' % (pad(offset, 2, True), GetTimeZoneName(this.value))
 
-    def toDateString(self):
+    def toDateString():
         check_date(this)
         return this.local_strftime('%d %B %Y')
 
-    def toTimeString(self):
+    def toTimeString():
         check_date(this)
         return this.local_strftime('%H:%M:%S')
 
-    def toLocaleString(self):
+    def toLocaleString():
         check_date(this)
         return this.local_strftime('%d %B %Y %H:%M:%S')
 
-    def toLocaleDateString(self):
+    def toLocaleDateString():
         check_date(this)
         return this.local_strftime('%d %B %Y')
 
-    def toLocaleTimeString(self):
+    def toLocaleTimeString():
         check_date(this)
         return this.local_strftime('%H:%M:%S')
 
-    def valueOf(self):
+    def valueOf():
         check_date(this)
         return this.value
 
-    def getTime(self):
+    def getTime():
         check_date(this)
         return this.value
 
-    def getFullYear(self):
+    def getFullYear():
         check_date(this)
         if this.value is NaN:
             return NaN
         return YearFromTime(UTCToLocal(this.value))
 
-    def getUTCFullYear(self):
+    def getUTCFullYear():
         check_date(this)
         if this.value is NaN:
             return NaN
         return YearFromTime(this.value)
 
-    def getMonth(self):
+    def getMonth():
         check_date(this)
         if this.value is NaN:
             return NaN
         return MonthFromTime(UTCToLocal(this.value))
 
-    def getDate(self):
+    def getDate():
         check_date(this)
         if this.value is NaN:
             return NaN
         return DateFromTime(UTCToLocal(this.value))
 
-    def getUTCMonth(self):
+    def getUTCMonth():
         check_date(this)
         if this.value is NaN:
             return NaN
         return MonthFromTime(this.value)
 
-    def getUTCDate(self):
+    def getUTCDate():
         check_date(this)
         if this.value is NaN:
             return NaN
         return DateFromTime(this.value)
 
-    def getDay(self):
+    def getDay():
         check_date(this)
         if this.value is NaN:
             return NaN
         return WeekDay(UTCToLocal(this.value))
 
-    def getUTCDay(self):
+    def getUTCDay():
         check_date(this)
         if this.value is NaN:
             return NaN
         return WeekDay(this.value)
 
-    def getHours(self):
+    def getHours():
         check_date(this)
         if this.value is NaN:
             return NaN
         return HourFromTime(UTCToLocal(this.value))
 
-    def getUTCHours(self):
+    def getUTCHours():
         check_date(this)
         if this.value is NaN:
             return NaN
         return HourFromTime(this.value)
 
-    def getMinutes(self):
+    def getMinutes():
         check_date(this)
         if this.value is NaN:
             return NaN
         return MinFromTime(UTCToLocal(this.value))
 
-    def getUTCMinutes(self):
+    def getUTCMinutes():
         check_date(this)
         if this.value is NaN:
             return NaN
         return MinFromTime(this.value)
 
-    def getSeconds(self):
+    def getSeconds():
         check_date(this)
         if this.value is NaN:
             return NaN
         return SecFromTime(UTCToLocal(this.value))
 
-    def getUTCSeconds(self):
+    def getUTCSeconds():
         check_date(this)
         if this.value is NaN:
             return NaN
         return SecFromTime(this.value)
 
-    def getMilliseconds(self):
+    def getMilliseconds():
         check_date(this)
         if this.value is NaN:
             return NaN
         return msFromTime(UTCToLocal(this.value))
 
-    def getUTCMilliseconds(self):
+    def getUTCMilliseconds():
         check_date(this)
         if this.value is NaN:
             return NaN
         return msFromTime(this.value)
 
-    def getTimezoneOffset(self):
+    def getTimezoneOffset():
         check_date(this)
         if this.value is NaN:
             return NaN
         return (UTCToLocal(this.value) - this.value)/60000
 
 
-    def setTime(self, time):
+    def setTime(time):
         check_date(this)
         this.value = TimeClip(time.to_number().to_int())
         return this.value
 
-    def setMilliseconds(self, ms):
+    def setMilliseconds(ms):
         check_date(this)
         t = UTCToLocal(this.value)
         tim = MakeTime(HourFromTime(t), MinFromTime(t), SecFromTime(t), ms.to_int())
@@ -294,7 +294,7 @@ class DateProto:
         this.value = u
         return u
 
-    def setUTCMilliseconds(self, ms):
+    def setUTCMilliseconds(ms):
         check_date(this)
         t = this.value
         tim = MakeTime(HourFromTime(t), MinFromTime(t), SecFromTime(t), ms.to_int())
@@ -304,18 +304,18 @@ class DateProto:
 
     # todo Complete all setters!
 
-    def toUTCString(self):
+    def toUTCString():
         check_date(this)
         return this.utc_strftime('%d %B %Y %H:%M:%S')
 
-    def toISOString(self):
+    def toISOString():
         check_date(this)
         t = this.value
         year = YearFromTime(t)
         month, day, hour, minute, second, milli = pad(MonthFromTime(t)+1), pad(DateFromTime(t)), pad(HourFromTime(t)), pad(MinFromTime(t)), pad(SecFromTime(t)), pad(msFromTime(t))
         return ISO_FORMAT % (unicode(year) if 0<=year<=9999 else pad(year, 6, True), month, day, hour, minute, second, milli)
 
-    def toJSON(self, key):
+    def toJSON(key):
         o = this.to_object()
         tv = o.to_primitive('Number')
         if tv.Class=='Number' and not tv.is_finite():

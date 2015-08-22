@@ -1189,8 +1189,10 @@ class PyJsFunction(PyJs):
         args += this, arguments  #append extra params to the arg list
         try:
             return Js(self.code(*args))
-        except RuntimeError: # maximum recursion
-            raise MakeError('RangeError', 'Maximum call stack size exceeded')
+        except NotImplementedError:
+            raise
+        except RuntimeError as e: # maximum recursion
+            raise MakeError('RangeError', e.message if not isinstance(e, NotImplementedError) else 'Not implemented!')
         
     def has_instance(self, other):
         # I am not sure here so instanceof may not work lol.

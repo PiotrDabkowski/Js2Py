@@ -1,4 +1,5 @@
 import json
+from js2py.base import Js
 indent = ''
 
 def parse(text):
@@ -188,5 +189,14 @@ def walk(holder, name, reviver):
 
 
 
-JSON = {'parse': parse,
-        'stringify': stringify}
+JSON = Js({})
+
+JSON.define_own_property('parse', {'value': Js(parse),
+                                   'enumerable': False,
+                                   'writable': True,
+                                   'configurable': True})
+
+JSON.define_own_property('stringify', {'value': Js(stringify),
+                                       'enumerable': False,
+                                       'writable': True,
+                                       'configurable': True})
