@@ -514,8 +514,8 @@ class PyJsParser:
                         st += '\r';
                     elif ch=='t':
                         st += '\t';
-                    elif ch=='b':
-                        st += '\b';
+                    # elif ch=='b':
+                    #     st += '\b';
                     elif ch=='f':
                         st += '\f';
                     elif ch=='v':
@@ -528,7 +528,7 @@ class PyJsParser:
                             octal = octToDec['octal'] or octal
                             st += unichr(octToDec['code'])
                         else:
-                            st += ch
+                            st += '\\' + ch  # DONT ESCAPE!!!
                 else:
                     self.lineNumber += 1
                     if (ch == '\r' and self.source[self.index] == '\n'):
