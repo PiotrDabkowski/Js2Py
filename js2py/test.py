@@ -5,8 +5,8 @@ c = js2py.EvalJs()
 # c.execute('f = function (){}')
 a = r'''
 
-x = 1234567
-x.toString(3)
+x = -3
+x.toString(2)
 
 '''
 

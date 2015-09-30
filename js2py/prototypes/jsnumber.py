@@ -18,14 +18,19 @@ class NumberPrototype:
         if r==10:
             return this.to_string()
         if r not in xrange(2, 36):
-            raise this.MakeError('RangeError', 'radix must be between 2 and 36')
+            raise this.MakeError('RangeError', 'Number.prototype.toString() radix argument must be between 2 and 36')
         num = this.to_int()
+        if num < 0:
+            num = -num
+            sign = '-'
+        else:
+            sign = ''
         res = ''
         while num:
             s = RADIX_SYMBOLS[num % r]
             num = num / r
             res = s + res
-        return res
+        return sign + (res if res else '0')
 
     def valueOf():
         if this.Class!='Number':
