@@ -5,11 +5,9 @@ c = js2py.EvalJs()
 # c.execute('f = function (){}')
 a = r'''
 
-b = {88:99}
-a = [0,1,2]
-a[1] = b
-b[9000] = a
-JSON.stringify(b)
+x = 1234567
+x.toString(3)
+
 '''
 
 #c.execute(a)
@@ -21,5 +19,5 @@ with open('test_res.py', 'wb') as f:
 def f(a, b, c):
     return [xrange(100),0]
 
-e =  js2py.eval_js("function test() {return 'Ciera Cola'}"+a)
+e =  js2py.eval_js("function Test() {return 'Ciera Cola'}"+a)
 print e

@@ -184,7 +184,7 @@ class StringPrototype:
         if func:
             args = (match,) +  pars + (span[1], string)
             # convert all types to JS
-            args = tuple(this.Js(x) for x in args)
+            args = tuple([this.Js(x) for x in args])
             res += replaceValue(*args).to_string().value
         else:
             res += replacement_template(replaceValue, s, span, pars)
