@@ -5,8 +5,7 @@ c = js2py.EvalJs()
 # c.execute('f = function (){}')
 a = r'''
 
-x = -3
-x.toString(2)
+[].forEach.call("test", function(ch) { console.log(ch) });
 
 '''
 

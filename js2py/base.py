@@ -1619,6 +1619,10 @@ def string_constructor():
         temp.value = ''
     else:
         temp.value = arguments[0].to_string().value
+        for i, ch in enumerate(temp.value): # this will make things long...
+            temp.put(str(i), Js(ch))
+    temp.own['length'] = {'value': Js(len(temp.value)), 'writable': False,
+                          'enumerable': False, 'configurable': False}
     return temp
 
 String.create = string_constructor
