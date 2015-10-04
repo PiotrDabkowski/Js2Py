@@ -105,8 +105,6 @@ def Js(val):
         if val in NUM_BANK:
             return NUM_BANK[val]
         return PyJsNumber(float(val), NumberPrototype)
-    elif isinstance(val, tuple): # convert to arguments
-        return val # todo later
     elif isinstance(val, FunctionType):
         return PyJsFunction(val, FunctionPrototype)
     #elif isinstance(val, ModuleType):
@@ -129,7 +127,7 @@ def Js(val):
          for k, v in val.iteritems():
              temp.put(Js(k), Js(v))
          return temp
-    elif isinstance(val, list): #Convert to array
+    elif isinstance(val, (list, tuple)): #Convert to array
         return PyJsArray(val, ArrayPrototype)
     elif isinstance(val, JsObjectWrapper):
         return val.__dict__['_obj']
@@ -205,7 +203,7 @@ class PyJs(object):
         return self.Class=='Null'
         
     def is_primitive(self):
-        return Type(self) in self.PRIMITIVES
+        return self.TYPE in self.PRIMITIVES  # todo make sure about this - it may cause bugs self.TYPE
     
     def is_object(self):
         return not self.is_primitive()
@@ -311,9 +309,9 @@ class PyJs(object):
         return Js(False)
     
     def default_value(self, hint=None):
-        order = ['toString', 'valueOf']
+        order = ('toString', 'valueOf')
         if hint=='Number' or (hint is None and self.Class=='Date'):
-            order.reverse()
+            order = ('valueOf', 'toString')
         for meth_name in order:
             method = self.get(meth_name)
             if method is not None and method.is_callable():
@@ -400,6 +398,8 @@ class PyJs(object):
     def to_primitive(self, hint=None):
         if self.is_primitive():
             return self
+        if hint is None and self.Class=='Number' or self.Class=='Boolean':  # favour number for Class== Number or Boolean default = String
+            hint = 'Number'
         return self.default_value(hint)
             
     def to_boolean(self):
@@ -421,13 +421,13 @@ class PyJs(object):
             return NaN
         elif typ=='Boolean':    # 1 for true 0 for false
             return Js(int(self.value))
-        elif typ=='Number':   # no need to convert
+        elif typ=='Number':# or self.Class=='Number':   # no need to convert
             return self
         elif typ=='String':
             s = self.value.strip() #Strip white space
             if not s: # '' is simply 0
                 return Js(0)
-            if 'x' in s or 'X' in s: #hex (positive only)
+            if 'x' in s or 'X' in s[:3]: #hex (positive only)
                 try: # try to convert
                     num = int(s, 16)
                 except ValueError: # could not convert > NaN
@@ -456,7 +456,7 @@ class PyJs(object):
             return Js('undefined')
         elif typ=='Boolean':
             return Js('true') if self.value else Js('false')
-        elif typ=='Number':
+        elif typ=='Number': #or self.Class=='Number':
             if self.is_nan():
                 return Js('NaN')
             elif self.is_infinity():
@@ -468,7 +468,7 @@ class PyJs(object):
         elif typ=='String':
             return self
         else: #object
-            return self.to_primitive('String').to_string() 
+            return self.to_primitive('String').to_string()
             
             
     def to_object(self):
@@ -490,6 +490,9 @@ class PyJs(object):
             return 0
         int32 = int(num.value) % 2**32
         return int(int32 - 2**32 if int32 >= 2**31 else int32)
+
+    def strict_equality_comparison(self, other):
+        return PyJsStrictEq(self, other)
 
     def cok(self):
         """Check object coercible"""
@@ -1615,12 +1618,14 @@ def String():
 def string_constructor():
     temp = PyJsObject(prototype=StringPrototype)
     temp.Class = 'String'
+    #temp.TYPE = 'String'
     if not len(arguments):
         temp.value = ''
     else:
         temp.value = arguments[0].to_string().value
         for i, ch in enumerate(temp.value): # this will make things long...
-            temp.put(str(i), Js(ch))
+            temp.own[str(i)] = {'value': Js(ch), 'writable': False,
+                                'enumerable': True, 'configurable': True}
     temp.own['length'] = {'value': Js(len(temp.value)), 'writable': False,
                           'enumerable': False, 'configurable': False}
     return temp
@@ -1664,6 +1669,7 @@ def Number():
 def number_constructor():
     temp = PyJsObject(prototype=NumberPrototype)
     temp.Class = 'Number'
+    #temp.TYPE = 'Number'
     if len(arguments):
         temp.value = arguments[0].to_number().value
     else:
@@ -1681,6 +1687,7 @@ def Boolean(value):
 def boolean_constructor(value):
     temp = PyJsObject(prototype=BooleanPrototype)
     temp.Class = 'Boolean'
+    #temp.TYPE = 'Boolean'
     temp.value = value.to_boolean().value
     return temp
 

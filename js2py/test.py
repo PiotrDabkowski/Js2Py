@@ -5,8 +5,8 @@ c = js2py.EvalJs()
 # c.execute('f = function (){}')
 a = r'''
 
-[].forEach.call("test", function(ch) { console.log(ch) });
-
+a = new Boolean(0)
+new String('2') == Number(2)
 '''
 
 #c.execute(a)
