@@ -212,10 +212,51 @@ class ArrayPrototype:
         return A
 
     def unshift():
-        raise NotImplementedError()
+        array = this.to_object()
+        arr_len = array.get('length').to_uint32()
+        argCount = len(arguments)
+        k = arr_len
+        while k > 0:
+            fr = str(k - 1)
+            to = str(k + argCount - 1)
+            if array.has_property(fr):
+                array.put(to, array.get(fr))
+            else:
+                array.delete(to)
+            k -= 1
+        j = 0
+        items = to_arr(arguments)
+        while items:
+            E = items.pop(0)
+            array.put(str(j), E)
+            j += 1
+        array.put('length', this.Js(arr_len + argCount))
+        return arr_len + argCount
 
     def indexOf(searchElement):
-        raise NotImplementedError()
+        array = this.to_object()
+        arr_len = array.get('length').to_uint32()
+        if arr_len == 0:
+            return -1
+        if arguments[1]:
+            n = arguments[1].to_int()
+        else:
+            n = 0
+        if n >= arr_len:
+            return -1
+        if n >= 0:
+            k = n
+        else:
+            k = arr_len - abs(n)
+            if k < 0:
+                k = 0
+        while k < arr_len:
+            if array.has_property(str(k)):
+                elementK = array.get(str(k))
+                if this.strict_equality_comparison(searchElement, elementK):
+                    return k
+            k += 1
+        return -1
 
     def lastIndexOf(searchElement):
         array = this.to_object()
@@ -284,7 +325,22 @@ class ArrayPrototype:
             k+=1
 
     def map(callbackfn):
-        raise NotImplementedError()
+        array = this.to_object()
+        arr_len = array.get('length').to_uint32()
+        if not callbackfn.is_callable():
+            raise this.MakeError('TypeError', 'callbackfn must be a function')
+        T = arguments[1]
+        A = this.Js([])
+        k = 0
+        while k<arr_len:
+            Pk = str(k)
+            if array.has_property(Pk):
+                kValue = array.get(Pk)
+                mappedValue = callbackfn.call(T, (kValue, this.Js(k), array))
+                A.define_own_property(Pk, {'value': mappedValue, 'writable': True,
+                    'enumerable': True, 'configurable': True})
+            k += 1
+        return A
 
     def filter(callbackfn):
         array = this.to_object()
