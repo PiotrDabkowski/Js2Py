@@ -664,6 +664,9 @@ class PyJs(object):
     # will be implemented as external functions later)
     # <, <=, !=, ==, >=, > are implemented here.
     
+    def strict_equality_comparison(self, a, b):
+        return PyJsStrictEq(a, b)
+    
     def abstract_relational_comparison(self, other, self_first=True):
         ''' self<other if self_first else other<self.
            Returns the result of the question: is self smaller than other?
