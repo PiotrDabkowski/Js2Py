@@ -211,8 +211,6 @@ class ArrayPrototype:
         array.put('length', this.Js(arr_len - actual_delete_count + items_len))
         return A
 
-
-
     def unshift():
         raise NotImplementedError()
 
@@ -220,13 +218,57 @@ class ArrayPrototype:
         raise NotImplementedError()
 
     def lastIndexOf(searchElement):
-        raise NotImplementedError()
+        array = this.to_object()
+        arr_len = array.get('length').to_uint32()
+        if arr_len == 0:
+            return -1
+        if len(arguments)>1:
+            n = arguments[1].to_int()
+        else:
+            n = arr_len - 1
+        if n >= 0:
+            k = min(n, arr_len-1)
+        else:
+            k = arr_len - abs(n)
+        while k >= 0:
+            if array.has_property(str(k)):
+                elementK = array.get(str(k))
+                if searchElement.strict_equality_comparison(elementK):
+                    return k
+            k -= 1
+        return -1
+
 
     def every(callbackfn):
-        raise NotImplementedError()
+        array = this.to_object()
+        arr_len = array.get('length').to_uint32()
+        if not callbackfn.is_callable():
+            raise this.MakeError('TypeError', 'callbackfn must be a function')
+        T = arguments[1]
+        k = 0
+        while k<arr_len:
+            if array.has_property(str(k)):
+                kValue = array.get(str(k))
+                if not callbackfn.call(T, (kValue, this.Js(k), array)).to_boolean().value:
+                    return False
+            k += 1
+        return True
+
 
     def some(callbackfn):
-        raise NotImplementedError()
+        array = this.to_object()
+        arr_len = array.get('length').to_uint32()
+        if not callbackfn.is_callable():
+            raise this.MakeError('TypeError', 'callbackfn must be a function')
+        T = arguments[1]
+        k = 0
+        while k<arr_len:
+            if array.has_property(str(k)):
+                kValue = array.get(str(k))
+                if callbackfn.call(T, (kValue, this.Js(k), array)).to_boolean().value:
+                    return True
+            k += 1
+        return False
 
     def forEach(callbackfn):
         array = this.to_object()
@@ -241,18 +283,77 @@ class ArrayPrototype:
                 callbackfn.call(T, (kValue, this.Js(k), array))
             k+=1
 
-
     def map(callbackfn):
         raise NotImplementedError()
 
     def filter(callbackfn):
-        raise NotImplementedError()
+        array = this.to_object()
+        arr_len = array.get('length').to_uint32()
+        if not callbackfn.is_callable():
+            raise this.MakeError('TypeError', 'callbackfn must be a function')
+        T = arguments[1]
+        res = []
+        k = 0
+        while k<arr_len:
+            if array.has_property(str(k)):
+                kValue = array.get(str(k))
+                if callbackfn.call(T, (kValue, this.Js(k), array)).to_boolean().value:
+                    res.append(kValue)
+            k += 1
+        return res # converted to js array automatically
 
     def reduce(callbackfn):
-        raise NotImplementedError()
+        array = this.to_object()
+        arr_len = array.get('length').to_uint32()
+        if not callbackfn.is_callable():
+            raise this.MakeError('TypeError', 'callbackfn must be a function')
+        if not arr_len and len(arguments)<2:
+            raise this.MakeError('TypeError', 'Reduce of empty array with no initial value')
+        k = 0
+        if len(arguments)>1: # initial value present
+            accumulator = arguments[1]
+        else:
+            kPresent = False
+            while not kPresent and k<arr_len:
+                kPresent = array.has_property(str(k))
+                if kPresent:
+                    accumulator = array.get(str(k))
+                k += 1
+            if not kPresent:
+                raise this.MakeError('TypeError', 'Reduce of empty array with no initial value')
+        while k<arr_len:
+            if array.has_property(str(k)):
+                kValue = array.get(str(k))
+                accumulator = callbackfn.call(this.undefined, (accumulator, kValue, this.Js(k), array))
+            k += 1
+        return accumulator
+
 
     def reduceRight(callbackfn):
-        raise NotImplementedError()
+        array = this.to_object()
+        arr_len = array.get('length').to_uint32()
+        if not callbackfn.is_callable():
+            raise this.MakeError('TypeError', 'callbackfn must be a function')
+        if not arr_len and len(arguments)<2:
+            raise this.MakeError('TypeError', 'Reduce of empty array with no initial value')
+        k = arr_len - 1
+        if len(arguments)>1: # initial value present
+            accumulator = arguments[1]
+        else:
+            kPresent = False
+            while not kPresent and k>=0:
+                kPresent = array.has_property(str(k))
+                if kPresent:
+                    accumulator = array.get(str(k))
+                k -= 1
+            if not kPresent:
+                raise this.MakeError('TypeError', 'Reduce of empty array with no initial value')
+        while k>=0:
+            if array.has_property(str(k)):
+                kValue = array.get(str(k))
+                accumulator = callbackfn.call(this.undefined, (accumulator, kValue, this.Js(k), array))
+            k -= 1
+        return accumulator
 
 
 def sort_compare(a, b, comp):
@@ -281,7 +382,6 @@ def sort_compare(a, b, comp):
     elif x>y:
         return 1
     return 0
-
 
 
 

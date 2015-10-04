@@ -203,7 +203,7 @@ class PyJs(object):
         return self.Class=='Null'
         
     def is_primitive(self):
-        return self.TYPE in self.PRIMITIVES  # todo make sure about this - it may cause bugs self.TYPE
+        return self.TYPE in self.PRIMITIVES
     
     def is_object(self):
         return not self.is_primitive()
