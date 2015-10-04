@@ -300,7 +300,7 @@ class PyJs(object):
     def delete(self, prop):
         if not isinstance(prop, basestring):
             prop = prop.to_string().value
-        desc = self.get_own_propertxy(prop)
+        desc = self.get_own_property(prop)
         if desc is None: 
             return Js(True)
         if desc['configurable']:
