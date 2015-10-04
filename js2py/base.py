@@ -300,7 +300,7 @@ class PyJs(object):
     def delete(self, prop):
         if not isinstance(prop, basestring):
             prop = prop.to_string().value
-        desc = self.get_own_property(prop)
+        desc = self.get_own_propertxy(prop)
         if desc is None: 
             return Js(True)
         if desc['configurable']:
@@ -663,9 +663,6 @@ class PyJs(object):
     #Comparisons (I dont implement === and !== here, these
     # will be implemented as external functions later)
     # <, <=, !=, ==, >=, > are implemented here.
-    
-    def strict_equality_comparison(self, a, b):
-        return PyJsStrictEq(a, b)
     
     def abstract_relational_comparison(self, other, self_first=True):
         ''' self<other if self_first else other<self.

@@ -238,7 +238,7 @@ class ArrayPrototype:
         arr_len = array.get('length').to_uint32()
         if arr_len == 0:
             return -1
-        if arguments[1]:
+        if len(arguments)>1:
             n = arguments[1].to_int()
         else:
             n = 0
@@ -253,7 +253,7 @@ class ArrayPrototype:
         while k < arr_len:
             if array.has_property(str(k)):
                 elementK = array.get(str(k))
-                if this.strict_equality_comparison(searchElement, elementK):
+                if searchElement.strict_equality_comparison(elementK):
                     return k
             k += 1
         return -1
