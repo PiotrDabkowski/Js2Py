@@ -1,7 +1,17 @@
 # NOTE: t must be INT!!!
 import time
 import datetime
-from tzlocal import get_localzone
+import warnings
+try:
+    from tzlocal import get_localzone
+    LOCAL_ZONE = get_localzone()
+except: # except all problems...
+    warnings.warn('Please install or fix tzlocal library (pip install tzlocal) in order to make Date object work better. Otherwise I will assume DST is in effect all the time', Warning)
+    class LOCAL_ZONE:
+        @staticmethod
+        def dst(*args):
+            return 1
+
 from js2py.base import MakeError
 CUM = (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365)
 msPerDay = 86400000
@@ -14,7 +24,9 @@ MinutesPerHour = 60
 SecondsPerMinute = 60
 NaN = float('nan')
 LocalTZA = - time.timezone * msPerSecond
-LOCAL_ZONE = get_localzone()
+
+
+
 
 
 def DaylightSavingTA(t):
@@ -23,7 +35,9 @@ def DaylightSavingTA(t):
     try:
         return int(LOCAL_ZONE.dst(datetime.datetime.utcfromtimestamp(t/1000)).seconds)*1000
     except:
-        raise MakeError('TypeError', 'date not supported by python.datetime. I will solve it in future versions')
+        warnings.warn('Invalid datetime date, assumed DST time, may be inaccurate...', Warning)
+        return 1
+        #raise MakeError('TypeError', 'date not supported by python.datetime. I will solve it in future versions')
 
 def GetTimeZoneName(t):
     return time.tzname[DaylightSavingTA(t)>0]

@@ -1,16 +1,11 @@
 import js2py
-import pytube
-y = pytube.YouTube('https://www.youtube.com/watch?v=ufWdBPVEjDQ')
-print y.get_videos()[-1].url
-raise
+
 c = js2py.EvalJs()
 # c.execute('a = {d:4,f:function k() {return 1}}')
 # c.execute('function k(a) {console.log(a);console.log(this)}')
 # c.execute('f = function (){}')
 a = r'''
-
-c = void 9
-00000037777
+Date()+''
 
 '''
 
