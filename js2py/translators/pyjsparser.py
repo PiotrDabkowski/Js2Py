@@ -534,8 +534,6 @@ class PyJsParser:
                     if (ch == '\r' and self.source[self.index] == '\n'):
                         self.index += 1
                     self.lineStart = self.index
-            elif isLineTerminator(ch):
-                raise RuntimeError('Line terminator inside regexp. Did not expect that')
             else:
                 st += ch
         return st

@@ -180,7 +180,8 @@ def js_typeof(a):
     return a+'.typeof()'
 
 def js_void(a):
-    return '('+a+')'
+    # eval and return undefined
+    return 'PyJsComma(%s, Js(None))' % a
 
 def js_new(a):
     cands = list(bracket_split(a, ('()',)))

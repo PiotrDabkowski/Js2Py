@@ -1,4 +1,7 @@
-from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 long_desc = '''Translates JavaScript to Python code. Js2Py is able to translate and execute virtually any JavaScript code.
 

@@ -563,6 +563,9 @@ def FunctionExpression(type, id, params, defaults, body, generator, expression):
     # transfer names from Py scope to Js scope
     arg_map = dict(zip(vars, used_vars))
     arg_map.update({'this':'this', 'arguments':'arguments'})
+    if id: # make self available from inside...
+        if id['name'] not in arg_map:
+            arg_map[id['name']] = PyName
     arg_conv = 'var = Scope({%s}, var)\n' % ', '.join(repr(k)+':'+v for k,v in arg_map.iteritems())
     # and finally set the name of the function to its real name:
     footer = '%s._set_name(%s)\n' % (PyName, repr(JsName))

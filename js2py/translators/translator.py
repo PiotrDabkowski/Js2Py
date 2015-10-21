@@ -42,15 +42,19 @@ def trasnlate(js, HEADER=DEFAULT_HEADER):
 syntax_tree_translate = translating_nodes.trans
 
 if __name__=='__main__':
+    PROFILE = False
     import js2py
     import codecs
     def main():
-        with codecs.open("esp.js", "r", "utf-8") as f:
+        with codecs.open("aaaaa.js", "r", "utf-8") as f:
             d = f.read()
             r = js2py.translate_js(d)
-            exec r in {}
+
             with open('res.py','wb') as f2:
                 f2.write(r)
-
-    import cProfile
-    cProfile.run('main()', sort='tottime')
+            exec r in {}
+    if PROFILE:
+        import cProfile
+        cProfile.run('main()', sort='tottime')
+    else:
+        main()

@@ -62,7 +62,10 @@ def to_list(js_obj, known=None):
         return known[js_obj]
     known[js_obj] = res
     for k in js_obj:
-        name = int(k.value)
+        try:
+            name = int(k.value)
+        except:
+            continue
         input = js_obj.get(str(name))
         output = to_python(input)
         if isinstance(output, JsObjectWrapper):
@@ -1609,7 +1612,7 @@ del RegExpPrototype.own['exec2']
 
 # String
 @Js
-def String():
+def String(st):
     if not len(arguments):
         return Js('')
     return arguments[0].to_string()

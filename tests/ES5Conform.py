@@ -1387,8 +1387,8 @@ STATS = {'not_implemented': 0,
          'error': 0,
          'passed': 0,
          'wrong': 0}
-PRINT_ERROR = 1
-PRINT_WRONG = 0
+PRINT_ERROR = 0
+PRINT_WRONG = 1
 
 def run_test_case(path):
     if path is None:
@@ -1433,3 +1433,4 @@ for path in TestCasePaths:
     run_test_case(path)
 
 print STATS
+raw_input()
