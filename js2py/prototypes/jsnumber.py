@@ -27,7 +27,7 @@ class NumberPrototype:
         r = radix.to_int()
         if r==10:
             return to_str_rep(this)
-        if r not in xrange(2, 36):
+        if r not in xrange(2, 37): 
             raise this.MakeError('RangeError', 'Number.prototype.toString() radix argument must be between 2 and 36')
         num = this.to_int()
         if num < 0:
