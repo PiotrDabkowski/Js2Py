@@ -5,8 +5,7 @@ c = js2py.EvalJs()
 # c.execute('function k(a) {console.log(a);console.log(this)}')
 # c.execute('f = function (){}')
 a = r'''
-Date()+''
-
+Number( Date())
 '''
 
 #c.execute(a)

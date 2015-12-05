@@ -620,6 +620,10 @@ class PyJs(object):
         a = self.to_primitive()
         b = other.to_primitive()
         if a.Class=='String' or b.Class=='String':
+            if self.Class=='Date':
+                a = self
+            elif other.Class=='Date':
+                b = other
             return Js(a.to_string().value+b.to_string().value)
         a = a.to_number()
         b = b.to_number()

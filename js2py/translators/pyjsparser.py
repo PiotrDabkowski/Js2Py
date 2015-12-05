@@ -2033,7 +2033,7 @@ class PyJsParser:
         elif ((not options['inFor'] and d.type != Syntax.Identifier) or self.match('=')):
             self.expect('=');
             init = self.isolateCoverGrammar(self.parseAssignmentExpression);
-        return node.finishVariableDeclarator(id, init)
+        return node.finishVariableDeclarator(d, init)
 
     def parseBindingList(self, kind, options):
         list = [];

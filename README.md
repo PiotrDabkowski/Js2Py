@@ -4,7 +4,7 @@ Translates any valid JavaScript (ECMA Script 5.1) to Python. Translation is full
 dependencies - <b>uses only standard python library.</b>
 <hr>
 
-Managed to fully automatically translate esprima to Python! - Available <a href="https://github.com/PiotrDabkowski/Js2Py/blob/master/examples/pyesprima.py"> Here </a>
+Managed to fully automatically translate esprima to Python! - Available <a href="https://github.com/PiotrDabkowski/Js2Py/blob/master/examples/pyesprima.py"> Here </a> (currently only JavaScript 6 parser for python!)
 
 <hr>
 ####Functionality
