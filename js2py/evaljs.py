@@ -50,11 +50,26 @@ class EvalJs(object):
         81
         >>> js.a
         10
+
+        context is a python dict or object that contains python variables that should be available to JavaScript
+        For example:
+        >>> js = EvalJs({'a': 30})
+        >>> js.execute('var x = a')
+        >>> js.x
+        30
+
        You can run interactive javascript console with console method!"""
-    def __init__(self, context=None):
+    def __init__(self, context={}):
         self.__dict__['_context'] = {}
         exec DEFAULT_HEADER in self._context
         self.__dict__['_var'] = self._context['var'].to_python()
+        if not isinstance(context, dict):
+            try:
+                context = context.__dict__
+            except:
+                raise TypeError('context has to be either a dict or have __dict__ attr')
+        for k, v in context.iteritems():
+            setattr(self._var, k, v)
 
     def execute(self, js):
         """executes javascript js in current context"""

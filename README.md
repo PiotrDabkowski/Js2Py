@@ -31,7 +31,7 @@ Simple Example:
 More advanced usage example:
     
     # Execute javascript in context:
-    >>> context = EvalJs()
+    >>> context = EvalJs({'python_sum': sum})
     >>> context.execute('var a = 10; function f(x) {return x*x};')
     # Get value of variable a:
     >>> context.a
@@ -51,6 +51,10 @@ More advanced usage example:
     4
     >>> context.foo.to_list() # convert to python list
     [1, 2, 3, 4]
+    
+    # You can use python objects that you put inside the context!
+    >>> context.eval('python_sum(new Array(1,2,3))')
+    6
     
 
 <hr>

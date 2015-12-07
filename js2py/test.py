@@ -18,4 +18,9 @@ def f(a, b, c):
     return [xrange(100),0]
 
 e =  js2py.eval_js(a)
-print e
+
+
+context = js2py.EvalJs({'python_sum': sum})
+print context.eval('python_sum([1,2,3])')
+
+

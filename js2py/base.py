@@ -83,7 +83,18 @@ def HJs(val):
     if hasattr(val, '__call__'): #
         @Js
         def PyWrapper(this, arguments, var=None):
-            return py_wrap(val.__call__(*tuple(to_python(e) for e in arguments.to_list())))
+            args = tuple(to_python(e) for e in arguments.to_list())
+            try:
+                py_res = val.__call__(*args)
+            except Exception as e:
+                message = 'your Python function failed!  '
+                try:
+                    message += e.message
+                except:
+                    pass
+                raise MakeError('Error', message)
+            return py_wrap(py_res)
+
         try:
             PyWrapper.func_name = val.__name__
         except:
@@ -1028,6 +1039,14 @@ class JsObjectWrapper(object):
     def __setitem__(self, item, value):
         self._obj.put(str(item), Js(value))
 
+    def __iter__(self):
+        if self._obj.Class=='Array':
+            return iter(self.to_list())
+        elif self._obj.Class=='Object':
+            return iter(self.to_dict())
+        else:
+            raise MakeError('TypeError', '%s is not iterable in Python' % self._obj.Class)
+
     def __repr__(self):
         if self._obj.is_primitive() or self._obj.is_callable:
             return repr(self._obj)
@@ -1069,7 +1088,17 @@ class PyObjectWrapper(PyJs):
 
     def __call__(self, *args):
         py_args = tuple(to_python(e) for e in args)
-        return py_wrap(self.obj.__call__(*py_args))
+        try:
+            py_res = self.obj.__call__(*py_args)
+        except Exception as e:
+            message = 'your Python function failed!  '
+            try:
+                message += e.message
+            except:
+                pass
+            raise MakeError('Error', message)
+        return py_wrap(py_res)
+
 
     def callprop(self, prop, *args):
         py_args = tuple(to_python(e) for e in args)
