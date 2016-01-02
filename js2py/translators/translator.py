@@ -46,7 +46,7 @@ if __name__=='__main__':
     import js2py
     import codecs
     def main():
-        with codecs.open("aaaaa.js", "r", "utf-8") as f:
+        with codecs.open("esp.js", "r", "utf-8") as f:
             d = f.read()
             r = js2py.translate_js(d)
 

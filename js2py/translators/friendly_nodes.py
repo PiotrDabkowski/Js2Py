@@ -212,6 +212,7 @@ def js_delete(a):
     c = list(bracket_split(a, ['()']))
     beg, arglist = ''.join(c[:-1]).strip(), c[-1].strip()  #strips just to make sure... I will remove it later
     if beg[-4:]!='.get':
+        print a
         raise SyntaxError('Invalid delete operation')
     return beg[:-3]+'delete'+arglist
 

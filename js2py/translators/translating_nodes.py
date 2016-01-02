@@ -2,6 +2,10 @@ from __future__ import unicode_literals
 from pyjsparserdata import *
 from friendly_nodes import *
 import random
+# number of characters above which expression will be split to multiple lines in order to avoid python parser stack overflow
+# still experimental so I suggest to set it to 400 in order to avoid common errors
+# set it to smaller value only if you have problems with parser stack overflow
+LINE_LEN_LIMIT = 400   #  200  # or any other value - the larger the smaller probability of errors :)
 
 class ForController:
     def __init__(self):
@@ -99,16 +103,43 @@ def to_key(literal_or_identifier):
         else:
             return unicode(k)
 
-def trans(ele):
+def trans(ele, standard=False):
     """Translates esprima syntax tree to python by delegating to appriopriate translating node"""
     try:
         node = globals().get(ele['type'])
         if not node:
             raise NotImplementedError('%s is not supported!' % ele['type'])
+        if standard:
+            node = node.__dict__['standard'] if 'standard' in node.__dict__ else node
         return node(**ele)
     except:
         #print ele
         raise
+
+
+def limited(func):
+    '''Decorator limiting resulting line length in order to avoid python parser stack overflow -
+      If expression longer than LINE_LEN_LIMIT characters then it will be moved to upper line
+     USE ONLY ON EXPRESSIONS!!! '''
+    def f(standard=False, **args):
+        insert_pos = len(inline_stack.names)  # in case line is longer than limit we will have to insert the lval at current position
+                                              # this is because calling func will change inline_stack.
+                                              # we cant use inline_stack.require here because we dont know whether line overflows yet
+        res = func(**args)
+        if len(res)>LINE_LEN_LIMIT:
+            name = inline_stack.require('LONG')
+            inline_stack.names.pop()
+            inline_stack.names.insert(insert_pos, name)
+            res = 'def %s():\n    return %s\n' % (name, res)
+            inline_stack.define(name, res)
+            return name+'()'
+        else:
+            return res
+    f.__dict__['standard'] = func
+    return f
+
+
+
 
 
 
@@ -130,7 +161,7 @@ def Literal(type, value, raw, regex=None):
 def Identifier(type, name):
     return 'var.get(%s)' % repr(name)
 
-
+@limited
 def MemberExpression(type, computed, object, property):
     far_left = trans(object)
     if computed:  # obj[prop] type accessor
@@ -147,7 +178,7 @@ def MemberExpression(type, computed, object, property):
 def ThisExpression(type):
     return 'var.get(u"this")'
 
-
+@limited
 def CallExpression(type, callee, arguments):
     arguments = [trans(e) for e in arguments]
     if callee['type']=='MemberExpression':
@@ -211,9 +242,9 @@ def Property(type, kind, key, computed, value, method, shorthand):
 # ========== EXPRESSIONS ============
 
 
-
+@limited
 def UnaryExpression(type, operator, argument, prefix):
-    a = trans(argument)
+    a = trans(argument, standard=True) # unary involve some complex operations so we cant use line shorteners here
     if operator=='delete':
         if argument['type'] in {'Identifier', 'MemberExpression'}:
             # means that operation is valid
@@ -223,18 +254,19 @@ def UnaryExpression(type, operator, argument, prefix):
         return js_typeof(a)
     return UNARY[operator](a)
 
+@limited
 def BinaryExpression(type, operator, left, right):
     a = trans(left)
     b = trans(right)
     # delegate to our friends
     return BINARY[operator](a,b)
 
-
+@limited
 def UpdateExpression(type, operator, argument, prefix):
-    a = trans(argument)
+    a = trans(argument, standard=True)  # also complex operation involving parsing of the result so no line length reducing here
     return js_postfix(a, operator=='++', not prefix)
 
-
+@limited
 def AssignmentExpression(type, operator, left, right):
     operator = operator[:-1]
     if left['type']=='Identifier':
@@ -259,14 +291,15 @@ def AssignmentExpression(type, operator, left, right):
     else:
         raise SyntaxError('Invalid left hand side in assignment!')
 
-
+@limited
 def SequenceExpression(type, expressions):
     return reduce(js_comma, (trans(e) for e in expressions))
 
-
+@limited
 def NewExpression(type, callee, arguments):
     return trans(callee) + '.create(%s)' % ', '.join(trans(e) for e in arguments)
 
+@limited
 def ConditionalExpression(type, test, consequent, alternate): # caused plenty of problems in my home-made translator :)
     return '(%s if %s else %s)' % (trans(consequent), trans(test), trans(alternate))
 
@@ -587,7 +620,7 @@ if __name__=='__main__':
     import time
     import pyjsparser
 
-    c = '''`ijfdij`'''
+    c = None#'''`ijfdij`'''
     if not c:
         with codecs.open("esp.js", "r", "utf-8") as f:
             c = f.read()
