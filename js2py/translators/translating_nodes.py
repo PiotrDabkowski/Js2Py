@@ -130,7 +130,7 @@ def limited(func):
             name = inline_stack.require('LONG')
             inline_stack.names.pop()
             inline_stack.names.insert(insert_pos, name)
-            res = 'def %s():\n    return %s\n' % (name, res)
+            res = 'def %s(var=var):\n    return %s\n' % (name, res)
             inline_stack.define(name, res)
             return name+'()'
         else:
