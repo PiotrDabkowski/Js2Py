@@ -586,10 +586,9 @@ def FunctionExpression(type, id, params, defaults, body, generator, expression):
     # check whether args are valid python names:
     used_vars = []
     for v in vars:
-        try:
-            compile(v, 'a','exec')  # valid
+        if is_valid_py_name(v):
             used_vars.append(v)
-        except: # invalid arg in python, for example $, replace with alternatice arg
+        else: # invalid arg in python, for example $, replace with alternatice arg
             used_vars.append('PyJsArg_%s_' % v.encode('hex'))
     header = '@Js\n'
     header+= 'def %s(%sthis, arguments, var=var):\n' % (PyName, ', '.join(used_vars) +(', ' if vars else ''))
