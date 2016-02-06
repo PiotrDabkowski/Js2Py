@@ -17,12 +17,17 @@
 # IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 #  OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
-
 from __future__ import unicode_literals
+
 import sys
 import unicodedata
+import six
 from collections import defaultdict
 
+if six.PY3:
+    unichr = chr
+    xrange = range
+    unicode = str
 
 token = {
         'BooleanLiteral': 1,
@@ -38,7 +43,7 @@ token = {
     }
 
 
-TokenName = {v:k for k,v in token.iteritems()}
+TokenName = {v:k for k,v in token.items()}
 
 FnExprTokens = ['(', '{', '[', 'in', 'typeof', 'instanceof', 'new',
                     'return', 'case', 'delete', 'throw', 'void',

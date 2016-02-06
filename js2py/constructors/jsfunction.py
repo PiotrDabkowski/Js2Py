@@ -1,6 +1,6 @@
-from js2py.base import *
+from ..base import *
 try:
-    from js2py.translators.translator import translate_js
+    from ..translators.translator import translate_js
 except:
     pass
 
@@ -28,7 +28,7 @@ def Function():
     return temp
 
 def executor(f, glob):
-    exec f in globals()
+    exec(f, globals())
     return globals()['PyJs_anonymous_0_']
 
 

@@ -1,4 +1,9 @@
-
+import six
+if six.PY3:
+    basestring = str
+    long = int
+    xrange = range
+    unicode = str
 
 
 RADIX_SYMBOLS = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9',
@@ -13,7 +18,7 @@ def to_str_rep(num):
     elif num.is_infinity():
         sign = '-' if num.value<0 else ''
         return num.Js(sign+'Infinity')
-    elif isinstance(num.value, long) or num.value.is_integer():  # dont print .0
+    elif isinstance(num.value, (long, int)) or num.value.is_integer():  # dont print .0
         return num.Js(unicode(int(num.value)))
     return num.Js(unicode(num.value)) # accurate enough
 

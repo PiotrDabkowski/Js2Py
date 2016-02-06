@@ -2,15 +2,34 @@
 from copy import copy
 import re
 #from translators import translator
-from js2py.translators.friendly_nodes import REGEXP_CONVERTER
-from utils.injector import fix_js_args
-from types import FunctionType, ModuleType, GeneratorType, ClassType, BuiltinFunctionType, MethodType, BuiltinMethodType, NoneType
+
+from .translators.friendly_nodes import REGEXP_CONVERTER
+from .utils.injector import fix_js_args
+from types import FunctionType, ModuleType, GeneratorType, BuiltinFunctionType, MethodType, BuiltinMethodType
 import traceback
 
+
+
+# python 3 support
+import six
+if six.PY3:
+    basestring = str
+    long = int
+    xrange = range
+    unicode = str
+
+
+def str_repr(s):
+    if six.PY2:
+        return repr(s.encode('utf-8'))
+    else:
+        return repr(s)
 
 def MakeError(name, message):
     """Returns PyJsException with PyJsError inside"""
     return JsToPyException(ERRORS[name](Js(message)))
+
+
 
 
 def to_python(val):
@@ -138,7 +157,7 @@ def Js(val):
 
     elif isinstance(val, dict): # convert to object
          temp = PyJsObject({}, ObjectPrototype)
-         for k, v in val.iteritems():
+         for k, v in six.iteritems(val):
              temp.put(Js(k), Js(v))
          return temp
     elif isinstance(val, (list, tuple)): #Convert to array
@@ -322,10 +341,10 @@ class PyJs(object):
             return Js(True)
         return Js(False)
     
-    def default_value(self, hint=None):
-        order = ('toString', 'valueOf')
-        if hint=='Number' or (hint is None and self.Class=='Date'):
-            order = ('valueOf', 'toString')
+    def default_value(self, hint=None):  # made a mistake at the very early stage and made it to prefer string... caused lots! of problems
+        order = ('valueOf', 'toString')
+        if hint=='String' or (hint is None and self.Class=='Date'):
+            order = ('toString', 'valueOf')
         for meth_name in order:
             method = self.get(meth_name)
             if method is not None and method.is_callable():
@@ -334,6 +353,7 @@ class PyJs(object):
                     return cand
         raise MakeError('TypeError', 'Cannot convert object to primitive value')
         
+
     def define_own_property(self, prop, desc): #Internal use only. External through Object
         # prop must be a Py string. Desc is either a descriptor or accessor.
         #Messy method -  raw translation from Ecma spec to prevent any bugs. # todo check this
@@ -412,7 +432,7 @@ class PyJs(object):
     def to_primitive(self, hint=None):
         if self.is_primitive():
             return self
-        if hint is None and self.Class=='Number' or self.Class=='Boolean':  # favour number for Class== Number or Boolean default = String
+        if hint is None and (self.Class=='Number' or self.Class=='Boolean'):  # favour number for Class== Number or Boolean default = String
             hint = 'Number'
         return self.default_value(hint)
             
@@ -582,11 +602,17 @@ class PyJs(object):
     
     def __nonzero__(self): 
         return self.to_boolean().value
+
+    def __bool__(self):
+        return self.to_boolean().value
         
     def typeof(self): 
         if self.is_callable():
             return Js('function')
-        return Js(Type(self).lower())
+        typ = Type(self).lower()
+        if typ=='null':
+            typ = 'object'
+        return Js(typ)
         
     #Bitwise operators
     #  <<, >>,  &, ^, |
@@ -630,11 +656,7 @@ class PyJs(object):
     def __add__(self, other):
         a = self.to_primitive()
         b = other.to_primitive()
-        if a.Class=='String' or b.Class=='String':
-            if self.Class=='Date':
-                a = self
-            elif other.Class=='Date':
-                b = other
+        if a.TYPE=='String' or b.TYPE=='String':
             return Js(a.to_string().value+b.to_string().value)
         a = a.to_number()
         b = b.to_number()
@@ -816,19 +838,22 @@ class PyJs(object):
         if self.Class=='Object':
             res = []
             for e in self:
-                res.append(e.value.encode('utf-8')+': '+repr(self.get(e)))
+                res.append(str_repr(e.value)+': '+str_repr(self.get(e)))
             return '{%s}'%', '.join(res)
         elif self.Class=='String':
-            return repr(self.value.encode('utf-8'))
+            return str_repr(self.value)
         elif self.Class=='Array':
             res = []
             for e in self:
                 res.append(repr(self.get(e)))
             return '[%s]'%', '.join(res)
         else:
-            val = self.to_string().value.encode('utf-8')
+            val = str_repr(self.to_string().value)
             return val
-    
+
+    def _fuck_python3(self): # hack to make object hashable in python 3 (__eq__ causes problems)
+        return object.__hash__(self)
+
     def callprop(self, prop, *args):
         '''Call a property prop as a method (this will be self).
         
@@ -852,6 +877,9 @@ class PyJs(object):
         return self.to_python()
 
 
+if six.PY3:
+    PyJs.__hash__ = PyJs._fuck_python3
+    PyJs.__truediv__ = PyJs.__div__
 #Define some more classes representing operators:
 
 def PyJsStrictEq(a, b):
@@ -914,7 +942,7 @@ class Scope(PyJs):
         if closure is None:
             # global, top level scope
             self.own = {}
-            for k, v in scope.iteritems():
+            for k, v in six.iteritems(scope):
                 # set all the global items
                 self.define_own_property(k, {'value': v, 'configurable': False,
                                                 'writable': False, 'enumerable': False})
@@ -1054,6 +1082,15 @@ class JsObjectWrapper(object):
             return repr(self.to_list())
         return repr(self.to_dict())
 
+    def __len__(self):
+        return len(self._obj)
+
+    def __nonzero__(self):
+        return bool(self._obj)
+
+    def __bool__(self):
+        return bool(self._obj)
+
     def to_dict(self):
         return to_dict(self.__dict__['_obj'])
 
@@ -1130,7 +1167,7 @@ class PyObjectWrapper(PyJs):
 
 def py_wrap(py):
     if isinstance(py, (FunctionType, BuiltinFunctionType, MethodType, BuiltinMethodType,
-                       dict, int, basestring, bool, float, long, list, tuple, NoneType)):
+                       dict, int, str, bool, float, list, tuple, long, basestring)) or py is None :
         return HJs(py)
     return PyObjectWrapper(py)
 
@@ -1147,7 +1184,7 @@ class PyJsObject(PyJs):
         self.prototype = prototype
         self.extensible = extensible
         self.own = {}
-        for prop, desc in prop_descs.iteritems():
+        for prop, desc in six.iteritems(prop_descs):
             self.define_own_property(prop, desc)
 
     def __repr__(self):
@@ -1165,10 +1202,10 @@ class PyJsFunction(PyJs):
         cand = fix_js_args(func)
         has_scope = cand is func
         func = cand
-        self.argcount = func.func_code.co_argcount - 2 - has_scope
+        self.argcount = six.get_function_code(func).co_argcount - 2 - has_scope
         self.code = func
         self.source = source if source else '{ [python code] }'
-        self.func_name = func.func_name if not func.func_name.startswith('PyJs_anonymous') else ''
+        self.func_name = func.__name__ if not func.__name__.startswith('PyJs_anonymous') else ''
         self.extensible = extensible
         self.prototype = prototype
         self.own = {}
@@ -1318,7 +1355,10 @@ class PyJsString(PyJs):
         if not isinstance(prop, basestring):
                 prop = prop.to_string().value
         try:
-            char = self.value[int(prop)]
+            index = int(prop)
+            if index<0:
+                return undefined
+            char = self.value[index]
             if char not in CHAR_BANK:
                 Js(char) # this will add char to CHAR BANK
             return CHAR_BANK[char]
@@ -1374,8 +1414,6 @@ PyJs.null = null
 class PyJsArray(PyJs):
     Class = 'Array'
     def __init__(self, arr=[], prototype=None):
-        if arr and arr[-1] is None:
-            del arr[-1]
         self.extensible = True
         self.prototype = prototype
         self.own = {'length' : {'value': Js(0), 'writable': True,
@@ -1393,7 +1431,7 @@ class PyJsArray(PyJs):
             new_len =  desc['value'].to_uint32()
             if new_len!=desc['value'].to_number().value:
                 raise MakeError('RangeError', 'Invalid range!')
-            new_desc = {k:v for k,v in desc.iteritems()}
+            new_desc = {k:v for k,v in six.iteritems(desc)}
             new_desc['value'] = Js(new_len)
             if new_len>=old_len:
                 return PyJs.define_own_property(self, prop, new_desc)
@@ -1529,7 +1567,7 @@ default_attrs = {'writable':True, 'enumerable':False, 'configurable':True}
 
 
 def fill_in_props(obj, props, default_desc):
-    for prop, value in props.iteritems():
+    for prop, value in props.items():
         default_desc['value'] = Js(value)
         obj.define_own_property(prop, default_desc)
 
@@ -1586,11 +1624,18 @@ for e in ERROR_NAMES:
 def fill_prototype(prototype, Class, attrs, constructor=False):
     for i in dir(Class):
         e = getattr(Class, i)
-        if hasattr(e, '__func__'):
-            temp = PyJsFunction(e.__func__, FunctionPrototype)
-            attrs = {k:v for k,v in attrs.iteritems()}
-            attrs['value'] = temp
-            prototype.define_own_property(i, attrs)
+        if six.PY2:
+            if hasattr(e, '__func__'):
+                temp = PyJsFunction(e.__func__, FunctionPrototype)
+                attrs = {k:v for k,v in attrs.iteritems()}
+                attrs['value'] = temp
+                prototype.define_own_property(i, attrs)
+        else:
+            if hasattr(e, '__call__') and not i.startswith('__'):
+                temp = PyJsFunction(e, FunctionPrototype)
+                attrs = {k:v for k,v in attrs.items()}
+                attrs['value'] = temp
+                prototype.define_own_property(i, attrs)
         if constructor:
             attrs['value'] = constructor
             prototype.define_own_property('constructor', attrs)
@@ -1601,7 +1646,7 @@ def fill_prototype(prototype, Class, attrs, constructor=False):
 PyJs.undefined = undefined
 PyJs.Js = staticmethod(Js)
 
-from prototypes import jsfunction, jsobject, jsnumber, jsstring, jsboolean, jsarray, jsregexp, jserror
+from .prototypes import jsfunction, jsobject, jsnumber, jsstring, jsboolean, jsarray, jsregexp, jserror
 
 
 #Object proto
@@ -1669,11 +1714,11 @@ def string_constructor():
 String.create = string_constructor
 
 # RegExp
-
+REG_EXP_FLAGS = {'g', 'i', 'm'}
 @Js
 def RegExp(pattern, flags):
     if pattern.Class=='RegExp':
-        if flags.is_undefined():
+        if not flags.is_undefined():
             raise  MakeError('TypeError', 'Cannot supply flags when constructing one RegExp from another')
         # copy the pattern
         temp  = copy(pattern)
@@ -1683,9 +1728,16 @@ def RegExp(pattern, flags):
     if pattern.is_undefined():
         pattern = ''
     else:
-
-        pattern = REGEXP_CONVERTER._unescape_string(pattern.to_string().value)
+        try:
+            pattern = REGEXP_CONVERTER._unescape_string(pattern.to_string().value)
+        except:
+            raise MakeError('SyntaxError', 'Invalid regexp')
     flags = flags.to_string().value if not flags.is_undefined() else ''
+    for flag in flags:
+        if flag not in REG_EXP_FLAGS:
+            raise MakeError('SyntaxError', 'Invalid flags supplied to RegExp constructor "%s"' % flag)
+    if len(set(flags))!=len(flags):
+        raise MakeError('SyntaxError', 'Invalid flags supplied to RegExp constructor "%s"' % flags)
     pattern  = '/%s/'%(pattern if pattern else '(?:)') + flags
     return JsRegExp(pattern)
 
@@ -1745,7 +1797,7 @@ builtins = ('true','false','null','undefined','Infinity',
 
 scope = dict(zip(builtins, [eval(e) for e in builtins]))
 
-JS_BUILTINS = {k:v for k,v in scope.iteritems()}
+JS_BUILTINS = {k:v for k,v in scope.items()}
 
 
 # Fill in NUM_BANK
@@ -1753,14 +1805,14 @@ for e in xrange(-2**10,2**14):
     NUM_BANK[e] = Js(e)
 
 if __name__=='__main__':
-    print ObjectPrototype.get('toString').callprop('call')
-    print FunctionPrototype.own
+    print(ObjectPrototype.get('toString').callprop('call'))
+    print(FunctionPrototype.own)
     a=  null-Js(49404)
     x = a.put('ser', Js('der'))
-    print Js(0) or Js('p') and Js(4.0000000000050000001)
+    print(Js(0) or Js('p') and Js(4.0000000000050000001))
     FunctionPrototype.put('Chuj', Js(409))
     for e in FunctionPrototype:
-        print 'Obk', e.get('__proto__').get('__proto__').get('__proto__'), e
+        print('Obk', e.get('__proto__').get('__proto__').get('__proto__'), e)
     import code
     s = Js(4)
     b = Js(6)

@@ -2,6 +2,11 @@ __all__ = ['fix_js_args']
 
 import types
 import opcode
+import six
+
+if six.PY3:
+    xrange = range
+    chr = lambda x: x
 
 # Opcode constants used for comparison and replacecment
 LOAD_FAST = opcode.opmap['LOAD_FAST']
@@ -11,12 +16,13 @@ STORE_FAST = opcode.opmap['STORE_FAST']
 def fix_js_args(func):
     '''Use this function when unsure whether func takes this and arguments as its last 2 args.
        It will append 2 args if it does not.'''
-    fcode = func.func_code
+    fcode = six.get_function_code(func)
     fargs = fcode.co_varnames[fcode.co_argcount-2:fcode.co_argcount]
     if fargs==('this', 'arguments') or fargs==('arguments', 'var'):
         return func
-    code = append_arguments(func.func_code, ('this','arguments'))
-    return types.FunctionType(code, func.func_globals, func.func_name, closure=func.func_closure)
+    code = append_arguments(six.get_function_code(func), ('this','arguments'))
+
+    return types.FunctionType(code, six.get_function_globals(func), func.__name__, closure=six.get_function_closure(func))
 
     
 def append_arguments(code_obj, new_locals):
@@ -82,28 +88,49 @@ def append_arguments(code_obj, new_locals):
         elif inst[0] in opcode.hasname:
             inst[1] = name_translations[inst[1]]
         modified.extend(write_instruction(inst))
+    if six.PY2:
+        code = ''.join(modified)
+        args = (co_argcount + new_locals_len,
+                              code_obj.co_nlocals + new_locals_len,
+                              code_obj.co_stacksize,
+                              code_obj.co_flags,
+                              code,
+                              code_obj.co_consts,
+                              names,
+                              varnames,
+                              code_obj.co_filename,
+                              code_obj.co_name,
+                              code_obj.co_firstlineno,
+                              code_obj.co_lnotab,
+                              code_obj.co_freevars,
+                              code_obj.co_cellvars)
+    else:
+        #print(modified)
+        code = bytes(modified)
+        #print(code)
+        args = (co_argcount + new_locals_len,
+                0,
+                code_obj.co_nlocals + new_locals_len,
+                code_obj.co_stacksize,
+                code_obj.co_flags,
+                code,
+                code_obj.co_consts,
+                names,
+                varnames,
+                code_obj.co_filename,
+                code_obj.co_name,
+                code_obj.co_firstlineno,
+                code_obj.co_lnotab,
+                code_obj.co_freevars,
+                code_obj.co_cellvars)
 
-    code = ''.join(modified)
     # Done modifying codestring - make the code object
-
-    return types.CodeType(co_argcount + new_locals_len,
-                          code_obj.co_nlocals + new_locals_len,
-                          code_obj.co_stacksize,
-                          code_obj.co_flags,
-                          code,
-                          code_obj.co_consts,
-                          names,
-                          varnames,
-                          code_obj.co_filename,
-                          code_obj.co_name,
-                          code_obj.co_firstlineno,
-                          code_obj.co_lnotab,
-                          code_obj.co_freevars,
-                          code_obj.co_cellvars)
+    return types.CodeType(*args)
 
 
 def instructions(code):
-    code = map(ord, code)
+    if six.PY2:
+        code = map(ord, code)
     i, L = 0, len(code)
     extended_arg = 0
     while i < L:
@@ -124,9 +151,9 @@ def write_instruction(inst):
     op, oparg = inst
     if oparg is None:
         return [chr(op)]
-    elif oparg <= 65536L:
+    elif oparg <= 65536:
         return [chr(op), chr(oparg & 255), chr((oparg >> 8) & 255)]
-    elif oparg <= 4294967296L:
+    elif oparg <= 4294967296:
         return [chr(opcode.EXTENDED_ARG),
                 chr((oparg >> 16) & 255),
                 chr((oparg >> 24) & 255),
@@ -139,3 +166,19 @@ def write_instruction(inst):
 
 
 
+
+
+
+if __name__=='__main__':
+    x = 'Wrong'
+    dick = 3000
+    def func(a):
+        print(x,y,z, a)
+        print(dick)
+        d = (x,)
+        for e in  (e for e in x):
+            print(e)
+        return x, y, z
+    func2 =types.FunctionType(append_arguments(six.get_function_code(func), ('x', 'y', 'z')), six.get_function_globals(func), func.__name__, closure=six.get_function_closure(func))
+    args = (2,2,3,4),3,4
+    assert func2(1, *args) == args

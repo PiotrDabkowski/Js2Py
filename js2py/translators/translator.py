@@ -1,15 +1,17 @@
-import pyjsparser
+from . import pyjsparser
 #from pyesprima import esprima
-import translating_nodes
+from . import translating_nodes
 
-DEFAULT_HEADER = u'''import js2py.pyjs, sys
-# Redefine builtin objects... Do you have a better idea?
-for m in sys.modules.keys():
-	if m.startswith('js2py'):
-		del sys.modules[m]
-del js2py.pyjs
-del js2py
-from js2py.pyjs import *
+# This crap is still needed but I removed it for speed reasons. Have to think of better idea
+# import js2py.pyjs, sys
+# # Redefine builtin objects... Do you have a better idea?
+# for m in list(sys.modules):
+# 	if m.startswith('js2py'):
+# 		del sys.modules[m]
+# del js2py.pyjs
+# del js2py
+
+DEFAULT_HEADER = u'''from js2py.pyjs import *
 # setting scope
 var = Scope( JS_BUILTINS )
 set_global_object(var)
@@ -52,7 +54,7 @@ if __name__=='__main__':
 
             with open('res.py','wb') as f2:
                 f2.write(r)
-            exec r in {}
+            exec(r, {})
     if PROFILE:
         import cProfile
         cProfile.run('main()', sort='tottime')

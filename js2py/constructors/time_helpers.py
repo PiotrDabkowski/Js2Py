@@ -33,7 +33,7 @@ def DaylightSavingTA(t):
     if t is NaN:
         return t
     try:
-        return int(LOCAL_ZONE.dst(datetime.datetime.utcfromtimestamp(t/1000)).seconds)*1000
+        return int(LOCAL_ZONE.dst(datetime.datetime.utcfromtimestamp(t//1000)).seconds)*1000
     except:
         warnings.warn('Invalid datetime date, assumed DST time, may be inaccurate...', Warning)
         return 1
@@ -50,7 +50,7 @@ def UTCToLocal(t):
 
 
 def Day(t):
-    return t/86400000
+    return t//86400000
 
 
 def TimeWithinDay(t):
@@ -68,13 +68,13 @@ def DaysInYear(y):
 
 
 def DayFromYear(y):
-    return 365 * (y-1970) + (y-1969)/4 -(y-1901)/100 + (y-1601)/400
+    return 365 * (y-1970) + (y-1969)//4 -(y-1901)//100 + (y-1601)//400
 
 def TimeFromYear(y):
     return 86400000 * DayFromYear(y)
 
 def YearFromTime(t):
-    guess = 1970 - t/31556908800  # msPerYear
+    guess = 1970 - t//31556908800  # msPerYear
     gt = TimeFromYear(guess)
     if gt<=t:
         while gt<=t:
@@ -144,13 +144,13 @@ def msFromTime(t):
     return t % 1000
 
 def SecFromTime(t):
-    return (t/1000) % 60
+    return (t//1000) % 60
 
 def MinFromTime(t):
-    return (t/60000) % 60
+    return (t//60000) % 60
 
 def HourFromTime(t):
-    return (t/3600000) % 24
+    return (t//3600000) % 24
 
 def MakeTime (hour, Min, sec, ms):
     # takes PyJs objects and returns t
@@ -165,7 +165,7 @@ def MakeDay(year, month, date):
     if not (year.is_finite() and month.is_finite() and date.is_finite()):
         return NaN
     y, m, dt = year.to_int(), month.to_int(), date.to_int()
-    y += m/12
+    y += m//12
     mn = m % 12
     d = DayFromYear(y) + CUM[mn] + dt - 1 + (1 if DaysInYear(y)==366 and mn>=2 else 0)
     return  d # ms per day

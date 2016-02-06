@@ -1,7 +1,7 @@
 ####Pure Python JavaScript Translator/Interpreter
 
-Translates any valid JavaScript (ECMA Script 5.1) to Python. Translation is fully automatic. Does not have any 
-dependencies - <b>uses only standard python library.</b>
+Translates <em>any</em> valid JavaScript (ECMA Script 5.1) to Python. Translation is fully automatic. Does not have any 
+dependencies - <b>uses only standard python library.</b> Supports Python 2 & 3.
 <hr>
 
 Managed to fully automatically translate esprima.js to Python! - <a href="https://github.com/PiotrDabkowski/Js2Py/blob/master/examples/pyesprima.py"> it's now the only JavaScript 6 parser available for Python</a>!
@@ -10,7 +10,7 @@ Managed to fully automatically translate esprima.js to Python! - <a href="https:
 ####Functionality
 
 <ul>
-<li>Automatically translates JavaScript to Python - Supports virtually everything (see limitations)</li>
+<li>Automatically translates JavaScript to Python - Supports <b>whole</b>  ECMA Script 5.1</li>
 <li>Supports importing Python libraries from JavaScript code using pyimport statement</li>
 <li>Very fast JavaScript Parsing - can be used as standalone JS parser, syntax tree is just like in esprima.js (use js2py.parse_js) </li>
 <li> Provides friendly JS execution features - js2py.eval_js for single execution and js2py.EvalJs for continuous </li>
@@ -28,10 +28,18 @@ Simple Example:
     >>> add.constructor
     function Function() { [python code] }
     
-More advanced usage example:
+When I say 'it supports everything' I really mean everything:
+
+    >>> js2py.eval_js("Object.prototype.toString.call(Function('s', 'return s+arguments[1]')(new Date(), 7).__proto__)")
+    [object String]
+
+
+
+    
+####More advanced usage example:
     
     # Execute javascript in context:
-    >>> context = EvalJs({'python_sum': sum})
+    >>> context = js2py.EvalJs({'python_sum': sum})
     >>> context.execute('var a = 10; function f(x) {return x*x};')
     # Get value of variable a:
     >>> context.a
@@ -39,11 +47,11 @@ More advanced usage example:
     # context.f behaves just like js function so you can supply more than 1 argument. '9'*'9' in javascript is 81.
     >>> context.f('9', 0)  
     81    
-    # context.f has all attributes of normal javascript object (including __proto__ )
+    # context.f has all attributes of normal javascript object
     >>> context.f.toString()
     u'function f(x) { [python code] }'
-    >>> context.f.constructor
-    function Function() { [python code] }
+    >>> context.f.bind
+    function bind(thisArg) { [python code] }
    
     # You can also set variables inside context:
     >>> context.foo = [1,2,3]  # context.foo is now Js Array object and behaves just like javascript array!
@@ -91,7 +99,7 @@ eval_js will return unicode type (u"hello"). However for complex types such conv
 See the conversion table JsType -> PyType:
 
     Boolean -> bool
-    String -> unicode
+    String -> unicode (str in Python 3)
     Number -> float (or int/long if whole number)
     undefined -> None
     null -> None

@@ -1,5 +1,5 @@
-from pyjsparserdata import *
- 
+from .pyjsparserdata import *
+import six
 
 class BaseNode:
         def finish(self):
@@ -521,11 +521,11 @@ class WrappingNode(BaseNode):
         pass
 
 
-def node_to_dict(node):
+def node_to_dict(node):  # extremely important for translation speed
     if isinstance(node, list):
         return [node_to_dict(e) for e in node]
     elif isinstance(node, dict):
-        return {k:node_to_dict(v) for k,v in node.iteritems()}
+        return {k:node_to_dict(v) for k,v in six.iteritems(node)}
     elif not isinstance(node, BaseNode):
         return node
-    return {k:node_to_dict(v) for k, v in node.__dict__.iteritems()}
+    return {k:node_to_dict(v) for k, v in six.iteritems(node.__dict__)}

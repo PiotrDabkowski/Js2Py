@@ -1387,13 +1387,14 @@ STATS = {'not_implemented': 0,
          'error': 0,
          'passed': 0,
          'wrong': 0}
-PRINT_ERROR = 0
-PRINT_WRONG = 1
+PRINT_ERROR = 1
+PRINT_WRONG = 0
 
 def run_test_case(path):
     if path is None:
         return
-    with open(path, 'r') as f:
+    #print(path)
+    with open(path, 'r', encoding='utf8') as f: #{'not_implemented': 128, 'wrong': 148, 'passed': 950, 'error': 4}
         test = f.read()
     try:
         result = e.eval(test)
@@ -1411,20 +1412,20 @@ def run_test_case(path):
         STATS['error'] += 1
         if not PRINT_ERROR:
             return
-        print path
-        print 'Failed to translate/run...'
-        print traceback.format_exc()
-        print
+        print(path)
+        print( 'Failed to translate/run...')
+        print(traceback.format_exc())
+        print()
         return
     if result.problem:
         STATS['wrong'] += 1
         if not PRINT_WRONG:
             return
-        print path
-        print result.description
-        print result.preconditionResult
-        print result.result
-        print
+        print (path)
+        print (result.description)
+        print (result.preconditionResult)
+        print (result.result)
+        print()
     else:
         STATS['passed'] += 1
 
@@ -1432,5 +1433,5 @@ def run_test_case(path):
 for path in TestCasePaths:
     run_test_case(path)
 
-print STATS
-raw_input()
+print(STATS)
+input()

@@ -1,11 +1,14 @@
 # coding=utf-8
 """ This module is still experimental!
 """
-from translators.translator import translate_js, dbg, DEFAULT_HEADER
+from .translators import translate_js, DEFAULT_HEADER
 import sys
 import time
 import json
+import six
 __all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js']
+DEBUG = False
+
 
 def import_js(path, lib_name, globals):
     """Imports from javascript source file.
@@ -61,20 +64,20 @@ class EvalJs(object):
        You can run interactive javascript console with console method!"""
     def __init__(self, context={}):
         self.__dict__['_context'] = {}
-        exec DEFAULT_HEADER in self._context
+        exec(DEFAULT_HEADER, self._context)
         self.__dict__['_var'] = self._context['var'].to_python()
         if not isinstance(context, dict):
             try:
                 context = context.__dict__
             except:
                 raise TypeError('context has to be either a dict or have __dict__ attr')
-        for k, v in context.iteritems():
+        for k, v in six.iteritems(context):
             setattr(self._var, k, v)
 
     def execute(self, js):
         """executes javascript js in current context"""
         code = translate_js(js, '')
-        exec code in self._context
+        exec(code, self._context)
 
     def eval(self, expression):
         """evaluates expression in current context and returns its value"""
@@ -97,9 +100,9 @@ class EvalJs(object):
     def console(self):
         """starts to interact (starts interactive console) Something like code.InteractiveConsole"""
         while True:
-            code = raw_input('>>> ')
+            code = input('>>> ')
             try:
-                print self.eval(code)
+                print(self.eval(code))
             except KeyboardInterrupt:
                 break
             except Exception as e:
@@ -112,13 +115,11 @@ class EvalJs(object):
 
 
 
-x = r'''
-var return;
-'''.replace('\n','\n').decode('unicode-escape')
+
 
 #print x
 
-DEBUG = True
+
 
 if __name__=='__main__':
     #with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:

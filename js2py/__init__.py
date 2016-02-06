@@ -64,6 +64,6 @@
 
 __author__ = 'Piotr Dabkowski'
 __all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js', 'parse_js']
-from js2py.evaljs import *
-from translators import parse as parse_js
+from .evaljs import *
+from .translators import parse as parse_js
 

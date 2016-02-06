@@ -18,9 +18,16 @@
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 #  OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 from __future__ import unicode_literals
-from pyjsparserdata import *
-from std_nodes import *
+from .pyjsparserdata import *
+from .std_nodes import *
 from pprint import pprint
+
+import six
+if six.PY3:
+    basestring = str
+    long = int
+    xrange = range
+    unicode = str
 
 ESPRIMA_VERSION = '2.2.0'
 DEBUG = False
@@ -185,9 +192,9 @@ class PyJsParser:
     def log_err_case(self):
         if not DEBUG:
             return
-        print 'INDEX', self.index
-        print self.source[self.index-10:self.index+10]
-        print
+        print('INDEX', self.index)
+        print(self.source[self.index-10:self.index+10])
+        print('')
 
     def at(self, loc):
         return None if loc>=self.length else self.source[loc]
@@ -2831,12 +2838,12 @@ if __name__=='__main__':
     res = p.parse(x)
     dt = time.time() - t+ 0.000000001
     if test_path:
-        print len(res)
+        print(len(res))
     else:
         pprint(res)
-    print
-    print 'Parsed everyting in', round(dt,5), 'seconds.'
-    print 'Thats %d characters per second' % int(len(x)/dt)
+    print()
+    print('Parsed everyting in', round(dt,5), 'seconds.')
+    print('Thats %d characters per second' % int(len(x)/dt))
 
 
 

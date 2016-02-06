@@ -1,17 +1,17 @@
-from base import *
-from constructors.jsmath import Math
-from constructors.jsdate import Date
-from constructors.jsobject import Object
-from constructors.jsfunction import Function
-from constructors.jsstring import String
-from constructors.jsnumber import Number
-from constructors.jsboolean import Boolean
-from constructors.jsregexp import RegExp
-from constructors.jsarray import Array
-from prototypes.jsjson import JSON
-from host.console import console
-from host.jseval import Eval
-from host.jsfunctions import parseFloat, parseInt, isFinite, isNaN
+from .base import *
+from .constructors.jsmath import Math
+from .constructors.jsdate import Date
+from .constructors.jsobject import Object
+from .constructors.jsfunction import Function
+from .constructors.jsstring import String
+from .constructors.jsnumber import Number
+from .constructors.jsboolean import Boolean
+from .constructors.jsregexp import RegExp
+from .constructors.jsarray import Array
+from .prototypes.jsjson import JSON
+from .host.console import console
+from .host.jseval import Eval
+from .host.jsfunctions import parseFloat, parseInt, isFinite, isNaN
 
 # Now we have all the necessary items to create global environment for script
 __all__ = ['Js', 'PyJsComma', 'PyJsStrictEq', 'PyJsStrictNeq',
@@ -42,10 +42,10 @@ def set_global_object(obj):
 
 scope = dict(zip(builtins, [globals()[e] for e in builtins]))
 # Now add errors:
-for name, error in ERRORS.iteritems():
+for name, error in ERRORS.items():
     scope[name] = error
 #add eval
 scope['eval'] = Eval
 scope['JSON'] = JSON
-JS_BUILTINS = {k:v for k,v in scope.iteritems()}
+JS_BUILTINS = {k:v for k,v in scope.items()}
 

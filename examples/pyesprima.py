@@ -30,7 +30,7 @@ tree.to_dict()
 """
 import js2py.pyjs, sys
 # Redefine builtin objects... Do you have a better idea?
-for m in sys.modules.keys():
+for m in list(sys.modules.keys()):
 	if m.startswith('js2py'):
 		del sys.modules[m]
 del js2py.pyjs
@@ -1801,7 +1801,9 @@ def PyJs_anonymous_0_(exports, this, arguments, var=var):
             return var.get(u'scanPunctuator')()
         if var.get(u'isDecimalDigit')(var.get(u'cp')):
             return var.get(u'scanNumericLiteral')()
-        if (var.get(u'extra').get(u'tokenize') and PyJsStrictEq(var.get(u'cp'),Js(47))):
+        ass = PyJsStrictEq(var.get(u'cp'),Js(47))
+        bass = var.get(u'extra').get(u'tokenize')
+        if (bass and ass):
             return var.get(u'advanceSlash')()
         if (PyJsStrictEq(var.get(u'cp'),Js(96)) or (PyJsStrictEq(var.get(u'cp'),Js(125)) and PyJsStrictEq(var.get(u'state').get(u'curlyStack').get((var.get(u'state').get(u'curlyStack').get(u'length')-Js(1.0))),Js(u'${')))):
             return var.get(u'scanTemplate')()
@@ -5113,9 +5115,19 @@ esprima = var.to_python().esprima # this will now exactly like JS JSON object :)
 if __name__=='__main__':
 
     JSON = var.to_python().JSON  # this will now exactly like JS JSON object :)
-    print 'version', esprima.version
-    print 'parsing var odds = evens.map(v => v + 1);'
-    print esprima.parse('var odds = evens.map(v => v + 1);')
-    print 'pretty printing it using JSON.stringify'
-    print JSON.stringify(esprima.parse('var odds = evens.map(v => v + 1);'), None, 4)
+    print('version', esprima.version)
+    print('parsing var odds = evens.map(v => v + 1);')
+    print(esprima.parse('var odds = evens.map(v => v + 1);'))
+    print('pretty printing it using JSON.stringify')
+    print(JSON.stringify(esprima.parse('var odds = evens.map(v => v + 1);'), None, 4))
+    import codecs, time
+    from js2py import parse_js
+    with codecs.open("esprima.js", "r", "utf-8") as f:
+            d = f.read()
+    parsed = parse_js(d)
+    t = time.time()
+    parsed = esprima.parse(d)
+    print('Done parsing...', time.time()-t)
+    JSON.stringify(parsed, None, 4)
+    print()
 

@@ -1,3 +1,10 @@
+# python 3 support
+import six
+if six.PY3:
+    basestring = str
+    long = int
+    xrange = range
+    unicode = str
 
 
 # todo fix apply and bind
@@ -10,6 +17,7 @@ class FunctionPrototype:
         return 'function %s(%s) '%(this.func_name, args)+this.source
     
     def call():
+        arguments_ = arguments
         if not len(arguments):
             obj = this.Js(None)
         else:
@@ -17,7 +25,7 @@ class FunctionPrototype:
         if len(arguments)<=1:
             args = () 
         else:
-            args = tuple([arguments[e] for e in xrange(1, len(arguments))])
+            args = tuple([arguments_[e] for e in xrange(1, len(arguments_))])
         return this.call(obj, args)
     
     def apply():
@@ -36,6 +44,7 @@ class FunctionPrototype:
         return this.call(obj, args)
 
     def bind(thisArg):
+        arguments_ = arguments
         if not this.is_callable():
             raise this.MakeError('TypeError', 'this must be callable!')
         to_call = this
@@ -46,14 +55,16 @@ class FunctionPrototype:
         if len(arguments)<=1:
             args = ()
         else:
-            args = tuple([arguments[e] for e in xrange(1, len(arguments))])
+            args = tuple([arguments_[e] for e in xrange(1, len(arguments_))])
         if obj.is_undefined():
             def PyJsLvalInline(this, arguments):
-                args2 = args + tuple([arguments[e] for e in xrange(0, len(arguments))])
+                arguments_ = arguments
+                args2 = args + tuple([arguments_[e] for e in xrange(0, len(arguments_))])
                 return to_call(*args2)
         else:
             def PyJsLvalInline(this, arguments):
-                args2 = args + tuple([arguments[e] for e in xrange(0, len(arguments))])
+                arguments_ = arguments
+                args2 = args + tuple([arguments_[e] for e in xrange(0, len(arguments_))])
                 return to_call.call(obj, args2)
         return PyJsLvalInline  # it will be automatically converted to js function :)
 
