@@ -216,4 +216,4 @@ class JsRegExpParser:
 
 
 a = JsRegExpParser('a(?=x)', '')
-print a.parsePattern()
+print(a.parsePattern())
