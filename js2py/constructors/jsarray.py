@@ -5,7 +5,7 @@ def Array():
     if len(arguments)==0 or len(arguments)>1:
         return arguments.to_list()
     a = arguments[0]
-    if isinstance(a, PyJsString):
+    if isinstance(a, PyJsNumber):
         length = a.to_uint32()
         if length!=a.value:
             raise MakeError('RangeError', 'Invalid array length')

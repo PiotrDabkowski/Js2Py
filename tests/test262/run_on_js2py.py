@@ -91,6 +91,12 @@ assert.throws = function (expectedErrorConstructor, func) {
 
 
 '''
+print js2py.eval_js(r'''
+
+ Array(8)
+
+''')
+
 
 def load(path):
     with open(path, 'rb') as f:
@@ -112,8 +118,9 @@ def exec_file(path):
             bibs += load(har+lib)
     try:
         js2py.eval_js(init + bibs + js)
+
     except NotImplementedError:
-        return
+        print 'Not implemented'
     except:
         if 'negative:' in desc or 'onlyStrict' in desc:
             return # supposed to fail
@@ -125,9 +132,16 @@ def exec_file(path):
         print
         print 'File "%s", line 1, in chuj' % os.path.abspath(path)
         raw_input()
+        return
+    if 'negative:' in desc and not 'onlyStrict' in desc:
+        print 'File "%s", line 1, in chuj' % os.path.abspath(path)
+        print 'Did not fail!'
+        raw_input()
 
 
-def test_kind(kind, prototype=False, language=True):
+
+
+def test_kind(kind, prototype=False, language=False):
     base_path = 'test/%s/' % ('built-ins' if not language else 'language') +kind
     if prototype=='all':
         for f in os.listdir(base_path):
@@ -144,4 +158,6 @@ def test_kind(kind, prototype=False, language=True):
         print f
         exec_file(file)
 
-test_kind('statements', 'try')
+test_kind('Array')
+
+

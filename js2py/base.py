@@ -1516,15 +1516,23 @@ FunctionPrototype.own['name']['value'] = Js('')
 
 # I will not rewrite RegExp engine from scratch. I will use re because its much faster.
 # I have to only make sure that I am handling all the differences correctly.
+REGEXP_DB = {}
+
 class PyJsRegExp(PyJs):
     Class = 'RegExp'
     extensible = True
 
     def __init__(self, regexp, prototype=None):
+
         self.prototype = prototype
         self.glob = False
         self.ignore_case = 0
         self.multiline = 0
+        # self._cache = {'str':'NoStringEmpty23093',
+        #                'iterator': None,
+        #                'lastpos': -1,
+        #                'matches': {}}
+        flags = ''
         if not regexp[-1]=='/':
             #contains some flags (allowed are i, g, m
             spl =  regexp.rfind('/')
@@ -1538,12 +1546,38 @@ class PyJsRegExp(PyJs):
                 self.multiline = re.MULTILINE
         else:
             self.value = regexp[1:-1]
+
         try:
-            # we have to check whether pattern is valid.
-            # also this will speed up matching later
-            self.pat = re.compile(self.value, self.ignore_case | self.multiline)
+            if self.value in REGEXP_DB:
+                self.pat = REGEXP_DB[regexp]
+            else:
+                comp =  'None'
+                # we have to check whether pattern is valid.
+                # also this will speed up matching later
+                # todo critical fix patter conversion etc. ..!!!!!
+                # ugly hacks porting js reg exp to py reg exp works in 99% of cases ;)
+                possible_fixes = [
+                    (u'[]', u'[\0]'),
+                    (u'[^]', u'[^\0]'),
+                    (u'nofix1791', u'nofix1791')
+                ]
+                reg = self.value
+                for fix, rep in possible_fixes:
+                    comp = REGEXP_CONVERTER._interpret_regexp(reg, flags)
+                    #print 'reg -> comp', reg, '->', comp
+                    try:
+                        self.pat = re.compile(comp, self.ignore_case | self.multiline)
+                        #print reg, '->', comp
+                        break
+                    except:
+                        reg = reg.replace(fix, rep)
+                       # print 'Fix', fix, '->', rep, '=', reg
+                else:
+                    raise
+                REGEXP_DB[regexp] = self.pat
         except:
-            raise MakeError('SyntaxError', 'Invalid RegExp pattern: %s'% repr(self.value))
+            #print 'Invalid pattern but fuck it', self.value, comp
+            raise MakeError('SyntaxError', 'Invalid RegExp pattern: %s -> %s'% (repr(self.value), repr(comp)))
         # now set own properties:
         self.own = {'source' : {'value': Js(self.value), 'enumerable': False, 'writable': False, 'configurable': False},
                     'global' : {'value': Js(self.glob), 'enumerable': False, 'writable': False, 'configurable': False},
@@ -1553,7 +1587,32 @@ class PyJsRegExp(PyJs):
 
     def match(self, string, pos):
         '''string is of course py string'''
-        return re.match(self.pat, string[pos:])
+        return self.pat.match(string, pos)  # way easier :)
+        # assert 0<=pos <= len(string)
+        # if not pos:
+        #     return re.match(self.pat, string)
+        # else:
+        #     if self._cache['str']==string:
+        #         if pos>self._cache['lastpos']:
+        #             for m in self._cache['iterator']:
+        #                 start = m.start()
+        #                 self._cache['lastpos'] = start
+        #                 self._cache['matches'][start] = m
+        #                 if start==pos:
+        #                     return m
+        #                 elif start>pos:
+        #                     return None
+        #             self._cache['lastpos'] = len(string)
+        #             return None
+        #         else:
+        #             return self._cache['matches'].get(pos)
+        #     else:
+        #         self._cache['str'] = string
+        #         self._cache['matches'] = {}
+        #         self._cache['lastpos'] = -1
+        #         self._cache['iterator'] = re.finditer(self.pat, string)
+        #         return self.match(string, pos)
+
 
 
 def JsRegExp(source):
@@ -1720,18 +1779,17 @@ def RegExp(pattern, flags):
     if pattern.Class=='RegExp':
         if not flags.is_undefined():
             raise  MakeError('TypeError', 'Cannot supply flags when constructing one RegExp from another')
-        # copy the pattern
-        temp  = copy(pattern)
-        temp.own = copy(pattern.own)
-        return temp
+        # return unchanged
+        return pattern
     #pattern is not a regexp
     if pattern.is_undefined():
         pattern = ''
     else:
-        try:
-            pattern = REGEXP_CONVERTER._unescape_string(pattern.to_string().value)
-        except:
-            raise MakeError('SyntaxError', 'Invalid regexp')
+        pattern = pattern.to_string().value
+        # try:
+        #     pattern = REGEXP_CONVERTER._unescape_string(pattern.to_string().value)
+        # except:
+        #     raise MakeError('SyntaxError', 'Invalid regexp')
     flags = flags.to_string().value if not flags.is_undefined() else ''
     for flag in flags:
         if flag not in REG_EXP_FLAGS:

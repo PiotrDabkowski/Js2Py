@@ -299,7 +299,7 @@ def SplitMatch(s, q, R):
     # s is Py String to match, q is the py int match start and R is Js RegExp or String.
     if R.Class=='RegExp':
         res = R.match(s, q)
-        return (None, ()) if res is None else (q+res.span()[1], res.groups())
+        return (None, ()) if res is None else (res.span()[1], res.groups())
     # R is just a string
     if s[q:].startswith(R.value):
         return q+len(R.value), ()

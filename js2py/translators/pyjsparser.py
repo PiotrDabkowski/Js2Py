@@ -22,6 +22,9 @@ from .pyjsparserdata import *
 from .std_nodes import *
 from pprint import pprint
 
+REGEXP_SPECIAL_SINGLE = {'\\', '^', '$', '*', '+', '?', '.', '[', ']', '(', ')', '{', '{', '|'}
+
+
 import six
 if six.PY3:
     basestring = str
@@ -490,7 +493,7 @@ class PyJsParser:
 
     # 7.8.4 String Literals
 
-    def _unescape_string(self, string):
+    def _interpret_regexp(self, string, flags):
         '''Perform sctring escape - for regexp literals'''
         self.index = 0
         self.length = len(string)
@@ -499,50 +502,86 @@ class PyJsParser:
         self.lineStart = 0
         octal = False
         st = ''
+        inside_square = 0
         while (self.index < self.length):
+            template = '[%s]' if not inside_square else '%s'
             ch = self.source[self.index]
             self.index += 1
             if ch == '\\':
                 ch = self.source[self.index]
                 self.index += 1
                 if (not isLineTerminator(ch)):
-                    if ch in 'ux':
-                        if (self.source[self.index] == '{'):
-                            self.index += 1
-                            st += self.scanUnicodeCodePointEscape()
+                    if ch=='u':
+                        digs = self.source[self.index:self.index+4]
+                        if len(digs)==4 and all(isHexDigit(d) for d in digs):
+                            st += template%unichr(int(digs, 16))
+                            self.index += 4
                         else:
-                            unescaped = self.scanHexEscape(ch)
-                            if (not unescaped):
-                                self.throwUnexpectedToken() # with throw I don't know whats the difference
-                            st += unescaped
+                            st += 'u'
+                    elif ch=='x':
+                        digs = self.source[self.index:self.index+2]
+                        if len(digs)==2 and all(isHexDigit(d) for d in digs):
+                            st += template%unichr(int(digs, 16))
+                            self.index += 2
+                        else:
+                            st += 'x'
+                    # special meaning - single char.
+                    elif ch=='0':
+                        st += '\\0'
                     elif ch=='n':
-                        st += '\n';
+                        st += '\\n'
                     elif ch=='r':
-                        st += '\r';
+                        st += '\\r'
                     elif ch=='t':
-                        st += '\t';
-                    # elif ch=='b':
-                    #     st += '\b';
+                        st += '\\t'
                     elif ch=='f':
-                        st += '\f';
+                        st += '\\f'
                     elif ch=='v':
-                        st += '\x0B'
-                    elif ch in '89':
-                        self.throwUnexpectedToken() # again with throw....
+                        st += '\\v'
+
+                    # unescape special single characters like . so that they are interpreted literally
+                    elif ch in REGEXP_SPECIAL_SINGLE:
+                        st += '\\' + ch
+
+                    # character groups
+                    elif ch=='b':
+                        st += '\\b'
+                    elif ch=='B':
+                        st += '\\B'
+                    elif ch=='w':
+                        st += '\\w'
+                    elif ch=='W':
+                        st += '\\W'
+                    elif ch=='d':
+                        st += '\\d'
+                    elif ch=='D':
+                        st += '\\D'
+                    elif ch=='s':
+                        st += template % u' \f\n\r\t\v\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff'
+                    elif ch=='S':
+                        st += template % u'\u0000-\u0008\u000e-\u001f\u0021-\u009f\u00a1-\u167f\u1681-\u180d\u180f-\u1fff\u200b-\u2027\u202a-\u202e\u2030-\u205e\u2060-\u2fff\u3001-\ufefe\uff00-\uffff'
                     else:
-                        if isOctalDigit(ch):
-                            octToDec = self.octalToDecimal(ch)
-                            octal = octToDec['octal'] or octal
-                            st += unichr(octToDec['code'])
+                        if isDecimalDigit(ch):
+                            num = ch
+                            while self.index<self.length and isDecimalDigit(self.source[self.index]):
+                                num += self.source[self.index]
+                                self.index += 1
+                            st += '\\' + num
+
                         else:
-                            st += '\\' + ch  # DONT ESCAPE!!!
+                            st += ch  # DONT ESCAPE!!!
                 else:
                     self.lineNumber += 1
                     if (ch == '\r' and self.source[self.index] == '\n'):
                         self.index += 1
                     self.lineStart = self.index
             else:
+                if ch=='[':
+                    inside_square = True
+                elif ch==']':
+                    inside_square = False
                 st += ch
+        #print string, 'was transformed to', st
         return st
 
 
@@ -589,12 +628,12 @@ class PyJsParser:
                         st += '\f';
                     elif ch=='v':
                         st += '\x0B'
-                    elif ch in '89':
-                        self.throwUnexpectedToken() # again with throw....
+                    #elif ch in '89':
+                    #    self.throwUnexpectedToken() # again with throw....
                     else:
                         if isOctalDigit(ch):
                             octToDec = self.octalToDecimal(ch)
-                            octal = octToDec['octal'] or octal
+                            octal = octToDec.get('octal') or octal
                             st += unichr(octToDec['code'])
                         else:
                             st += ch
@@ -1239,7 +1278,7 @@ class PyJsParser:
         typ = token['type']
 
         if typ in [Token.StringLiteral, Token.NumericLiteral]:
-            if self.strict and token['octal']:
+            if self.strict and token.get('octal'):
                 self.tolerateUnexpectedToken(token, Messages.StrictOctalLiteral);
             return node.finishLiteral(token);
         elif typ in  {Token.Identifier, Token.BooleanLiteral, Token.NullLiteral, Token.Keyword}:

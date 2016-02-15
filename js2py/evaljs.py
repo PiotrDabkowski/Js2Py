@@ -100,7 +100,10 @@ class EvalJs(object):
     def console(self):
         """starts to interact (starts interactive console) Something like code.InteractiveConsole"""
         while True:
-            code = input('>>> ')
+            if six.PY2:
+                code = raw_input('>>> ')
+            else:
+                code = input('>>>')
             try:
                 print(self.eval(code))
             except KeyboardInterrupt:

@@ -54,7 +54,7 @@ def indent(lines, ind=4):
 
 def compose_regex(val):
     reg, flags = val
-    reg = REGEXP_CONVERTER._unescape_string(reg)
+    #reg = REGEXP_CONVERTER._unescape_string(reg)
     return u'/%s/%s' % (reg, flags)
 
 def float_repr(f):
