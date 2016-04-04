@@ -85,6 +85,38 @@ class EvalJs(object):
         self.execute(code)
         return self['PyJsEvalResult']
 
+    def execute_debug(self, js):
+        """executes javascript js in current context
+        as opposed to the (faster) self.execute method, you can use your regular debugger
+        to set breakpoints and inspect the generated python code
+        """
+        code = translate_js(js, '')
+        from md5 import md5
+        import os
+        # make sure you have a temp folder:
+        filename = 'temp' + os.sep + '_' + md5(code).hexdigest() + '.py'
+        try:
+            with open(filename, mode='w') as f:
+                f.write(code)
+            execfile(filename, self._context)
+        except Exception as err:
+            raise err
+        finally:
+            os.remove(filename)
+            try:
+                os.remove(filename + 'c')
+            except:
+                pass
+
+    def eval_debug(self, expression):
+        """evaluates expression in current context and returns its value
+        as opposed to the (faster) self.execute method, you can use your regular debugger
+        to set breakpoints and inspect the generated python code
+        """
+        code = 'PyJsEvalResult = eval(%s)'%json.dumps(expression)
+        self.execute_debug(code)
+        return self['PyJsEvalResult']
+
     def __getattr__(self, var):
         return getattr(self._var, var)
 
