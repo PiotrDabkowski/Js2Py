@@ -80,13 +80,15 @@ class EvalJs(object):
     def execute(self, js=None):
         """executes javascript js in current context
 
-        After initial execute() the converted js is cached for re-use. That means you can for
-        instance run in interactive console statements like 'x++' followed
-        by console.log(x) repeated times without the system recompiling the console.log statement
-        time and again.
+        During initial execute() the converted js is cached for re-use. That means next time you
+        run the same javascript snippet you save many instructions needed to parse and convert the
+        js code to python code.
 
-        Note that the cache has no expiration or cleanup so when running this in automated situations,
-        it mightincrease memory usage.
+        This cache causes minor overhead (a cache dicts is updated) but the Js=>Py conversion process
+        is typically expensive compared to actually running the generated python code.
+
+        Note that the cache is just a dict, it has no expiration or cleanup so when running this
+        in automated situations with vast amounts of snippets it might increase memory usage.
         """
         try:
             cache = self.__dict__['cache']
