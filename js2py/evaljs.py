@@ -6,6 +6,9 @@ import sys
 import time
 import json
 import six
+import os
+import hashlib
+
 __all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js']
 DEBUG = False
 
@@ -74,10 +77,30 @@ class EvalJs(object):
         for k, v in six.iteritems(context):
             setattr(self._var, k, v)
 
-    def execute(self, js):
-        """executes javascript js in current context"""
-        code = translate_js(js, '')
-        exec(code, self._context)
+    def execute(self, js=None):
+        """executes javascript js in current context
+
+        During initial execute() the converted js is cached for re-use. That means next time you
+        run the same javascript snippet you save many instructions needed to parse and convert the
+        js code to python code.
+
+        This cache causes minor overhead (a cache dicts is updated) but the Js=>Py conversion process
+        is typically expensive compared to actually running the generated python code.
+
+        Note that the cache is just a dict, it has no expiration or cleanup so when running this
+        in automated situations with vast amounts of snippets it might increase memory usage.
+        """
+        try:
+            cache = self.__dict__['cache']
+        except KeyError:
+            cache = self.__dict__['cache'] = {}
+        hashkey = hashlib.md5(js).digest()
+        try:
+            compiled = cache[hashkey]
+        except KeyError:
+            code = translate_js(js, '')
+            compiled = cache[hashkey] = compile(code, '<EvalJS snippet>', 'exec')
+        exec(compiled, self._context)
 
     def eval(self, expression):
         """evaluates expression in current context and returns its value"""
@@ -91,10 +114,8 @@ class EvalJs(object):
         to set breakpoints and inspect the generated python code
         """
         code = translate_js(js, '')
-        from md5 import md5
-        import os
         # make sure you have a temp folder:
-        filename = 'temp' + os.sep + '_' + md5(code).hexdigest() + '.py'
+        filename = 'temp' + os.sep + '_' + hashlib.md5(code).hexdigest() + '.py'
         try:
             with open(filename, mode='w') as f:
                 f.write(code)
@@ -160,6 +181,7 @@ if __name__=='__main__':
     #with open('C:\Users\Piotrek\Desktop\esprima.js', 'rb') as f:
     #    x = f.read()
     e = EvalJs()
+    e.execute('square(x)')
     #e.execute(x)
     e.console()
 
