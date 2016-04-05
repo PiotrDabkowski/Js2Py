@@ -23,7 +23,7 @@ def _is_cancelled(source, n):
             break
         cancelled = not cancelled
     return cancelled
-    
+
 def _ensure_regexp(source, n): #<- this function has to be improved
     '''returns True if regexp starts at n else returns False
       checks whether it is not a division '''
@@ -33,7 +33,7 @@ def _ensure_regexp(source, n): #<- this function has to be improved
         k+=1
         if n-k<0:
             return True
-        char = source[n-k] 
+        char = source[n-k]
         if char in markers:
             return True
         if char!=' ' and char!='\n':
@@ -67,12 +67,12 @@ def parse_exponent(source, start):
 def remove_constants(source):
     '''Replaces Strings and Regexp literals in the source code with
        identifiers and *removes comments*. Identifier is of the format:
-       
+
        PyJsStringConst(String const number)_ - for Strings
        PyJsRegExpConst(RegExp const number)_ - for RegExps
 
        Returns dict which relates identifier and replaced constant.
-    
+
        Removes single line and multiline comments from JavaScript source code
        Pseudo comments (inside strings) will not be removed.
 
@@ -138,7 +138,7 @@ def remove_constants(source):
                     elif char==']':
                         regexp_class_count = max(regexp_class_count-1, 0)
                     elif  char=='/' and not regexp_class_count:
-                        quiting_regexp = True 
+                        quiting_regexp = True
                 else:
                     if char not in IDENTIFIER_START:
                         inside_regexp[1] = n
@@ -181,21 +181,21 @@ def remove_constants(source):
     count = 0
     constants = {}
     for end, next_start, typ in comments:
-          res += source[start:end]
-          start = next_start
-          if typ==0: # String
-              name = StringName
-          elif typ==1: # comment
-              continue
-          elif typ==2: # regexp
-              name = RegExpName
-          elif typ==3: # number
-              name = NumberName
-          else:
-              raise RuntimeError()
-          res += ' '+name % count+' '
-          constants[name % count] = source[end: next_start]
-          count += 1
+        res += source[start:end]
+        start = next_start
+        if typ==0: # String
+            name = StringName
+        elif typ==1: # comment
+            continue
+        elif typ==2: # regexp
+            name = RegExpName
+        elif typ==3: # number
+            name = NumberName
+        else:
+            raise RuntimeError()
+        res += ' '+name % count+' '
+        constants[name % count] = source[end: next_start]
+        count += 1
     res+=source[start:]
     # remove this stupid white space
     for e in WHITE:
@@ -205,7 +205,7 @@ def remove_constants(source):
         res = res.replace(e, '\n')
     return res.strip(), constants
 
-    
+
 def recover_constants(py_source, replacements): #now has n^2 complexity. improve to n
     '''Converts identifiers representing Js constants to the PyJs constants
     PyJsNumberConst_1_ which has the true value of 5 will be converted to PyJsNumber(5)'''
@@ -257,7 +257,7 @@ def do_escape(source, n):
         n+=2
         end = parse_num(source, n, HEX)
         if end-n < length:
-                raise SyntaxError('Invalid escape sequence!')
+            raise SyntaxError('Invalid escape sequence!')
         #if length==4:
         #    return unichr(int(source[n:n+4], 16)), n+4 # <- this was a very bad way of solving this problem :)
         return source[n-2:n+length], n+length
@@ -289,6 +289,6 @@ def do_escape(source, n):
 if __name__=='__main__':
     test = ('''
     ''')
-            
+
     t, d = remove_constants(test)
     print t, d
