@@ -9,17 +9,25 @@ import re
 # it finds any 'simple numeric that is not preceded with an alphanumeric character
 # the numeric can be a float (so a dot is found) but
 # it does not recognise notation such as 123e5, 0xFF, infinity or NaN
-CP_NUMERIC_1 = re.compile(r'(?<![a-zA-Z0-9_"\'])([0-9\.]+)')
-CP_NUMERIC_CONSTANT_PLACEHOLDER = '@@NUM_%i_NUM@@'
-CP_NUMERIC_2 = re.compile(CP_NUMERIC_CONSTANT_PLACEHOLDER.replace('%i', r'([0-9\.]+)'))
+CP_NUMERIC_RE = re.compile(r'(?<![a-zA-Z0-9_"\'])([0-9\.]+)')
+CP_NUMERIC_PLACEHOLDER = '__PyJsNUM_%i_PyJsNUM__'
+CP_NUMERIC_PLACEHOLDER_REVERSE_RE = re.compile(
+    CP_NUMERIC_PLACEHOLDER.replace('%i', '([0-9\.]+)')
+    )
 
 # the re below is how we'll recognise string constants
 # it finds a ' or ", then reads until the next matching ' or "
 # this re only services simple cases, it can not be used when
 # there are escaped quotes in the expression
-CP_STRING_1 = re.compile(r'(["\'])(.*?)\1') # this is how we'll recognise string constants
-CP_STRING_CONSTANT_PLACEHOLDER = "'@@STR_%i_STR@@'"
-CP_STRING_2 = re.compile(CP_STRING_CONSTANT_PLACEHOLDER.replace('%i', r'(.*?)'))
+
+#CP_STRING_1 = re.compile(r'(["\'])(.*?)\1') # this is how we'll recognise string constants
+
+CP_STRING = '"([^\\\\"]+|\\\\([bfnrtv\'"\\\\]|[0-3]?[0-7]{1,2}|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}))*"|\'([^\\\\\']+|\\\\([bfnrtv\'"\\\\]|[0-3]?[0-7]{1,2}|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}))*\''
+CP_STRING_RE = re.compile(CP_STRING) # this is how we'll recognise string constants
+CP_STRING_PLACEHOLDER = '__PyJsSTR_%i_PyJsSTR__'
+CP_STRING_PLACEHOLDER_REVERSE_RE = re.compile(
+    CP_STRING_PLACEHOLDER.replace('%i', '([0-9\.]+)')
+    )
 
 cache = {}
 
@@ -45,11 +53,11 @@ def dbg(x):
     """does nothing, legacy dummy function"""
     return ''
 
-def translate_js(js, HEADER=DEFAULT_HEADER, use_compile_plan=False):
+def translate_js(js, HEADER=DEFAULT_HEADER, use_compilation_plan=False):
     """js has to be a javascript source code.
        returns equivalent python code."""
-    if use_compile_plan:
-        return translate_js_with_compile_plan(js, HEADER=HEADER)
+    if use_compilation_plan:
+        return translate_js_with_compilation_plan(js, HEADER=HEADER)
     parser = pyjsparser.PyJsParser()
     parsed = parser.parse(js) # js to esprima syntax tree
     # Another way of doing that would be with my auto esprima translation but its much slower and causes import problems:
@@ -57,7 +65,43 @@ def translate_js(js, HEADER=DEFAULT_HEADER, use_compile_plan=False):
     translating_nodes.clean_stacks()
     return HEADER + translating_nodes.trans(parsed)  # syntax tree to python code
 
-def translate_js_with_compile_plan(js, HEADER=DEFAULT_HEADER):
+class match_unumerator(object):
+    """This class ise used """
+    matchcount = -1
+
+    def __init__(self, placeholder_mask):
+        self.placeholder_mask = placeholder_mask
+        self.matches = []
+
+    def __call__(self, match):
+        self.matchcount += 1
+        self.matches.append(match.group(0))
+        return self.placeholder_mask%self.matchcount
+
+    def __repr__(self):
+        return '\n'.join(self.placeholder_mask%counter + '=' + match for counter, match in enumerate(self.matches))
+
+    def wrap_up(self, output):
+        for counter, value in enumerate(self.matches):
+            output = output.replace("u'" + self.placeholder_mask%(counter) + "'", value, 1)
+        return output
+
+def get_compilation_plan(js):
+    match_increaser_str = match_unumerator(CP_STRING_PLACEHOLDER)
+    compilation_plan = re.sub(
+        CP_STRING, match_increaser_str, js
+    )
+
+    match_increaser_num = match_unumerator(CP_NUMERIC_PLACEHOLDER)
+    compilation_plan = re.sub(CP_NUMERIC_RE, match_increaser_num, compilation_plan)
+    # now put quotes, note that just patching string replaces is somewhat faster than
+    # using another re:
+    compilation_plan = compilation_plan.replace('__PyJsNUM_', '"__PyJsNUM_').replace('_PyJsNUM__', '_PyJsNUM__"')
+    compilation_plan = compilation_plan.replace('__PyJsSTR_', '"__PyJsSTR_').replace('_PyJsSTR__', '_PyJsSTR__"')
+
+    return match_increaser_str, match_increaser_num, compilation_plan
+
+def translate_js_with_compilation_plan(js, HEADER=DEFAULT_HEADER):
     """js has to be a javascript source code.
        returns equivalent python code.
 
@@ -78,53 +122,26 @@ def translate_js_with_compile_plan(js, HEADER=DEFAULT_HEADER):
        not cacheable:
        Q1 == 1 && name /* some comment */ == 'o\'Reilly'
        """
-    if not r'\"' in js and not r"\'" in js and not r'//' in js and not '/*' in js:
-        # since our regex for strings can't understand newlines don't optimize
-        hasliterals = "'" in js or '"' in js
-    else:
-        hasliterals = False
 
-    class match_increaser(object):
-        matchcount = 0
+    match_increaser_str, match_increaser_num, compilation_plan = get_compilation_plan(js)
 
-        def __init__(self, mask):
-            self.mask = mask
-            self.matches = []
-
-        def __call__(self, match):
-            self.matchcount += 1
-            self.matches.append(match.group(0))
-            return self.mask%self.matchcount
-
-    match_increaser_num = match_increaser(CP_NUMERIC_CONSTANT_PLACEHOLDER)
-    compile_plan = re.sub(CP_NUMERIC_1, match_increaser_num, js)
-    if hasliterals:
-        match_increaser_str = match_increaser(CP_STRING_CONSTANT_PLACEHOLDER)
-        compile_plan = re.sub(
-            CP_STRING_1, match_increaser_str, compile_plan
-        )
-    compile_plan = re.sub(CP_NUMERIC_2, "'" + CP_NUMERIC_CONSTANT_PLACEHOLDER.replace('%i', r'\1') + "'", compile_plan)
-
-    cp_hash = hashlib.md5(compile_plan).digest()
+    cp_hash = hashlib.md5(compilation_plan).digest()
     try:
         python_code = cache[cp_hash]['proto_python_code']
     except:
         parser = pyjsparser.PyJsParser()
-        parsed = parser.parse(compile_plan) # js to esprima syntax tree
+        parsed = parser.parse(compilation_plan) # js to esprima syntax tree
         # Another way of doing that would be with my auto esprima translation but its much slower and causes import problems:
         # parsed = esprima.parse(js).to_dict()
         translating_nodes.clean_stacks()
         python_code = translating_nodes.trans(parsed)  # syntax tree to python code
         cache[cp_hash] = {
-            'compile_plan': compile_plan,
+            'compilation_plan': compilation_plan,
             'proto_python_code': python_code,
         }
-    for counter, value in enumerate(match_increaser_num.matches):
-        python_code = python_code.replace("u'" + CP_NUMERIC_CONSTANT_PLACEHOLDER%(counter+1) + "'", value, 1)
 
-    if hasliterals:
-        for counter, value in enumerate(match_increaser_str.matches):
-            python_code = python_code.replace(CP_STRING_CONSTANT_PLACEHOLDER%(counter+1), value, 1)
+    python_code = match_increaser_str.wrap_up(python_code)
+    python_code = match_increaser_num.wrap_up(python_code)
 
     return HEADER + python_code
 
