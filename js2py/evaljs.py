@@ -77,7 +77,7 @@ class EvalJs(object):
         for k, v in six.iteritems(context):
             setattr(self._var, k, v)
 
-    def execute(self, js=None):
+    def execute(self, js=None, use_compilation_plan=False):
         """executes javascript js in current context
 
         During initial execute() the converted js is cached for re-use. That means next time you
@@ -98,14 +98,14 @@ class EvalJs(object):
         try:
             compiled = cache[hashkey]
         except KeyError:
-            code = translate_js(js, '')
+            code = translate_js(js, '', use_compilation_plan=use_compilation_plan)
             compiled = cache[hashkey] = compile(code, '<EvalJS snippet>', 'exec')
         exec(compiled, self._context)
 
-    def eval(self, expression):
+    def eval(self, expression, use_compilation_plan=False):
         """evaluates expression in current context and returns its value"""
         code = 'PyJsEvalResult = eval(%s)'%json.dumps(expression)
-        self.execute(code)
+        self.execute(code, use_compilation_plan=use_compilation_plan)
         return self['PyJsEvalResult']
 
     def execute_debug(self, js):

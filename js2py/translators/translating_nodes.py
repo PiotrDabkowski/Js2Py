@@ -110,7 +110,7 @@ def to_key(literal_or_identifier):
             return unicode(k)
 
 def trans(ele, standard=False):
-    """Translates esprima syntax tree to python by delegating to appriopriate translating node"""
+    """Translates esprima syntax tree to python by delegating to appropriate translating node"""
     try:
         node = globals().get(ele['type'])
         if not node:
