@@ -125,7 +125,7 @@ def translate_js_with_compilation_plan(js, HEADER=DEFAULT_HEADER):
 
     match_increaser_str, match_increaser_num, compilation_plan = get_compilation_plan(js)
 
-    cp_hash = hashlib.md5(compilation_plan).digest()
+    cp_hash = hashlib.md5(compilation_plan.encode('utf-8')).digest()
     try:
         python_code = cache[cp_hash]['proto_python_code']
     except:

@@ -94,7 +94,7 @@ class EvalJs(object):
             cache = self.__dict__['cache']
         except KeyError:
             cache = self.__dict__['cache'] = {}
-        hashkey = hashlib.md5(js).digest()
+        hashkey = hashlib.md5(js.encode('utf-8')).digest()
         try:
             compiled = cache[hashkey]
         except KeyError:
