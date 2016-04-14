@@ -22,7 +22,7 @@ from .pyjsparserdata import *
 from .std_nodes import *
 from pprint import pprint
 
-REGEXP_SPECIAL_SINGLE = {'\\', '^', '$', '*', '+', '?', '.', '[', ']', '(', ')', '{', '{', '|'}
+REGEXP_SPECIAL_SINGLE = {'\\', '^', '$', '*', '+', '?', '.', '[', ']', '(', ')', '{', '{', '|', '-'}
 
 
 import six
