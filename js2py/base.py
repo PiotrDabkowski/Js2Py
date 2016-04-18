@@ -630,6 +630,14 @@ class PyJs(object):
         rnum = other.to_uint32()
         shiftCount = rnum & 0x1F
         return Js(Js(lnum >> shiftCount).to_int32())
+
+
+    # >>>
+    def pyjs_bshift(self, other):
+        lnum = self.to_uint32()
+        rnum = other.to_uint32()
+        shiftCount = rnum & 0x1F
+        return Js(Js(lnum >> shiftCount).to_uint32())
      
     # & 
     def __and__(self, other):
@@ -900,7 +908,7 @@ def PyJsStrictNeq(a, b):
     
 def PyJsBshift(a, b):
     """a>>>b"""
-    return a>>b
+    return a.pyjs_bshift(b)
 
 
 def PyJsComma(a, b):
@@ -1304,7 +1312,7 @@ OP_METHODS = {'*': '__mul__',
               '&': '__and__',
               '^': '__xor__',
               '|': '__or__',
-              '>>>': '__rshift__'}
+              '>>>': 'pyjs_bshift'}
 
 def Empty():
     return Js(None)
