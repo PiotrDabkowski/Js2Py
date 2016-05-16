@@ -8,20 +8,48 @@ import json
 import six
 import os
 import hashlib
+import codecs
 
-__all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js']
+__all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js', 'translate_file', 'run_file']
 DEBUG = False
 
+def path_as_local(path):
+    return os.path.join(os.getcwd(), path)
 
 def import_js(path, lib_name, globals):
     """Imports from javascript source file.
       globals is your globals()"""
-    with open(path, 'rb') as f:
+    with codecs.open(path_as_local(path), "r", "utf-8") as f:
         js = f.read()
     e = EvalJs()
     e.execute(js)
     var = e.context['var']
     globals[lib_name] = var.to_python()
+
+
+def get_file_contents(path_or_file):
+    if hasattr(path_or_file, 'read'):
+        js = path_or_file.read()
+    else:
+        with codecs.open(path_as_local(path_or_file), "r", "utf-8") as f:
+            js = f.read()
+    return js
+
+def translate_file(path_or_file):
+    return translate_js(get_file_contents(path_or_file))
+
+
+def run_file(path_or_file, context=None):
+    ''' Context must be EvalJS object. Runs given path as a JS program. Returns (eval_value, context).
+    '''
+    if context is None:
+        context = EvalJs()
+    if not isinstance(context, EvalJs):
+        raise TypeError('context must be the instance of EvalJs')
+    eval_value = context.eval(get_file_contents(path_or_file))
+    return eval_value, context
+
+
 
 def eval_js(js):
     """Just like javascript eval. Translates javascript to python,
@@ -168,7 +196,6 @@ class EvalJs(object):
                 else:
                     sys.stderr.write('EXCEPTION: '+str(e)+'\n')
                 time.sleep(0.01)
-
 
 
 
