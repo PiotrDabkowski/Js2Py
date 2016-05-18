@@ -69,7 +69,11 @@ class TestCase:
         for c in content.splitlines():
             cand = c.strip('[] -')
             if cand:
-                res.append(cand)
+                if ', ' in cand:
+                    for e in cand.split(','):
+                        res.append(e)
+                else:
+                    res.append(cand)
         return res
 
     def run(self):
@@ -135,7 +139,7 @@ class TestCase:
 
     def print_result(self):
 
-        print self.clear_name, self.es5id, self.label, self.reason
+        print self.clear_name, self.es5id, self.label, self.reason, '\nFile "%s", line 1'%self.full_path if self.label=='CRASHED' else ''
 
 
 
