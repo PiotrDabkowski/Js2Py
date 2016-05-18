@@ -1,5 +1,0 @@
-export PATH=$PATH:/Users/PiotrDabkowski/Desktop/PYSCRIPTS
-sudo chmod a+x /Users/PiotrDabkowski/Desktop/PYSCRIPTS/pitjs.py
-
-cd /Users/PiotrDabkowski/PycharmProjects/Js2Py/tests/test262
-python tools/packaging/test262.py --command "pitjs.py" --non_strict_only
