@@ -1,6 +1,7 @@
+from __future__ import print_function
 import js2py
 from js2py.base import PyJsException, PyExceptionToJs
-import os, sys, re, traceback
+import os, sys, re, traceback, threading, ctypes, time, six
 from distutils.version import LooseVersion
 
 
@@ -8,8 +9,27 @@ def load(path):
     with open(path, 'r') as f:
         return f.read()
 
+def terminate_thread(thread):
+    """Terminates a python thread from another thread.
+
+    :param thread: a threading.Thread instance
+    """
+    if not thread.isAlive():
+        return
+
+    exc = ctypes.py_object(SystemExit)
+    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
+        ctypes.c_long(thread.ident), exc)
+    if res == 0:
+        raise ValueError("nonexistent thread id")
+    elif res > 1:
+        # """if it returns a number greater than one, you're in trouble,
+        # and you should call it again with exc=NULL to revert the effect"""
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(thread.ident, None)
+        raise SystemError("PyThreadState_SetAsyncExc failed")
 
 
+TEST_TIMEOUT =  10
 INCLUDE_PATH = 'includes/'
 TEST_PATH = 'test_cases/'
 INIT = load(os.path.join(INCLUDE_PATH, 'init.js'))
@@ -71,7 +91,7 @@ class TestCase:
             if cand:
                 if ', ' in cand:
                     for e in cand.split(','):
-                        res.append(e)
+                        res.append(e.strip())
                 else:
                     res.append(cand)
         return res
@@ -95,7 +115,7 @@ class TestCase:
             full_error = traceback.format_exc()
             label = 'NOT_IMPLEMENTED'
 
-        except PyJsException, e:
+        except PyJsException as e:
             crashed = False
             full_error = traceback.format_exc()
             if self.negative:
@@ -106,7 +126,7 @@ class TestCase:
                 label = 'FAILED'
 
 
-        except SyntaxError, e:
+        except SyntaxError as e:
             full_error = traceback.format_exc()
             if self.negative=='SyntaxError':
                 passed = True
@@ -138,8 +158,7 @@ class TestCase:
         return passed, label, reason, full_error
 
     def print_result(self):
-
-        print self.clear_name, self.es5id, self.label, self.reason, '\nFile "%s", line 1'%self.full_path if self.label=='CRASHED' else ''
+        print(self.clear_name, self.es5id, self.label, self.reason, '\nFile "%s", line 1'%self.full_path if self.label=='CRASHED' else '')
 
 
 
@@ -154,7 +173,11 @@ def list_path(path, folders=False):
     if folders:
         return sorted(res)
     else:
-        return sorted(res, key=LooseVersion)
+        try:
+            return sorted(res, key=LooseVersion)
+        except:
+            print('Fuck python 3!')
+            return sorted(res)  # python 3
 
 def test_all(path):
     files = list_path(path)
@@ -162,11 +185,27 @@ def test_all(path):
     for f in files:
         if not f.endswith('.js'):
             continue
-        test = TestCase(f)
-        if test.strict_only:
-            continue
-        test.run()
-        test.print_result()
+        try:
+            test = TestCase(f)
+            if test.strict_only:
+                continue
+
+            thread = threading.Thread(target=test.run)
+            timeout_time = time.time() + TEST_TIMEOUT
+            thread.start()
+            while thread.is_alive() and time.time()<timeout_time:
+                time.sleep(0.001)
+            if thread.is_alive():
+                terminate_thread(thread)
+                test.passed = False
+                test.full_error = 'TERMINATED'
+                test.label = 'TIMEOUT'
+                test.reason = '?'
+            test.print_result()
+        except:
+            print(traceback.format_exc())
+            print(f)
+            input()
     for folder in folders:
         test_all(folder)
 
