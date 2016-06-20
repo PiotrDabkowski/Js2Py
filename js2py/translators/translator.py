@@ -152,6 +152,7 @@ def trasnlate(js, HEADER=DEFAULT_HEADER):
        Equivalent to translate_js"""
     return translate_js(js, HEADER)
 
+
 syntax_tree_translate = translating_nodes.trans
 
 if __name__=='__main__':

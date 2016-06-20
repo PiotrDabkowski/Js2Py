@@ -1084,7 +1084,7 @@ class JsObjectWrapper(object):
             raise MakeError('TypeError', '%s is not iterable in Python' % self._obj.Class)
 
     def __repr__(self):
-        if self._obj.is_primitive() or self._obj.is_callable:
+        if self._obj.is_primitive() or self._obj.is_callable():
             return repr(self._obj)
         elif self._obj.Class in {'Array', 'Arguments'}:
             return repr(self.to_list())
@@ -1301,6 +1301,43 @@ class PyJsFunction(PyJs):
         if res.is_object():
             return res
         return new
+
+class PyJsBoundFunction(PyJsFunction):
+    def __init__(self, target, bound_this, bound_args):
+        self.target = target
+        self.bound_this = bound_this
+        self.bound_args = bound_args
+        self.argcount = target.argcount
+        self.code = target.code
+        self.source = target.source
+        self.func_name = target.func_name
+        self.extensible = True
+        self.prototype = FunctionPrototype
+        self.own = {}
+        # set own property length to the number of arguments
+        self.define_own_property('length', {'value': target.get('length')-Js(len(self.bound_args)), 'writable': False,
+                                            'enumerable': False, 'configurable': False})
+
+        if self.func_name:
+            self.define_own_property('name', {'value': Js(self.func_name), 'writable': False,
+                                              'enumerable': False, 'configurable': True})
+
+        # set own prototype
+        proto = Js({})
+        # constructor points to this function
+        proto.define_own_property('constructor', {'value': self, 'writable': True,
+                                                  'enumerable': False, 'configurable': True})
+        self.define_own_property('prototype', {'value': proto, 'writable': True,
+                                               'enumerable': False, 'configurable': False})
+
+
+    def call(self, this, args=()):
+        return self.target.call(self.bound_this, self.bound_args+args)
+
+    def has_instance(self, other):
+        return self.target.has_instance(other)
+
+PyJs.PyJsBoundFunction = PyJsBoundFunction
 
 OP_METHODS = {'*': '__mul__',
               '/': '__div__',

@@ -10,6 +10,8 @@ import os
 import hashlib
 import codecs
 
+
+
 __all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js', 'translate_file', 'run_file']
 DEBUG = False
 
@@ -35,8 +37,35 @@ def get_file_contents(path_or_file):
             js = f.read()
     return js
 
-def translate_file(path_or_file):
-    return translate_js(get_file_contents(path_or_file))
+
+def translate_file(input_path_or_file, output_path_or_file):
+    '''
+    Translates input JS file to python and saves the output to the output file.
+    It appends some convenience code at the end so that it is easy to import JS objects.
+
+    For example we have a file 'example.js' with:   var a = function(x) {return x}
+    translate_file('example.js', 'example.py')
+
+    Now example.py can be easily importend and used:
+    >>> from example import a
+    >>> a(30)
+    30
+    '''
+    js = get_file_contents(input_path_or_file)
+
+    py_code = translate_js(js)
+
+    to_add = '''pyvar = var.to_python()\n'''
+    ctx = {}
+#    exec(py_code, ctx)
+  #  for name in ctx['var'].own:
+  #      to_add += '%s = pyvar'
+    with open(output_path_or_file, 'w') as f:
+        f.write(py_code)
+
+
+
+
 
 
 def run_file(path_or_file, context=None):

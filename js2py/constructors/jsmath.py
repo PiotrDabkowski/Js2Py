@@ -31,13 +31,19 @@ class MathFunctions:
         a = x.to_number().value
         if a!=a: # it must be a nan
             return NaN
-        return math.acos(a)
+        try:
+            return math.acos(a)
+        except:
+            return NaN
 
     def asin(x):
         a = x.to_number().value
         if a!=a: # it must be a nan
             return NaN
-        return math.asin(a)
+        try:
+            return math.asin(a)
+        except:
+            return NaN
 
     def atan(x):
         a = x.to_number().value
@@ -92,7 +98,10 @@ class MathFunctions:
         a = x.to_number().value
         if a!=a: # it must be a nan
             return NaN
-        return math.log(a)
+        try:
+            return math.log(a)
+        except:
+            return NaN
 
     def exp(x):
         a = x.to_number().value
@@ -105,13 +114,19 @@ class MathFunctions:
         b = y.to_number().value
         if a!=a or b!=b: # it must be a nan
             return NaN
-        return a**b
+        try:
+            return a**b
+        except:
+            return NaN
 
     def sqrt(x):
         a = x.to_number().value
         if a!=a: # it must be a nan
             return NaN
-        return a**0.5
+        try:
+            return a**0.5
+        except:
+            return NaN
 
     def min():
         if not len(arguments):
