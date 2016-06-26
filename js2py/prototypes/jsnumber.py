@@ -43,7 +43,7 @@ class NumberPrototype:
         res = ''
         while num:
             s = RADIX_SYMBOLS[num % r]
-            num = num / r
+            num = num // r
             res = s + res
         return sign + (res if res else '0')
 
