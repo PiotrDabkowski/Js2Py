@@ -2,6 +2,7 @@ import six
 
 if six.PY3:
     xrange = range
+    import functools
 
 def to_arr(this):
     """Returns Python array from Js array"""
@@ -153,15 +154,23 @@ class ArrayPrototype:
     def sort(cmpfn):
         if not this.Class in {'Array', 'Arguments'}:
             return this.to_object() # do nothing
-        arr = [this.get(str(i)) for i in xrange(len(this))]
+        arr = []
+        for i in xrange(len(this)):
+            arr.append(this.get(six.text_type(i)))
+
         if not arr:
             return this
         if not cmpfn.is_callable():
             cmpfn = None
         cmp = lambda a,b: sort_compare(a, b, cmpfn)
-        arr.sort(cmp=cmp)
+        if six.PY3:
+            key = functools.cmp_to_key(cmp)
+            arr.sort(key=key)
+        else:
+            arr.sort(cmp=cmp)
         for i in xrange(len(arr)):
-            this.put(unicode(i), arr[i])
+            this.put(six.text_type(i), arr[i])
+
         return this
 
     def splice(start, deleteCount):
