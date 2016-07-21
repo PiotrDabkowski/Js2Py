@@ -1057,6 +1057,12 @@ class JsObjectWrapper(object):
         return to_python(self._obj(*args))
 
     def __getattr__(self, item):
+        if item == 'new' and self._obj.is_callable():
+            # return instance initializer
+            def PyJsInstanceInit(*args):
+                args = tuple(Js(e) for e in args)
+                return self._obj.create(*args).to_python()
+            return PyJsInstanceInit
         cand = to_python(self._obj.get(str(item)))
         # handling method calling... obj.meth(). Value of this in meth should be self
         if isinstance(cand, self.__class__):
@@ -1919,6 +1925,7 @@ if __name__=='__main__':
     import code
     s = Js(4)
     b = Js(6)
+
     s2 = Js(4)
     o =  ObjectPrototype
     o.put('x', Js(100))

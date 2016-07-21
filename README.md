@@ -31,6 +31,15 @@ Simple Example:
     >>> add.constructor
     function Function() { [python code] }
 ```
+
+Translate JS file:
+
+```python
+    >>> js2py.translate_file('example.js', 'example.py')
+    >>> from example import example
+    >>> example.someFunction()
+    ...
+```
    
 When I say <i>it supports everything</i> I really mean <em>everything</em>:
 
