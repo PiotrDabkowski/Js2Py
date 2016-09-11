@@ -170,7 +170,7 @@ def MakeDay(year, month, date):
     d = DayFromYear(y) + CUM[mn] + dt - 1 + (1 if DaysInYear(y)==366 and mn>=2 else 0)
     return  d # ms per day
 
-def MakeDate (day, time):
+def MakeDate(day, time):
     return 86400000*day + time
 
 
