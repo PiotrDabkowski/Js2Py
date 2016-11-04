@@ -260,7 +260,7 @@ class PyJs(object):
     def get(self, prop): #external use!
          #prop = prop.value
          if self.Class=='Undefined' or self.Class=='Null':
-             raise MakeError('TypeError', 'Undefiend and null dont have properties!')
+             raise MakeError('TypeError', 'Undefined and null dont have properties!')
          if not isinstance(prop, basestring):
              prop = prop.to_string().value
          if not isinstance(prop, basestring): raise RuntimeError('Bug')
@@ -298,7 +298,7 @@ class PyJs(object):
            op can be either None for simple assignment or one of:
            * / % + - << >> & ^ |'''
         if self.Class=='Undefined' or self.Class=='Null':
-             raise MakeError('TypeError', 'Undefiend and null dont have properties!')
+             raise MakeError('TypeError', 'Undefined and null dont have properties!')
         if not isinstance(prop, basestring):
              prop = prop.to_string().value
         #we need to set the value to the incremented one
