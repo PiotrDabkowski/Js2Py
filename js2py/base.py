@@ -1,7 +1,6 @@
 '''Most important file in Js2Py implementation: PyJs class - father of all PyJs objects'''
 from copy import copy
 import re
-#from translators import translator
 
 from .translators.friendly_nodes import REGEXP_CONVERTER
 from .utils.injector import fix_js_args
@@ -202,7 +201,7 @@ def is_generic_descriptor(desc):
 ##############################################################################
 
 class PyJs(object):
-    PRIMITIVES =  {'String', 'Number', 'Boolean', 'Undefined', 'Null'}
+    PRIMITIVES =  frozenset(['String', 'Number', 'Boolean', 'Undefined', 'Null'])
     TYPE = 'Object'
     Class = None
     extensible = True
@@ -530,7 +529,7 @@ class PyJs(object):
 
     def cok(self):
         """Check object coercible"""
-        if self.Class in {'Undefined', 'Null'}:
+        if self.Class in ('Undefined', 'Null'):
             raise MakeError('TypeError', 'undefined or null can\'t be converted to object')
 
     def to_int(self):
@@ -1092,7 +1091,7 @@ class JsObjectWrapper(object):
     def __repr__(self):
         if self._obj.is_primitive() or self._obj.is_callable():
             return repr(self._obj)
-        elif self._obj.Class in {'Array', 'Arguments'}:
+        elif self._obj.Class in ('Array', 'Arguments'):
             return repr(self.to_list())
         return repr(self.to_dict())
 
@@ -1482,7 +1481,7 @@ class PyJsArray(PyJs):
             new_len =  desc['value'].to_uint32()
             if new_len!=desc['value'].to_number().value:
                 raise MakeError('RangeError', 'Invalid range!')
-            new_desc = {k:v for k,v in six.iteritems(desc)}
+            new_desc = dict((k,v) for k,v in six.iteritems(desc))
             new_desc['value'] = Js(new_len)
             if new_len>=old_len:
                 return PyJs.define_own_property(self, prop, new_desc)
@@ -1737,13 +1736,13 @@ def fill_prototype(prototype, Class, attrs, constructor=False):
         if six.PY2:
             if hasattr(e, '__func__'):
                 temp = PyJsFunction(e.__func__, FunctionPrototype)
-                attrs = {k:v for k,v in attrs.iteritems()}
+                attrs = dict((k,v) for k,v in attrs.iteritems())
                 attrs['value'] = temp
                 prototype.define_own_property(i, attrs)
         else:
             if hasattr(e, '__call__') and not i.startswith('__'):
                 temp = PyJsFunction(e, FunctionPrototype)
-                attrs = {k:v for k,v in attrs.items()}
+                attrs = dict((k,v) for k,v in attrs.items())
                 attrs['value'] = temp
                 prototype.define_own_property(i, attrs)
         if constructor:
@@ -1824,7 +1823,7 @@ def string_constructor():
 String.create = string_constructor
 
 # RegExp
-REG_EXP_FLAGS = {'g', 'i', 'm'}
+REG_EXP_FLAGS = ('g', 'i', 'm')
 @Js
 def RegExp(pattern, flags):
     if pattern.Class=='RegExp':
@@ -1906,7 +1905,7 @@ builtins = ('true','false','null','undefined','Infinity',
 
 scope = dict(zip(builtins, [eval(e) for e in builtins]))
 
-JS_BUILTINS = {k:v for k,v in scope.items()}
+JS_BUILTINS = dict((k,v) for k,v in scope.items())
 
 
 # Fill in NUM_BANK

@@ -1,9 +1,14 @@
-from . import pyjsparser
-#from pyesprima import esprima
+import pyjsparser
+import pyjsparser.parser
 from . import translating_nodes
 
 import hashlib
 import re
+
+
+# Enable Js2Py exceptions and pyimport in parser
+pyjsparser.parser.ENABLE_JS2PY_ERRORS = True
+pyjsparser.parser.ENABLE_PYIMPORT = True
 
 # the re below is how we'll recognise numeric constants.
 # it finds any 'simple numeric that is not preceded with an alphanumeric character
@@ -31,7 +36,7 @@ CP_STRING_PLACEHOLDER_REVERSE_RE = re.compile(
 
 cache = {}
 
-# This crap is still needed but I removed it for speed reasons. Have to think of better idea
+# This crap is still needed but I removed it for speed reasons. Have to think ofa  better idea
 # import js2py.pyjs, sys
 # # Redefine builtin objects... Do you have a better idea?
 # for m in list(sys.modules):

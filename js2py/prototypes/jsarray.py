@@ -152,7 +152,7 @@ class ArrayPrototype:
         return res
 
     def sort(cmpfn):
-        if not this.Class in {'Array', 'Arguments'}:
+        if not this.Class in ('Array', 'Arguments'):
             return this.to_object() # do nothing
         arr = []
         for i in xrange(len(this)):

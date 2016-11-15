@@ -18,7 +18,7 @@ def object_constructor():
         if val.TYPE=='Object':
             #Implementation dependent, but my will simply return :)
             return val
-        elif val.TYPE in {'Number', 'String', 'Boolean'}:
+        elif val.TYPE in ('Number', 'String', 'Boolean'):
             return val.to_object()
     return PyJsObject(prototype=ObjectPrototype)
 

@@ -2,11 +2,12 @@
 import time
 import datetime
 import warnings
+
 try:
     from tzlocal import get_localzone
     LOCAL_ZONE = get_localzone()
 except: # except all problems...
-    warnings.warn('Please install or fix tzlocal library (pip install tzlocal) in order to make Date object work better. Otherwise I will assume DST is in effect all the time', Warning)
+    warnings.warn('Please install or fix tzlocal library (pip install tzlocal) in order to make Date object work better. Otherwise I will assume DST is in effect all the time')
     class LOCAL_ZONE:
         @staticmethod
         def dst(*args):

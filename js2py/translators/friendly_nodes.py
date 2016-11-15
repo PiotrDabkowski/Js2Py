@@ -1,6 +1,6 @@
 import binascii
 
-from .pyjsparser import PyJsParser
+from pyjsparser import PyJsParser
 import six
 if six.PY3:
     basestring = str
@@ -73,7 +73,7 @@ def argsplit(args, sep=','):
     last = 0
     splits = []
     for e in bracket_split(args, brackets=['()', '[]', '{}']):
-        if e[0] not in {'(', '[', '{'}:
+        if e[0] not in ('(', '[', '{'):
             for i, char in enumerate(e):
                 if char==sep:
                     splits.append(args[last:parsed_len+i])

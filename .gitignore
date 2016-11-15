@@ -17,6 +17,8 @@ lib64/
 parts/
 sdist/
 var/
+.idea/
+
 *.egg-info/
 .installed.cfg
 *.egg
@@ -64,7 +66,8 @@ target/
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -102,3 +105,6 @@ $RECYCLE.BIN/
 *.xml
 
 .spyderproject
+.idea/dictionaries/
+.idea/inspectionProfiles/
+.idea/scopes/

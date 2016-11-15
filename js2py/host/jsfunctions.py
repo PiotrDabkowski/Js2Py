@@ -1,4 +1,4 @@
-from js2py.base import *
+from ..base import *
 
 RADIX_CHARS = {'1': 1, '0': 0, '3': 3, '2': 2, '5': 5, '4': 4, '7': 7, '6': 6, '9': 9, '8': 8, 'a': 10, 'c': 12,
                'b': 11, 'e': 14, 'd': 13, 'g': 16, 'f': 15, 'i': 18, 'h': 17, 'k': 20, 'j': 19, 'm': 22, 'l': 21,
@@ -10,7 +10,7 @@ RADIX_CHARS = {'1': 1, '0': 0, '3': 3, '2': 2, '5': 5, '4': 4, '7': 7, '6': 6, '
 def parseInt (string , radix):
     string = string.to_string().value.lstrip()
     sign = 1
-    if string and string[0] in {'+', '-'}:
+    if string and string[0] in ('+', '-'):
         if string[0]=='-':
             sign = -1
         string = string[1:]
@@ -24,7 +24,7 @@ def parseInt (string , radix):
     else:
         r = 10
     if strip_prefix:
-        if len(string)>=2 and string[:2] in {'0x', '0X'}:
+        if len(string)>=2 and string[:2] in ('0x', '0X'):
             string = string[2:]
             r = 16
     n = 0
@@ -43,7 +43,7 @@ def parseInt (string , radix):
 def parseFloat(string):
     string = string.to_string().value.strip()
     sign = 1
-    if string and string[0] in {'+', '-'}:
+    if string and string[0] in ('+', '-'):
         if string[0]=='-':
             sign = -1
         string = string[1:]

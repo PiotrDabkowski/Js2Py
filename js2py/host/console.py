@@ -1,4 +1,4 @@
-from js2py.base import *
+from ..base import *
 
 @Js
 def console():

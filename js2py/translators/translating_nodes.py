@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-from .pyjsparserdata import *
+from pyjsparser.pyjsparserdata import *
 from .friendly_nodes import *
 import random
 import six
@@ -252,7 +252,7 @@ def Property(type, kind, key, computed, value, method, shorthand):
 def UnaryExpression(type, operator, argument, prefix):
     a = trans(argument, standard=True) # unary involve some complex operations so we cant use line shorteners here
     if operator=='delete':
-        if argument['type'] in {'Identifier', 'MemberExpression'}:
+        if argument['type'] in ('Identifier', 'MemberExpression'):
             # means that operation is valid
             return js_delete(a)
         return 'PyJsComma(%s, Js(True))' % a   # otherwise not valid, just perform expression and return true.

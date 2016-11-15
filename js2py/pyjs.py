@@ -47,5 +47,5 @@ for name, error in ERRORS.items():
 #add eval
 scope['eval'] = Eval
 scope['JSON'] = JSON
-JS_BUILTINS = {k:v for k,v in scope.items()}
+JS_BUILTINS = dict((k,v) for k,v in scope.items())
 

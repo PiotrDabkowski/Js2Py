@@ -1,4 +1,4 @@
-from pyjsparserdata import *
+from pyjsparser.pyjsparserdata import *
 
 REGEXP_SPECIAL_SINGLE = {'\\', '^', '$', '*', '+', '?', '.'}
 

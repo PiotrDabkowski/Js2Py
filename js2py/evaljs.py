@@ -1,7 +1,6 @@
 # coding=utf-8
-""" This module is still experimental!
-"""
 from .translators import translate_js, DEFAULT_HEADER
+from .es6 import js6_to_js5
 import sys
 import time
 import json
@@ -10,10 +9,12 @@ import os
 import hashlib
 import codecs
 
-
-
-__all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js', 'translate_file', 'run_file']
+__all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js', 'translate_file', 'eval_js6', 'translate_js6', 'run_file', 'disable_pyimport']
 DEBUG = False
+
+def disable_pyimport():
+    import pyjsparser.parser
+    pyjsparser.parser.ENABLE_PYIMPORT = False
 
 def path_as_local(path):
     if os.path.isabs(path):
@@ -108,6 +109,13 @@ def eval_js(js):
        """
     e = EvalJs()
     return e.eval(js)
+
+def eval_js6(js):
+    return eval_js(js6_to_js5(js))
+
+
+def translate_js6(js):
+    return translate_js(js6_to_js5(js))
 
 
 

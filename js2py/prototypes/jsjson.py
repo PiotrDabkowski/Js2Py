@@ -1,5 +1,5 @@
 import json
-from js2py.base import Js
+from ..base import Js
 indent = ''
 # python 3 support
 import six
@@ -43,7 +43,7 @@ def stringify(value, replacer, space):
                 elif v._type()=='String':
                     item = v
                 elif v.is_object():
-                    if v.Class in {'String', 'Number'}:
+                    if v.Class in ('String', 'Number'):
                         item = v.to_string()
                 if not item.is_undefined() and item.value not in property_list:
                     property_list.append(item.value)
@@ -168,7 +168,7 @@ def Quote(string):
 
 def to_js(this, d):
     if isinstance(d, dict):
-        return this.Js({k:this.Js(v) for k, v in six.iteritems(d)})
+        return this.Js(dict((k,this.Js(v)) for k, v in six.iteritems(d)))
     return this.Js(d)
 
 
