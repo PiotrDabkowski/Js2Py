@@ -24,6 +24,8 @@ Now also supports JavaScript 6 (still experimental):
 ```
 JavaScript 6 support was achieved by using Js2Py to translate javascript library called <a href="https://github.com/babel/babel">Babel</a>. Babel translates JS 6 to JS 5 and afterwards Js2Py translates JS 5 to Python. The only downside is that translated babel.js has about 4 MB and importing such a long Python file takes about 15 seconds!
 
+<hr>
+
 Translating a JavaScript file:
 
 ```python
