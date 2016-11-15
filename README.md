@@ -1,20 +1,6 @@
 ####Pure Python JavaScript Translator/Interpreter
 
-Translates <em>any</em> valid JavaScript (ECMA Script 5.1) to Python. Translation is fully automatic. Does not have any 
-dependencies - <b>uses only standard python library.</b> Supports Python 2 & 3.
-<hr>
-
-Managed to fully automatically translate esprima.js to Python! - <a href="https://github.com/PiotrDabkowski/Js2Py/blob/master/examples/pyesprima.py"> it's now the only JavaScript 6 parser available for Python</a>!
-
-<hr>
-####Functionality
-
-<ul>
-<li>Automatically translates JavaScript to Python - Supports <b>whole</b>  ECMA Script 5.1</li>
-<li>Supports importing Python libraries from JavaScript code using pyimport statement</li>
-<li>Very fast JavaScript Parsing - can be used as standalone JS parser, syntax tree is just like in esprima.js (use js2py.parse_js) </li>
-<li> Provides friendly JS execution features - js2py.eval_js for single execution and js2py.EvalJs for continuous </li>
-</ul>
+Everything is done in 100% pure Python so it's extremely easy to install and use. Supports Python 2 & 3. Full support for ECMAScript 5.1, ECMA 6 support is still experimental.
 
 
 Simple Example:
@@ -24,18 +10,26 @@ Simple Example:
     >>> js2py.eval_js('console.log( "Hello World!" )')
     'Hello World!'
     >>> add = js2py.eval_js('function add(a, b) {return a + b}')
-    >>> add
-    function add(a, b) { [python code] }
     >>> add(1, 2) + 3
     6
     >>> add.constructor
     function Function() { [python code] }
 ```
 
-Translate JS file:
+Now also supports JavaScript 6 (still experimental):
 
 ```python
+    >>> js2py.eval_js6('let a = () => 11; a()')
+    11
+```
+JavaScript 6 support was achieved by using Js2Py to translate javascript library called <a href="https://github.com/babel/babel">Babel</a>. Babel translates JS 6 to JS 5 and afterwards Js2Py translates JS 5 to Python. The only downside is that translated babel.js has about 4 MB and importing such a long Python file takes about 15 seconds!
+
+Translating a JavaScript file:
+
+```python
+    # this will translate example.js to example.py
     >>> js2py.translate_file('example.js', 'example.py')
+    # example.py can be now imported and used!
     >>> from example import example
     >>> example.someFunction()
     ...
