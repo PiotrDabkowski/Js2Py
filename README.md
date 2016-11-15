@@ -1,7 +1,7 @@
 ####Pure Python JavaScript Translator/Interpreter
 
 Everything is done in 100% pure Python so it's extremely easy to install and use. Supports Python 2 & 3. Full support for ECMAScript 5.1, ECMA 6 support is still experimental.
-
+<hr>
 
 Simple Example:
 
