@@ -6,7 +6,7 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
-# command to install dependencies
+# command to install dependencies!
 install: "pip install -r requirements.txt"
-# command to run tests
+# command to run tests!
 script: python simple_test.py
