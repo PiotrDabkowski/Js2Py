@@ -48,5 +48,19 @@ for (let a of [1,2,3]) {
 typeof a === 'undefined' && x === 3
 ''')
 
+assert js2py.eval_js6('''
+class Shape {
+    constructor (id, x, y) {
+        this.id = id
+        this.move(x, y)
+    }
+    move (x, y) {
+        this.x = x
+        this.y = y
+    }
+};
+
+a = new Shape(1,2,3)
+''').x == 2
 print("Passed ECMA 6!")
 

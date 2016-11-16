@@ -255,16 +255,16 @@ def PyJs_anonymous_29_(require, module, exports, this, arguments, var=var):
                 try:
                     var.put(u'result', var.get(u'transform')(var.get(u'code'), var.get(u'opts')))
                 except PyJsException as PyJsTempException:
-                    PyJsHolder_5f657272_96713703 = var.own.get(u'_err')
+                    PyJsHolder_5f657272_67108312 = var.own.get(u'_err')
                     var.force_own_put(u'_err', PyExceptionToJs(PyJsTempException))
                     try:
                         var.put(u'err', var.get(u'_err'))
                     finally:
-                        if PyJsHolder_5f657272_96713703 is not None:
-                            var.own[u'_err'] = PyJsHolder_5f657272_96713703
+                        if PyJsHolder_5f657272_67108312 is not None:
+                            var.own[u'_err'] = PyJsHolder_5f657272_67108312
                         else:
                             del var.own[u'_err']
-                        del PyJsHolder_5f657272_96713703
+                        del PyJsHolder_5f657272_67108312
             if var.get(u'err'):
                 var.get(u'callback')(var.get(u'err'))
             else:
@@ -526,16 +526,16 @@ def PyJs_anonymous_56_(require, module, exports, this, arguments, var=var):
             try:
                 return var.get(u'_module2').get(u'default').callprop(u'_resolveFilename', var.get(u'loc'), var.get(u'relativeMod'))
             except PyJsException as PyJsTempException:
-                PyJsHolder_657272_89519354 = var.own.get(u'err')
+                PyJsHolder_657272_57087007 = var.own.get(u'err')
                 var.force_own_put(u'err', PyExceptionToJs(PyJsTempException))
                 try:
                     return var.get(u"null")
                 finally:
-                    if PyJsHolder_657272_89519354 is not None:
-                        var.own[u'err'] = PyJsHolder_657272_89519354
+                    if PyJsHolder_657272_57087007 is not None:
+                        var.own[u'err'] = PyJsHolder_657272_57087007
                     else:
                         del var.own[u'err']
-                    del PyJsHolder_657272_89519354
+                    del PyJsHolder_657272_57087007
         PyJs_anonymous_58_._set_name(u'anonymous')
         var.get(u'exports').put(u'default', PyJs_anonymous_58_)
         var.put(u'_module', var.get(u'require')(Js(u'module')))
@@ -1262,7 +1262,7 @@ def PyJs_anonymous_80_(require, module, exports, this, arguments, var=var):
                     else:
                         return var.get(u'callback')()
                 except PyJsException as PyJsTempException:
-                    PyJsHolder_657272_79783925 = var.own.get(u'err')
+                    PyJsHolder_657272_50892639 = var.own.get(u'err')
                     var.force_own_put(u'err', PyExceptionToJs(PyJsTempException))
                     try:
                         if var.get(u'err').get(u'_babel'):
@@ -1283,11 +1283,11 @@ def PyJs_anonymous_80_(require, module, exports, this, arguments, var=var):
                         PyJsTempException = JsToPyException(var.get(u'err'))
                         raise PyJsTempException
                     finally:
-                        if PyJsHolder_657272_79783925 is not None:
-                            var.own[u'err'] = PyJsHolder_657272_79783925
+                        if PyJsHolder_657272_50892639 is not None:
+                            var.own[u'err'] = PyJsHolder_657272_50892639
                         else:
                             del var.own[u'err']
-                        del PyJsHolder_657272_79783925
+                        del PyJsHolder_657272_50892639
             PyJs_wrap_130_._set_name(u'wrap')
             var.get(u'File').get(u'prototype').put(u'wrap', PyJs_wrap_130_)
             @Js
@@ -1852,18 +1852,18 @@ def PyJs_anonymous_172_(require, module, exports, this, arguments, var=var):
                     if var.get(u'key'):
                         var.put(u'options', var.get(u'options').get(var.get(u'key')))
                 except PyJsException as PyJsTempException:
-                    PyJsHolder_657272_53047984 = var.own.get(u'err')
+                    PyJsHolder_657272_93340872 = var.own.get(u'err')
                     var.force_own_put(u'err', PyExceptionToJs(PyJsTempException))
                     try:
                         var.get(u'err').put(u'message', ((var.get(u'loc')+Js(u': Error while parsing JSON - '))+var.get(u'err').get(u'message')))
                         PyJsTempException = JsToPyException(var.get(u'err'))
                         raise PyJsTempException
                     finally:
-                        if PyJsHolder_657272_53047984 is not None:
-                            var.own[u'err'] = PyJsHolder_657272_53047984
+                        if PyJsHolder_657272_93340872 is not None:
+                            var.own[u'err'] = PyJsHolder_657272_93340872
                         else:
                             del var.own[u'err']
-                        del PyJsHolder_657272_53047984
+                        del PyJsHolder_657272_93340872
                 PyJs_Object_187_ = Js({u'options':var.get(u'options'),u'alias':var.get(u'loc'),u'dirname':var.get(u'_path2').get(u'default').callprop(u'dirname', var.get(u'loc'))})
                 var.get(u"this").callprop(u'mergeConfig', PyJs_Object_187_)
                 return var.get(u'options').neg().neg()
@@ -2335,7 +2335,7 @@ def PyJs_anonymous_240_(require, module, exports, this, arguments, var=var):
                             raise PyJsTempException
                         (var.get(u'onResolve') and var.get(u'onResolve')(var.get(u'val'), var.get(u'presetLoc')))
                     except PyJsException as PyJsTempException:
-                        PyJsHolder_65_79625347 = var.own.get(u'e')
+                        PyJsHolder_65_49729099 = var.own.get(u'e')
                         var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
                         try:
                             if var.get(u'presetLoc'):
@@ -2343,11 +2343,11 @@ def PyJs_anonymous_240_(require, module, exports, this, arguments, var=var):
                             PyJsTempException = JsToPyException(var.get(u'e'))
                             raise PyJsTempException
                         finally:
-                            if PyJsHolder_65_79625347 is not None:
-                                var.own[u'e'] = PyJsHolder_65_79625347
+                            if PyJsHolder_65_49729099 is not None:
+                                var.own[u'e'] = PyJsHolder_65_49729099
                             else:
                                 del var.own[u'e']
-                            del PyJsHolder_65_79625347
+                            del PyJsHolder_65_49729099
                     return var.get(u'val')
                 PyJs_anonymous_260_._set_name(u'anonymous')
                 return var.get(u'presets').callprop(u'map', PyJs_anonymous_260_)
@@ -3394,16 +3394,16 @@ def PyJs_anonymous_357_(require, module, exports, this, arguments, var=var):
         try:
             var.get(u"this").put(u'regexp', var.get(u'RegExp').create(var.get(u're'), var.get(u'flags')))
         except PyJsException as PyJsTempException:
-            PyJsHolder_6578_93770425 = var.own.get(u'ex')
+            PyJsHolder_6578_58961032 = var.own.get(u'ex')
             var.force_own_put(u'ex', PyExceptionToJs(PyJsTempException))
             try:
                 var.get(u"this").put(u'regexp', Js(False))
             finally:
-                if PyJsHolder_6578_93770425 is not None:
-                    var.own[u'ex'] = PyJsHolder_6578_93770425
+                if PyJsHolder_6578_58961032 is not None:
+                    var.own[u'ex'] = PyJsHolder_6578_58961032
                 else:
                     del var.own[u'ex']
-                del PyJsHolder_6578_93770425
+                del PyJsHolder_6578_58961032
         return var.get(u"this").get(u'regexp')
     PyJsHoisted_makeRe_.func_name = u'makeRe'
     var.put(u'makeRe', PyJsHoisted_makeRe_)
@@ -3724,7 +3724,7 @@ def PyJs_anonymous_357_(require, module, exports, this, arguments, var=var):
                             try:
                                 var.get(u'RegExp')(((Js(u'[')+var.get(u'cs'))+Js(u']')))
                             except PyJsException as PyJsTempException:
-                                PyJsHolder_6572_28934031 = var.own.get(u'er')
+                                PyJsHolder_6572_91644122 = var.own.get(u'er')
                                 var.force_own_put(u'er', PyExceptionToJs(PyJsTempException))
                                 try:
                                     var.put(u'sp', var.get(u"this").callprop(u'parse', var.get(u'cs'), var.get(u'SUBPARSE')))
@@ -3733,11 +3733,11 @@ def PyJs_anonymous_357_(require, module, exports, this, arguments, var=var):
                                     var.put(u'inClass', Js(False))
                                     continue
                                 finally:
-                                    if PyJsHolder_6572_28934031 is not None:
-                                        var.own[u'er'] = PyJsHolder_6572_28934031
+                                    if PyJsHolder_6572_91644122 is not None:
+                                        var.own[u'er'] = PyJsHolder_6572_91644122
                                     else:
                                         del var.own[u'er']
-                                    del PyJsHolder_6572_28934031
+                                    del PyJsHolder_6572_91644122
                         var.put(u'hasMagic', var.get(u'true'))
                         var.put(u'inClass', Js(False))
                         var.put(u're', var.get(u'c'), u'+')
@@ -3838,16 +3838,16 @@ def PyJs_anonymous_357_(require, module, exports, this, arguments, var=var):
         try:
             var.put(u'regExp', var.get(u'RegExp').create(((Js(u'^')+var.get(u're'))+Js(u'$')), var.get(u'flags')))
         except PyJsException as PyJsTempException:
-            PyJsHolder_6572_75627987 = var.own.get(u'er')
+            PyJsHolder_6572_96421937 = var.own.get(u'er')
             var.force_own_put(u'er', PyExceptionToJs(PyJsTempException))
             try:
                 return var.get(u'RegExp').create(Js(u'$.'))
             finally:
-                if PyJsHolder_6572_75627987 is not None:
-                    var.own[u'er'] = PyJsHolder_6572_75627987
+                if PyJsHolder_6572_96421937 is not None:
+                    var.own[u'er'] = PyJsHolder_6572_96421937
                 else:
                     del var.own[u'er']
-                del PyJsHolder_6572_75627987
+                del PyJsHolder_6572_96421937
         var.get(u'regExp').put(u'_glob', var.get(u'pattern'))
         var.get(u'regExp').put(u'_src', var.get(u're'))
         return var.get(u'regExp')
@@ -3928,16 +3928,16 @@ def PyJs_anonymous_357_(require, module, exports, this, arguments, var=var):
     try:
         var.put(u'path', var.get(u'require')(Js(u'path')))
     except PyJsException as PyJsTempException:
-        PyJsHolder_6572_11642440 = var.own.get(u'er')
+        PyJsHolder_6572_32117432 = var.own.get(u'er')
         var.force_own_put(u'er', PyExceptionToJs(PyJsTempException))
         try:
             pass
         finally:
-            if PyJsHolder_6572_11642440 is not None:
-                var.own[u'er'] = PyJsHolder_6572_11642440
+            if PyJsHolder_6572_32117432 is not None:
+                var.own[u'er'] = PyJsHolder_6572_32117432
             else:
                 del var.own[u'er']
-            del PyJsHolder_6572_11642440
+            del PyJsHolder_6572_32117432
     PyJs_Object_359_ = Js({})
     var.put(u'GLOBSTAR', var.get(u'minimatch').put(u'GLOBSTAR', var.get(u'Minimatch').put(u'GLOBSTAR', PyJs_Object_359_)))
     var.put(u'expand', var.get(u'require')(Js(u'brace-expansion')))
@@ -9528,16 +9528,16 @@ def PyJs_anonymous_764_(require, module, exports, this, arguments, var=var):
                 try:
                     return (PyJsComma(Js(0.0),var.get(u'_stringify2').get(u'default'))(var.get(u'val')) or (var.get(u'val')+Js(u'')))
                 except PyJsException as PyJsTempException:
-                    PyJsHolder_65_35031225 = var.own.get(u'e')
+                    PyJsHolder_65_98138155 = var.own.get(u'e')
                     var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
                     try:
                         return var.get(u'util').callprop(u'inspect', var.get(u'val'))
                     finally:
-                        if PyJsHolder_65_35031225 is not None:
-                            var.own[u'e'] = PyJsHolder_65_35031225
+                        if PyJsHolder_65_98138155 is not None:
+                            var.own[u'e'] = PyJsHolder_65_98138155
                         else:
                             del var.own[u'e']
-                        del PyJsHolder_65_35031225
+                        del PyJsHolder_65_98138155
         PyJs_anonymous_769_._set_name(u'anonymous')
         return var.get(u'args').callprop(u'map', PyJs_anonymous_769_)
     PyJsHoisted_parseArgs_.func_name = u'parseArgs'
@@ -17276,16 +17276,16 @@ def PyJs_anonymous_1458_(require, module, exports, this, arguments, var=var):
         try:
             return var.get(u'it').get(var.get(u'key'))
         except PyJsException as PyJsTempException:
-            PyJsHolder_65_99406303 = var.own.get(u'e')
+            PyJsHolder_65_48759406 = var.own.get(u'e')
             var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
             try:
                 pass
             finally:
-                if PyJsHolder_65_99406303 is not None:
-                    var.own[u'e'] = PyJsHolder_65_99406303
+                if PyJsHolder_65_48759406 is not None:
+                    var.own[u'e'] = PyJsHolder_65_48759406
                 else:
                     del var.own[u'e']
-                del PyJsHolder_65_99406303
+                del PyJsHolder_65_48759406
     PyJs_anonymous_1460_._set_name(u'anonymous')
     var.put(u'tryGet', PyJs_anonymous_1460_)
     @Js
@@ -17990,16 +17990,16 @@ def PyJs_anonymous_1556_(require, module, exports, this, arguments, var=var):
         try:
             return var.get(u'exec')().neg().neg()
         except PyJsException as PyJsTempException:
-            PyJsHolder_65_52572223 = var.own.get(u'e')
+            PyJsHolder_65_66067223 = var.own.get(u'e')
             var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
             try:
                 return var.get(u'true')
             finally:
-                if PyJsHolder_65_52572223 is not None:
-                    var.own[u'e'] = PyJsHolder_65_52572223
+                if PyJsHolder_65_66067223 is not None:
+                    var.own[u'e'] = PyJsHolder_65_66067223
                 else:
                     del var.own[u'e']
-                del PyJsHolder_65_52572223
+                del PyJsHolder_65_66067223
     PyJs_anonymous_1557_._set_name(u'anonymous')
     var.get(u'module').put(u'exports', PyJs_anonymous_1557_)
 PyJs_anonymous_1556_._set_name(u'anonymous')
@@ -18200,7 +18200,7 @@ def PyJs_anonymous_1594_(require, module, exports, this, arguments, var=var):
         try:
             return (var.get(u'fn')(var.get(u'anObject')(var.get(u'value')).get(u'0'), var.get(u'value').get(u'1')) if var.get(u'entries') else var.get(u'fn')(var.get(u'value')))
         except PyJsException as PyJsTempException:
-            PyJsHolder_65_5899077 = var.own.get(u'e')
+            PyJsHolder_65_64523188 = var.own.get(u'e')
             var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
             try:
                 var.put(u'ret', var.get(u'iterator').get(u'return'))
@@ -18209,11 +18209,11 @@ def PyJs_anonymous_1594_(require, module, exports, this, arguments, var=var):
                 PyJsTempException = JsToPyException(var.get(u'e'))
                 raise PyJsTempException
             finally:
-                if PyJsHolder_65_5899077 is not None:
-                    var.own[u'e'] = PyJsHolder_65_5899077
+                if PyJsHolder_65_64523188 is not None:
+                    var.own[u'e'] = PyJsHolder_65_64523188
                 else:
                     del var.own[u'e']
-                del PyJsHolder_65_5899077
+                del PyJsHolder_65_64523188
     PyJs_anonymous_1595_._set_name(u'anonymous')
     var.get(u'module').put(u'exports', PyJs_anonymous_1595_)
 PyJs_anonymous_1594_._set_name(u'anonymous')
@@ -18610,16 +18610,16 @@ def PyJs_anonymous_1652_(require, module, exports, this, arguments, var=var):
             try:
                 return var.get(u'dP')(var.get(u'O'), var.get(u'P'), var.get(u'Attributes'))
             except PyJsException as PyJsTempException:
-                PyJsHolder_65_23726939 = var.own.get(u'e')
+                PyJsHolder_65_75205354 = var.own.get(u'e')
                 var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
                 try:
                     pass
                 finally:
-                    if PyJsHolder_65_23726939 is not None:
-                        var.own[u'e'] = PyJsHolder_65_23726939
+                    if PyJsHolder_65_75205354 is not None:
+                        var.own[u'e'] = PyJsHolder_65_75205354
                     else:
                         del var.own[u'e']
-                    del PyJsHolder_65_23726939
+                    del PyJsHolder_65_75205354
         if (var.get(u'Attributes').contains(Js(u'get')) or var.get(u'Attributes').contains(Js(u'set'))):
             PyJsTempException = JsToPyException(var.get(u'TypeError')(Js(u'Accessors not supported!')))
             raise PyJsTempException
@@ -18673,16 +18673,16 @@ def PyJs_anonymous_1658_(require, module, exports, this, arguments, var=var):
             try:
                 return var.get(u'gOPD')(var.get(u'O'), var.get(u'P'))
             except PyJsException as PyJsTempException:
-                PyJsHolder_65_24489019 = var.own.get(u'e')
+                PyJsHolder_65_6934147 = var.own.get(u'e')
                 var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
                 try:
                     pass
                 finally:
-                    if PyJsHolder_65_24489019 is not None:
-                        var.own[u'e'] = PyJsHolder_65_24489019
+                    if PyJsHolder_65_6934147 is not None:
+                        var.own[u'e'] = PyJsHolder_65_6934147
                     else:
                         del var.own[u'e']
-                    del PyJsHolder_65_24489019
+                    del PyJsHolder_65_6934147
         if var.get(u'has')(var.get(u'O'), var.get(u'P')):
             return var.get(u'createDesc')(var.get(u'pIE').get(u'f').callprop(u'call', var.get(u'O'), var.get(u'P')).neg(), var.get(u'O').get(var.get(u'P')))
     PyJs_getOwnPropertyDescriptor_1659_._set_name(u'getOwnPropertyDescriptor')
@@ -18705,16 +18705,16 @@ def PyJs_anonymous_1661_(require, module, exports, this, arguments, var=var):
         try:
             return var.get(u'gOPN')(var.get(u'it'))
         except PyJsException as PyJsTempException:
-            PyJsHolder_65_80019817 = var.own.get(u'e')
+            PyJsHolder_65_72290655 = var.own.get(u'e')
             var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
             try:
                 return var.get(u'windowNames').callprop(u'slice')
             finally:
-                if PyJsHolder_65_80019817 is not None:
-                    var.own[u'e'] = PyJsHolder_65_80019817
+                if PyJsHolder_65_72290655 is not None:
+                    var.own[u'e'] = PyJsHolder_65_72290655
                 else:
                     del var.own[u'e']
-                del PyJsHolder_65_80019817
+                del PyJsHolder_65_72290655
     PyJs_anonymous_1663_._set_name(u'anonymous')
     var.put(u'getWindowNames', PyJs_anonymous_1663_)
     @Js
@@ -18914,16 +18914,16 @@ def PyJs_anonymous_1698_(require, module, exports, this, arguments, var=var):
             var.get(u'set')(var.get(u'test'), Js([]))
             var.put(u'buggy', var.get(u'test').instanceof(var.get(u'Array')).neg())
         except PyJsException as PyJsTempException:
-            PyJsHolder_65_73890589 = var.own.get(u'e')
+            PyJsHolder_65_30361003 = var.own.get(u'e')
             var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
             try:
                 var.put(u'buggy', var.get(u'true'))
             finally:
-                if PyJsHolder_65_73890589 is not None:
-                    var.own[u'e'] = PyJsHolder_65_73890589
+                if PyJsHolder_65_30361003 is not None:
+                    var.own[u'e'] = PyJsHolder_65_30361003
                 else:
                     del var.own[u'e']
-                del PyJsHolder_65_73890589
+                del PyJsHolder_65_30361003
         @Js
         def PyJs_setPrototypeOf_1703_(O, proto, this, arguments, var=var):
             var = Scope({u'this':this, u'setPrototypeOf':PyJs_setPrototypeOf_1703_, u'arguments':arguments, u'O':O, u'proto':proto}, var)
@@ -19952,17 +19952,17 @@ def PyJs_anonymous_1864_(require, module, exports, this, arguments, var=var):
             PyJsTempException = JsToPyException(var.get(u'Error').create())
             raise PyJsTempException
         except PyJsException as PyJsTempException:
-            PyJsHolder_6572726f72_48135980 = var.own.get(u'error')
+            PyJsHolder_6572726f72_58122749 = var.own.get(u'error')
             var.force_own_put(u'error', PyExceptionToJs(PyJsTempException))
             try:
                 if var.get(u'error').get(u'stack'):
                     var.put(u'stack', var.get(u'error').get(u'stack').callprop(u'split', Js(u'\n')).callprop(u'slice', Js(1.0)).callprop(u'join', Js(u'\n')))
             finally:
-                if PyJsHolder_6572726f72_48135980 is not None:
-                    var.own[u'error'] = PyJsHolder_6572726f72_48135980
+                if PyJsHolder_6572726f72_58122749 is not None:
+                    var.own[u'error'] = PyJsHolder_6572726f72_58122749
                 else:
                     del var.own[u'error']
-                del PyJsHolder_6572726f72_48135980
+                del PyJsHolder_6572726f72_58122749
         PyJs_Object_1866_ = Js({u'allowReturnOutsideFunction':var.get(u'true'),u'allowSuperOutsideMethod':var.get(u'true'),u'preserveComments':Js(False)})
         var.put(u'opts', PyJsComma(Js(0.0),var.get(u'_assign2').get(u'default'))(PyJs_Object_1866_, var.get(u'opts')))
         @Js
@@ -19982,18 +19982,18 @@ def PyJs_anonymous_1864_(require, module, exports, this, arguments, var=var):
                 PyJs_anonymous_1869_._set_name(u'anonymous')
                 var.get(u'_babelTraverse2').get(u'default').callprop(u'cheap', var.get(u'ast'), PyJs_anonymous_1869_)
             except PyJsException as PyJsTempException:
-                PyJsHolder_657272_12018794 = var.own.get(u'err')
+                PyJsHolder_657272_43794349 = var.own.get(u'err')
                 var.force_own_put(u'err', PyExceptionToJs(PyJsTempException))
                 try:
                     var.get(u'err').put(u'stack', ((var.get(u'err').get(u'stack')+Js(u'from\n'))+var.get(u'stack')))
                     PyJsTempException = JsToPyException(var.get(u'err'))
                     raise PyJsTempException
                 finally:
-                    if PyJsHolder_657272_12018794 is not None:
-                        var.own[u'err'] = PyJsHolder_657272_12018794
+                    if PyJsHolder_657272_43794349 is not None:
+                        var.own[u'err'] = PyJsHolder_657272_43794349
                     else:
                         del var.own[u'err']
-                    del PyJsHolder_657272_12018794
+                    del PyJsHolder_657272_43794349
             @Js
             def PyJs_getAst_1870_(this, arguments, var=var):
                 var = Scope({u'this':this, u'arguments':arguments, u'getAst':PyJs_getAst_1870_}, var)
@@ -24511,7 +24511,7 @@ def PyJs_anonymous_2083_(require, module, exports, this, arguments, var=var):
             var.put(u'replacement', ((Js(u'(')+var.get(u'replacement'))+Js(u')')))
             var.put(u'replacement', PyJsComma(Js(0.0),var.get(u'_babylon').get(u'parse'))(var.get(u'replacement')))
         except PyJsException as PyJsTempException:
-            PyJsHolder_657272_91190407 = var.own.get(u'err')
+            PyJsHolder_657272_62521723 = var.own.get(u'err')
             var.force_own_put(u'err', PyExceptionToJs(PyJsTempException))
             try:
                 var.put(u'loc', var.get(u'err').get(u'loc'))
@@ -24521,11 +24521,11 @@ def PyJs_anonymous_2083_(require, module, exports, this, arguments, var=var):
                 PyJsTempException = JsToPyException(var.get(u'err'))
                 raise PyJsTempException
             finally:
-                if PyJsHolder_657272_91190407 is not None:
-                    var.own[u'err'] = PyJsHolder_657272_91190407
+                if PyJsHolder_657272_62521723 is not None:
+                    var.own[u'err'] = PyJsHolder_657272_62521723
                 else:
                     del var.own[u'err']
-                del PyJsHolder_657272_91190407
+                del PyJsHolder_657272_62521723
         var.put(u'replacement', var.get(u'replacement').get(u'program').get(u'body').get(u'0').get(u'expression'))
         var.get(u'_index2').get(u'default').callprop(u'removeProperties', var.get(u'replacement'))
         return var.get(u"this").callprop(u'replaceWith', var.get(u'replacement'))
@@ -34869,7 +34869,7 @@ def PyJs_anonymous_2842_(require, module, exports, this, arguments, var=var):
                     try:
                         return var.get(u'inner').callprop(u'call', var.get(u"this"), var.get(u'expr'), var.get(u'noIn'), var.get(u'startPos'), var.get(u'startLoc'))
                     except PyJsException as PyJsTempException:
-                        PyJsHolder_657272_20086333 = var.own.get(u'err')
+                        PyJsHolder_657272_30891008 = var.own.get(u'err')
                         var.force_own_put(u'err', PyExceptionToJs(PyJsTempException))
                         try:
                             if var.get(u'err').instanceof(var.get(u'SyntaxError')):
@@ -34880,11 +34880,11 @@ def PyJs_anonymous_2842_(require, module, exports, this, arguments, var=var):
                                 PyJsTempException = JsToPyException(var.get(u'err'))
                                 raise PyJsTempException
                         finally:
-                            if PyJsHolder_657272_20086333 is not None:
-                                var.own[u'err'] = PyJsHolder_657272_20086333
+                            if PyJsHolder_657272_30891008 is not None:
+                                var.own[u'err'] = PyJsHolder_657272_30891008
                             else:
                                 del var.own[u'err']
-                            del PyJsHolder_657272_20086333
+                            del PyJsHolder_657272_30891008
                 return var.get(u'inner').callprop(u'call', var.get(u"this"), var.get(u'expr'), var.get(u'noIn'), var.get(u'startPos'), var.get(u'startLoc'))
             PyJs_anonymous_3133_._set_name(u'anonymous')
             return PyJs_anonymous_3133_
@@ -35399,7 +35399,7 @@ def PyJs_anonymous_2842_(require, module, exports, this, arguments, var=var):
                     try:
                         return var.get(u'inner').callprop(u'apply', var.get(u"this"), var.get(u'args'))
                     except PyJsException as PyJsTempException:
-                        PyJsHolder_657272_45729297 = var.own.get(u'err')
+                        PyJsHolder_657272_79758696 = var.own.get(u'err')
                         var.force_own_put(u'err', PyExceptionToJs(PyJsTempException))
                         try:
                             if var.get(u'err').instanceof(var.get(u'SyntaxError')):
@@ -35409,11 +35409,11 @@ def PyJs_anonymous_2842_(require, module, exports, this, arguments, var=var):
                                 PyJsTempException = JsToPyException(var.get(u'err'))
                                 raise PyJsTempException
                         finally:
-                            if PyJsHolder_657272_45729297 is not None:
-                                var.own[u'err'] = PyJsHolder_657272_45729297
+                            if PyJsHolder_657272_79758696 is not None:
+                                var.own[u'err'] = PyJsHolder_657272_79758696
                             else:
                                 del var.own[u'err']
-                            del PyJsHolder_657272_45729297
+                            del PyJsHolder_657272_79758696
                 var.get(u"this").get(u'state').get(u'context').callprop(u'push', var.get(u'types$1').get(u'parenExpression'))
                 if ((var.get(u'jsxError')!=var.get(u"null")) or var.get(u"this").callprop(u'isRelational', Js(u'<'))):
                     var.put(u'arrowExpression', PyJsComma(Js(0.0), Js(None)))
@@ -35425,17 +35425,17 @@ def PyJs_anonymous_2842_(require, module, exports, this, arguments, var=var):
                         var.get(u'arrowExpression').put(u'start', var.get(u'typeParameters').get(u'start'))
                         var.get(u'arrowExpression').get(u'loc').put(u'start', var.get(u'typeParameters').get(u'loc').get(u'start'))
                     except PyJsException as PyJsTempException:
-                        PyJsHolder_657272_88194025 = var.own.get(u'err')
+                        PyJsHolder_657272_54478765 = var.own.get(u'err')
                         var.force_own_put(u'err', PyExceptionToJs(PyJsTempException))
                         try:
                             PyJsTempException = JsToPyException((var.get(u'jsxError') or var.get(u'err')))
                             raise PyJsTempException
                         finally:
-                            if PyJsHolder_657272_88194025 is not None:
-                                var.own[u'err'] = PyJsHolder_657272_88194025
+                            if PyJsHolder_657272_54478765 is not None:
+                                var.own[u'err'] = PyJsHolder_657272_54478765
                             else:
                                 del var.own[u'err']
-                            del PyJsHolder_657272_88194025
+                            del PyJsHolder_657272_54478765
                     if PyJsStrictEq(var.get(u'arrowExpression').get(u'type'),Js(u'ArrowFunctionExpression')):
                         return var.get(u'arrowExpression')
                     else:
@@ -35468,7 +35468,7 @@ def PyJs_anonymous_2842_(require, module, exports, this, arguments, var=var):
                             var.get(u"this").callprop(u'unexpected')
                         var.get(u'node').put(u'returnType', var.get(u'returnType'))
                     except PyJsException as PyJsTempException:
-                        PyJsHolder_657272_46851118 = var.own.get(u'err')
+                        PyJsHolder_657272_34966532 = var.own.get(u'err')
                         var.force_own_put(u'err', PyExceptionToJs(PyJsTempException))
                         try:
                             if var.get(u'err').instanceof(var.get(u'SyntaxError')):
@@ -35477,11 +35477,11 @@ def PyJs_anonymous_2842_(require, module, exports, this, arguments, var=var):
                                 PyJsTempException = JsToPyException(var.get(u'err'))
                                 raise PyJsTempException
                         finally:
-                            if PyJsHolder_657272_46851118 is not None:
-                                var.own[u'err'] = PyJsHolder_657272_46851118
+                            if PyJsHolder_657272_34966532 is not None:
+                                var.own[u'err'] = PyJsHolder_657272_34966532
                             else:
                                 del var.own[u'err']
-                            del PyJsHolder_657272_46851118
+                            del PyJsHolder_657272_34966532
                 return var.get(u'inner').callprop(u'call', var.get(u"this"), var.get(u'node'))
             PyJs_anonymous_3189_._set_name(u'anonymous')
             return PyJs_anonymous_3189_
@@ -36468,17 +36468,17 @@ def PyJs_anonymous_3249_(require, module, exports, this, arguments, var=var):
             try:
                 return var.get(u'fs').callprop(u'readFileSync', var.get(u'filepath'), Js(u'utf8'))
             except PyJsException as PyJsTempException:
-                PyJsHolder_65_4717485 = var.own.get(u'e')
+                PyJsHolder_65_62339762 = var.own.get(u'e')
                 var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
                 try:
                     PyJsTempException = JsToPyException(var.get(u'Error').create((((Js(u'An error occurred while trying to read the map file at ')+var.get(u'filepath'))+Js(u'\n'))+var.get(u'e'))))
                     raise PyJsTempException
                 finally:
-                    if PyJsHolder_65_4717485 is not None:
-                        var.own[u'e'] = PyJsHolder_65_4717485
+                    if PyJsHolder_65_62339762 is not None:
+                        var.own[u'e'] = PyJsHolder_65_62339762
                     else:
                         del var.own[u'e']
-                    del PyJsHolder_65_4717485
+                    del PyJsHolder_65_62339762
         PyJsHoisted_readFromFileMap_.func_name = u'readFromFileMap'
         var.put(u'readFromFileMap', PyJsHoisted_readFromFileMap_)
         @Js
@@ -36707,16 +36707,16 @@ def PyJs_anonymous_3278_(require, module, exports, this, arguments, var=var):
         try:
             var.put(u'r', var.get(u'exports').get(u'storage').get(u'debug'))
         except PyJsException as PyJsTempException:
-            PyJsHolder_65_9582966 = var.own.get(u'e')
+            PyJsHolder_65_27913289 = var.own.get(u'e')
             var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
             try:
                 pass
             finally:
-                if PyJsHolder_65_9582966 is not None:
-                    var.own[u'e'] = PyJsHolder_65_9582966
+                if PyJsHolder_65_27913289 is not None:
+                    var.own[u'e'] = PyJsHolder_65_27913289
                 else:
                     del var.own[u'e']
-                del PyJsHolder_65_9582966
+                del PyJsHolder_65_27913289
         return var.get(u'r')
     PyJsHoisted_load_.func_name = u'load'
     var.put(u'load', PyJsHoisted_load_)
@@ -36762,16 +36762,16 @@ def PyJs_anonymous_3278_(require, module, exports, this, arguments, var=var):
         try:
             return var.get(u'window').get(u'localStorage')
         except PyJsException as PyJsTempException:
-            PyJsHolder_65_53434678 = var.own.get(u'e')
+            PyJsHolder_65_8009014 = var.own.get(u'e')
             var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
             try:
                 pass
             finally:
-                if PyJsHolder_65_53434678 is not None:
-                    var.own[u'e'] = PyJsHolder_65_53434678
+                if PyJsHolder_65_8009014 is not None:
+                    var.own[u'e'] = PyJsHolder_65_8009014
                 else:
                     del var.own[u'e']
-                del PyJsHolder_65_53434678
+                del PyJsHolder_65_8009014
     PyJsHoisted_localstorage_.func_name = u'localstorage'
     var.put(u'localstorage', PyJsHoisted_localstorage_)
     @Js
@@ -36793,16 +36793,16 @@ def PyJs_anonymous_3278_(require, module, exports, this, arguments, var=var):
             else:
                 var.get(u'exports').get(u'storage').put(u'debug', var.get(u'namespaces'))
         except PyJsException as PyJsTempException:
-            PyJsHolder_65_38449548 = var.own.get(u'e')
+            PyJsHolder_65_85910939 = var.own.get(u'e')
             var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
             try:
                 pass
             finally:
-                if PyJsHolder_65_38449548 is not None:
-                    var.own[u'e'] = PyJsHolder_65_38449548
+                if PyJsHolder_65_85910939 is not None:
+                    var.own[u'e'] = PyJsHolder_65_85910939
                 else:
                     del var.own[u'e']
-                del PyJsHolder_65_38449548
+                del PyJsHolder_65_85910939
     PyJsHoisted_save_.func_name = u'save'
     var.put(u'save', PyJsHoisted_save_)
     var.put(u'exports', var.get(u'module').put(u'exports', var.get(u'require')(Js(u'./debug'))))
@@ -41838,16 +41838,16 @@ def PyJs_anonymous_3693_(require, module, exports, this, arguments, var=var):
             try:
                 var.put(u'result', (var.get(u'value')+Js(u'')).neg().neg())
             except PyJsException as PyJsTempException:
-                PyJsHolder_65_62852971 = var.own.get(u'e')
+                PyJsHolder_65_43263878 = var.own.get(u'e')
                 var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
                 try:
                     pass
                 finally:
-                    if PyJsHolder_65_62852971 is not None:
-                        var.own[u'e'] = PyJsHolder_65_62852971
+                    if PyJsHolder_65_43263878 is not None:
+                        var.own[u'e'] = PyJsHolder_65_43263878
                     else:
                         del var.own[u'e']
-                    del PyJsHolder_65_62852971
+                    del PyJsHolder_65_43263878
         return var.get(u'result')
     PyJsHoisted_isHostObject_.func_name = u'isHostObject'
     var.put(u'isHostObject', PyJsHoisted_isHostObject_)
@@ -42500,29 +42500,29 @@ def PyJs_anonymous_3770_(require, module, exports, this, arguments, var=var):
             try:
                 return var.get(u'funcToString').callprop(u'call', var.get(u'func'))
             except PyJsException as PyJsTempException:
-                PyJsHolder_65_4203982 = var.own.get(u'e')
+                PyJsHolder_65_72408585 = var.own.get(u'e')
                 var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
                 try:
                     pass
                 finally:
-                    if PyJsHolder_65_4203982 is not None:
-                        var.own[u'e'] = PyJsHolder_65_4203982
+                    if PyJsHolder_65_72408585 is not None:
+                        var.own[u'e'] = PyJsHolder_65_72408585
                     else:
                         del var.own[u'e']
-                    del PyJsHolder_65_4203982
+                    del PyJsHolder_65_72408585
             try:
                 return (var.get(u'func')+Js(u''))
             except PyJsException as PyJsTempException:
-                PyJsHolder_65_55716243 = var.own.get(u'e')
+                PyJsHolder_65_77429111 = var.own.get(u'e')
                 var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
                 try:
                     pass
                 finally:
-                    if PyJsHolder_65_55716243 is not None:
-                        var.own[u'e'] = PyJsHolder_65_55716243
+                    if PyJsHolder_65_77429111 is not None:
+                        var.own[u'e'] = PyJsHolder_65_77429111
                     else:
                         del var.own[u'e']
-                    del PyJsHolder_65_55716243
+                    del PyJsHolder_65_77429111
         return Js(u'')
     PyJsHoisted_toSource_.func_name = u'toSource'
     var.put(u'toSource', PyJsHoisted_toSource_)
@@ -44113,16 +44113,16 @@ def PyJs_anonymous_3921_(require, module, exports, this, arguments, var=var):
                 PyJs_Object_3922_ = Js({u'value':var.get(u'value')})
                 var.get(u'originalDefProp').callprop(u'call', var.get(u'originalObject'), var.get(u'obj'), var.get(u'name'), PyJs_Object_3922_)
             except PyJsException as PyJsTempException:
-                PyJsHolder_646566696e6550726f7065727479497342726f6b656e496e494538_88910181 = var.own.get(u'definePropertyIsBrokenInIE8')
+                PyJsHolder_646566696e6550726f7065727479497342726f6b656e496e494538_59123052 = var.own.get(u'definePropertyIsBrokenInIE8')
                 var.force_own_put(u'definePropertyIsBrokenInIE8', PyExceptionToJs(PyJsTempException))
                 try:
                     var.get(u'obj').put(var.get(u'name'), var.get(u'value'))
                 finally:
-                    if PyJsHolder_646566696e6550726f7065727479497342726f6b656e496e494538_88910181 is not None:
-                        var.own[u'definePropertyIsBrokenInIE8'] = PyJsHolder_646566696e6550726f7065727479497342726f6b656e496e494538_88910181
+                    if PyJsHolder_646566696e6550726f7065727479497342726f6b656e496e494538_59123052 is not None:
+                        var.own[u'definePropertyIsBrokenInIE8'] = PyJsHolder_646566696e6550726f7065727479497342726f6b656e496e494538_59123052
                     else:
                         del var.own[u'definePropertyIsBrokenInIE8']
-                    del PyJsHolder_646566696e6550726f7065727479497342726f6b656e496e494538_88910181
+                    del PyJsHolder_646566696e6550726f7065727479497342726f6b656e496e494538_59123052
         else:
             var.get(u'obj').put(var.get(u'name'), var.get(u'value'))
     PyJsHoisted_defProp_.func_name = u'defProp'
@@ -48584,16 +48584,16 @@ def PyJs_anonymous_4199_(require, module, exports, this, arguments, var=var):
         try:
             var.get(u'block')()
         except PyJsException as PyJsTempException:
-            PyJsHolder_65_25541185 = var.own.get(u'e')
+            PyJsHolder_65_5622760 = var.own.get(u'e')
             var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
             try:
                 var.put(u'actual', var.get(u'e'))
             finally:
-                if PyJsHolder_65_25541185 is not None:
-                    var.own[u'e'] = PyJsHolder_65_25541185
+                if PyJsHolder_65_5622760 is not None:
+                    var.own[u'e'] = PyJsHolder_65_5622760
                 else:
                     del var.own[u'e']
-                del PyJsHolder_65_25541185
+                del PyJsHolder_65_5622760
         var.put(u'message', ((((Js(u' (')+var.get(u'expected').get(u'name'))+Js(u').')) if (var.get(u'expected') and var.get(u'expected').get(u'name')) else Js(u'.'))+((Js(u' ')+var.get(u'message')) if var.get(u'message') else Js(u'.'))))
         if (var.get(u'shouldThrow') and var.get(u'actual').neg()):
             var.get(u'fail')(var.get(u'actual'), var.get(u'expected'), (Js(u'Missing expected exception')+var.get(u'message')))
@@ -49570,16 +49570,16 @@ def PyJs_anonymous_4215_(require, module, exports, this, arguments, var=var):
                 var.get(u'arr').put(u'foo', PyJs_anonymous_4219_)
                 return ((PyJsStrictEq(var.get(u'arr').callprop(u'foo'),Js(42.0)) and PyJsStrictEq(var.get(u'arr').get(u'subarray').typeof(),Js(u'function'))) and PyJsStrictEq(var.get(u'arr').callprop(u'subarray', Js(1.0), Js(1.0)).get(u'byteLength'),Js(0.0)))
             except PyJsException as PyJsTempException:
-                PyJsHolder_65_31773420 = var.own.get(u'e')
+                PyJsHolder_65_42861762 = var.own.get(u'e')
                 var.force_own_put(u'e', PyExceptionToJs(PyJsTempException))
                 try:
                     return Js(False)
                 finally:
-                    if PyJsHolder_65_31773420 is not None:
-                        var.own[u'e'] = PyJsHolder_65_31773420
+                    if PyJsHolder_65_42861762 is not None:
+                        var.own[u'e'] = PyJsHolder_65_42861762
                     else:
                         del var.own[u'e']
-                    del PyJsHolder_65_31773420
+                    del PyJsHolder_65_42861762
         PyJsHoisted_typedArraySupport_.func_name = u'typedArraySupport'
         var.put(u'typedArraySupport', PyJsHoisted_typedArraySupport_)
         @Js
@@ -51851,16 +51851,16 @@ def PyJs_anonymous_4326_(require, module, exports, this, arguments, var=var):
                             try:
                                 return var.get(u'JSON').callprop(u'stringify', var.get(u'args').get((var.put(u'i',Js(var.get(u'i').to_number())+Js(1))-Js(1))))
                             except PyJsException as PyJsTempException:
-                                PyJsHolder_5f_26663704 = var.own.get(u'_')
+                                PyJsHolder_5f_51919926 = var.own.get(u'_')
                                 var.force_own_put(u'_', PyExceptionToJs(PyJsTempException))
                                 try:
                                     return Js(u'[Circular]')
                                 finally:
-                                    if PyJsHolder_5f_26663704 is not None:
-                                        var.own[u'_'] = PyJsHolder_5f_26663704
+                                    if PyJsHolder_5f_51919926 is not None:
+                                        var.own[u'_'] = PyJsHolder_5f_51919926
                                     else:
                                         del var.own[u'_']
-                                    del PyJsHolder_5f_26663704
+                                    del PyJsHolder_5f_51919926
                         if True:
                             SWITCHED = True
                             return var.get(u'x')

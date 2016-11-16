@@ -16,6 +16,7 @@ Js2Py is written in pure python and does not have any dependencies. Basically an
 
     # returns 5
 
+Now also supports ECMA 6 through js2py.eval_js6(js6_code)!
 
 More examples at: https://github.com/PiotrDabkowski/Js2Py
 '''
