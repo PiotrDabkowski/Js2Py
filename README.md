@@ -37,13 +37,13 @@ Translating a JavaScript file:
     ...
 ```
    
-When I say <i>it supports everything</i> I really mean <em>everything</em>:
+Every feature of ECMA 5.1 is implemented (except of 'with' statement):
 
 ```python
 >>> js2py.eval_js("Object.prototype.toString.call(Function('s', 'return s+arguments[1]')(new Date(), 7).__proto__)")
 [object String]
 ```
-
+Unfortunately even though Js2Py can be generally used to translate huge Js files (over 50k lines long), in rare cases you may encounter some unexpected problems (like javascript calling a function with 300 arguments - python allows only 255). These problems are very hard to fix with current translation approach. I will try to implement an interpreter in near future which will hopefully fix all the edge cases.
 
     
 ####More advanced usage example
