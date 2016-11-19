@@ -189,10 +189,10 @@ def Type(val):
 
 def is_data_descriptor(desc):
     return desc and ('value' in desc or 'writable' in desc)
-    
+
 def is_accessor_descriptor(desc):
     return desc and ('get' in desc or 'set' in desc)
-    
+
 def is_generic_descriptor(desc):
     return desc and not (is_data_descriptor(desc) or is_accessor_descriptor(desc))
 
@@ -210,7 +210,7 @@ class PyJs(object):
     GlobalObject = None
     IS_CHILD_SCOPE = False
     value = None
-    
+
     def __init__(self, value=None, prototype=None, extensible=False):
         '''Constructor for Number String and Boolean'''
         # I dont think this is needed anymore
@@ -227,35 +227,35 @@ class PyJs(object):
         self.extensible = extensible
         self.prototype = prototype
         self.own = {}
-        
+
     def is_undefined(self):
         return self.Class=='Undefined'
-    
+
     def is_null(self):
         return self.Class=='Null'
-        
+
     def is_primitive(self):
         return self.TYPE in self.PRIMITIVES
-    
+
     def is_object(self):
         return not self.is_primitive()
 
     def _type(self):
         return Type(self)
-    
+
     def is_callable(self):
         return hasattr(self, 'call')
-    
+
     def get_own_property(self, prop):
         return self.own.get(prop)
-    
+
     def get_property(self, prop):
         cand = self.get_own_property(prop)
         if cand:
             return cand
         if self.prototype is not None:
             return self.prototype.get_property(prop)
-    
+
     def get(self, prop): #external use!
          #prop = prop.value
          if self.Class=='Undefined' or self.Class=='Null':
@@ -266,18 +266,18 @@ class PyJs(object):
          cand = self.get_property(prop)
          if cand is None:
              return Js(None)
-         if is_data_descriptor(cand): 
+         if is_data_descriptor(cand):
              return cand['value']
          if cand['get'].is_undefined():
              return cand['get']
          return cand['get'].call(self)
-    
+
     def can_put(self, prop):  #to check
         desc = self.get_own_property(prop)
         if desc: #if we have this property
             if is_accessor_descriptor(desc):
-                return desc['set'].is_callable() # Check if setter method is defined           
-            else:  #data desc 
+                return desc['set'].is_callable() # Check if setter method is defined
+            else:  #data desc
                 return desc['writable']
         if self.prototype is not None:
             return self.extensible
@@ -289,8 +289,8 @@ class PyJs(object):
         elif self.extensible:
             return inherited['writable']
         return False
-            
-    
+
+
     def put(self, prop, val, op=None):  #external use!
         '''Just like in js: self.prop op= val
            for example when op is '+' it will be self.prop+=val
@@ -325,21 +325,21 @@ class PyJs(object):
             else:
                 self.own[prop] = new
         return val
-                
+
     def has_property(self, prop):
         return self.get_property(prop) is not None
-    
+
     def delete(self, prop):
         if not isinstance(prop, basestring):
             prop = prop.to_string().value
         desc = self.get_own_property(prop)
-        if desc is None: 
+        if desc is None:
             return Js(True)
         if desc['configurable']:
             del self.own[prop]
             return Js(True)
         return Js(False)
-    
+
     def default_value(self, hint=None):  # made a mistake at the very early stage and made it to prefer string... caused lots! of problems
         order = ('valueOf', 'toString')
         if hint=='String' or (hint is None and self.Class=='Date'):
@@ -351,7 +351,7 @@ class PyJs(object):
                 if cand.is_primitive():
                     return cand
         raise MakeError('TypeError', 'Cannot convert object to primitive value')
-        
+
 
     def define_own_property(self, prop, desc): #Internal use only. External through Object
         # prop must be a Py string. Desc is either a descriptor or accessor.
@@ -379,7 +379,7 @@ class PyJs(object):
             return True
         if not desc or desc==current: #We dont need to change anything.
             return True
-        configurable = current['configurable']  
+        configurable = current['configurable']
         if not configurable:  #Prevent changing configurable or enumerable
             if desc.get('configurable'):
                 return False
@@ -399,7 +399,7 @@ class PyJs(object):
                 del current['set']
                 del current['get']
                 current['value'] = undefined #undefined
-                current['writable'] = False 
+                current['writable'] = False
         elif is_data_descriptor(current) and is_data_descriptor(desc):
             if not configurable:
                 if not current['writable'] and desc.get('writable'):
@@ -427,14 +427,14 @@ class PyJs(object):
     def is_finite(self):
         return not (self.is_nan() or self.is_infinity())
     #Type Conversions. to_type. All must return pyjs subclass instance
-    
+
     def to_primitive(self, hint=None):
         if self.is_primitive():
             return self
         if hint is None and (self.Class=='Number' or self.Class=='Boolean'):  # favour number for Class== Number or Boolean default = String
             hint = 'Number'
         return self.default_value(hint)
-            
+
     def to_boolean(self):
         typ = Type(self)
         if typ=='Boolean': #no need to convert
@@ -468,7 +468,7 @@ class PyJs(object):
                 return Js(num)
             sign = 1 #get sign
             if s[0] in '+-':
-                if s[0]=='-': 
+                if s[0]=='-':
                     sign = -1
                 s = s[1:]
             if s=='Infinity': #Check for infinity keyword. 'NaN' will be NaN anyway.
@@ -477,10 +477,10 @@ class PyJs(object):
                 num = sign*float(s) # Converted
             except ValueError:
                 return NaN # could not convert to decimal  > return NaN
-            return Js(num) 
+            return Js(num)
         else: #object -  most likely it will be NaN.
             return self.to_primitive('Number').to_number()
-            
+
     def to_string(self):
         typ = Type(self)
         if typ=='Null':
@@ -502,8 +502,8 @@ class PyJs(object):
             return self
         else: #object
             return self.to_primitive('String').to_string()
-            
-            
+
+
     def to_object(self):
         typ = self.TYPE
         if typ=='Null' or typ=='Undefined':
@@ -512,7 +512,7 @@ class PyJs(object):
             return Boolean.create(self)
         elif typ=='Number': #?
             return Number.create(self)
-        elif typ=='String': #? 
+        elif typ=='String': #?
             return String.create(self)
         else: #object
             return self
@@ -585,44 +585,44 @@ class PyJs(object):
         except:
             raise TypeError('This object (%s) does not have length property'%self.Class)
     #Oprators-------------
-    #Unary, other will be implemented as functions. Increments and decrements 
+    #Unary, other will be implemented as functions. Increments and decrements
     # will be methods of Number class
     def __neg__(self): #-u
         return Js(-self.to_number().value)
-    
+
     def __pos__(self): #+u
         return self.to_number()
-    
+
     def __invert__(self): #~u
         return Js(Js(~self.to_int32()).to_int32())
-    
+
     def neg(self): # !u  cant do 'not u' :(
         return Js(not self.to_boolean().value)
-    
-    def __nonzero__(self): 
+
+    def __nonzero__(self):
         return self.to_boolean().value
 
     def __bool__(self):
         return self.to_boolean().value
-        
-    def typeof(self): 
+
+    def typeof(self):
         if self.is_callable():
             return Js('function')
         typ = Type(self).lower()
         if typ=='null':
             typ = 'object'
         return Js(typ)
-        
+
     #Bitwise operators
     #  <<, >>,  &, ^, |
-    
-    # << 
+
+    # <<
     def __lshift__(self, other):
         lnum = self.to_int32()
         rnum = other.to_uint32()
         shiftCount = rnum & 0x1F
         return Js(Js(lnum << shiftCount).to_int32())
-    
+
     # >>
     def __rshift__(self, other):
         lnum = self.to_int32()
@@ -637,13 +637,13 @@ class PyJs(object):
         rnum = other.to_uint32()
         shiftCount = rnum & 0x1F
         return Js(Js(lnum >> shiftCount).to_uint32())
-     
-    # & 
+
+    # &
     def __and__(self, other):
         lnum = self.to_int32()
         rnum = other.to_int32()
         return Js(Js(lnum & rnum).to_int32())
-    
+
     # ^
     def __xor__(self, other):
         lnum = self.to_int32()
@@ -658,7 +658,7 @@ class PyJs(object):
 
     # Additive operators
     # + and - are implemented here
-        
+
     # +
     def __add__(self, other):
         a = self.to_primitive()
@@ -668,18 +668,18 @@ class PyJs(object):
         a = a.to_number()
         b = b.to_number()
         return Js(a.value+b.value)
-    
+
     # -
     def __sub__(self, other):
         return Js(self.to_number().value-other.to_number().value)
-    
+
     #Multiplicative operators
     # *, / and % are implemented here
-    
+
     # *
     def __mul__(self, other):
         return Js(self.to_number().value*other.to_number().value)
-        
+
     # /
     def __div__(self, other):
         a = self.to_number().value
@@ -689,7 +689,7 @@ class PyJs(object):
         if not a or a!=a:
             return NaN
         return Infinity if a>0 else -Infinity
-    
+
     # %
     def __mod__(self, other):
         a = self.to_number().value
@@ -699,18 +699,18 @@ class PyJs(object):
         if abs(b)==float('inf'):
             return Js(a)
         pyres = Js(a%b) #different signs in python and javascript
-                        #python has the same sign as b and js has the same 
+                        #python has the same sign as b and js has the same
                         #sign as a.
         if a<0 and pyres.value>0:
             pyres.value -= abs(b)
         elif a>0 and pyres.value<0:
             pyres.value += abs(b)
         return Js(pyres)
-        
+
     #Comparisons (I dont implement === and !== here, these
     # will be implemented as external functions later)
     # <, <=, !=, ==, >=, > are implemented here.
-    
+
     def abstract_relational_comparison(self, other, self_first=True):
         ''' self<other if self_first else other<self.
            Returns the result of the question: is self smaller than other?
@@ -729,36 +729,36 @@ class PyJs(object):
         else:
             # I am pretty sure that python has the same
             # string cmp algorithm but I have to confirm it
-            return Js(px.value<py.value) 
-        
+            return Js(px.value<py.value)
+
     #<
-    def __lt__(self, other): 
+    def __lt__(self, other):
         res = self.abstract_relational_comparison(other, True)
         if res.is_undefined():
             return false
         return res
-    
+
     #<=
-    def __le__(self, other): 
+    def __le__(self, other):
         res = self.abstract_relational_comparison(other, False)
         if res.is_undefined():
             return false
-        return res.neg() 
-    
+        return res.neg()
+
     #>=
-    def __ge__(self, other): 
+    def __ge__(self, other):
         res = self.abstract_relational_comparison(other, True)
         if res.is_undefined():
             return false
-        return res.neg() 
-    
+        return res.neg()
+
     #>
-    def __gt__(self, other): 
+    def __gt__(self, other):
         res = self.abstract_relational_comparison(other, False)
         if res.is_undefined():
             return false
         return res
-        
+
     def abstract_equality_comparison(self, other):
         ''' returns the result of JS == compare.
            result is PyJs type: bool'''
@@ -785,23 +785,23 @@ class PyJs(object):
             return self.to_primitive().abstract_equality_comparison(other)
         else:
            return false
-                
+
     #==
-    def __eq__(self, other): 
+    def __eq__(self, other):
         return self.abstract_equality_comparison(other)
-           
+
     #!=
-    def __ne__(self, other): 
+    def __ne__(self, other):
         return self.abstract_equality_comparison(other).neg()
-    
+
     #Other methods (instanceof)
-    
+
     def instanceof(self, other):
         '''checks if self is instance of other'''
         if not hasattr(other, 'has_instance'):
             return false
         return other.has_instance(self)
-        
+
     #iteration
     def __iter__(self):
         #Returns a generator of all own enumerable properties
@@ -817,16 +817,16 @@ class PyJs(object):
             if check and check['enumerable']:
                 yield Js(cand)
 
-    
+
     def contains(self, other):
         if not self.is_object():
             raise MakeError('TypeError',"You can\'t use 'in' operator to search in non-objects")
         return Js(self.has_property(other.to_string().value))
-        
+
     #Other Special methods
     def __call__(self, *args):
         '''Call a property prop as a function (this will be global object).
-        
+
         NOTE: dont pass this and arguments here, these will be added
         automatically!'''
         if not self.is_callable():
@@ -863,7 +863,7 @@ class PyJs(object):
 
     def callprop(self, prop, *args):
         '''Call a property prop as a method (this will be self).
-        
+
         NOTE: dont pass this and arguments here, these will be added
         automatically!'''
         if not isinstance(prop, basestring):
@@ -899,12 +899,12 @@ def PyJsStrictEq(a, b):
     if a.is_primitive(): #string bool and number case
         return Js(a.value==b.value)
     return Js(a is b) # object comparison
-    
-  
+
+
 def PyJsStrictNeq(a, b):
     ''' a!==b'''
     return PyJsStrictEq(a, b).neg()
-    
+
 def PyJsBshift(a, b):
     """a>>>b"""
     return a.pyjs_bshift(b)
@@ -1186,10 +1186,10 @@ def py_wrap(py):
 
 
 
-  
+
 ##############################################################################
 #Define types
-    
+
 #Object
 class PyJsObject(PyJs):
     Class = 'Object'
@@ -1203,8 +1203,8 @@ class PyJsObject(PyJs):
     def __repr__(self):
         return repr(self.to_python().to_dict())
 
-    
-    
+
+
 ObjectPrototype = PyJsObject()
 
 
@@ -1251,18 +1251,18 @@ class PyJsFunction(PyJs):
         obj = PyJsObject(prototype=proto)
         cand = self.call(obj, *args)
         return cand if cand.is_object() else obj
-    
+
     def call(self, this, args=()):
-        '''Calls this function and returns a result 
+        '''Calls this function and returns a result
         (converted to PyJs type so func can return python types)
-        
+
         this must be a PyJs object and args must be a python tuple of PyJs objects.
-        
-        arguments object is passed automatically and will be equal to Js(args) 
-        (tuple converted to arguments object).You dont need to worry about number 
-        of arguments you provide if you supply less then missing ones will be set 
+
+        arguments object is passed automatically and will be equal to Js(args)
+        (tuple converted to arguments object).You dont need to worry about number
+        of arguments you provide if you supply less then missing ones will be set
         to undefined (but not present in arguments object).
-        And if you supply too much then excess will not be passed 
+        And if you supply too much then excess will not be passed
         (but they will be present in arguments object).
         '''
         if not hasattr(args, '__iter__'):  #get rid of it later
@@ -1282,7 +1282,7 @@ class PyJsFunction(PyJs):
             raise
         except RuntimeError as e: # maximum recursion
             raise MakeError('RangeError', e.message if not isinstance(e, NotImplementedError) else 'Not implemented!')
-        
+
     def has_instance(self, other):
         # I am not sure here so instanceof may not work lol.
         if not other.is_object():
@@ -1748,7 +1748,7 @@ def fill_prototype(prototype, Class, attrs, constructor=False):
         if constructor:
             attrs['value'] = constructor
             prototype.define_own_property('constructor', attrs)
-            
+
 
 
 
@@ -1897,9 +1897,9 @@ def appengine(code):
         return translator.translate_js(code.decode('utf-8'))
     except:
         return traceback.format_exc()
-        
-        
-        
+
+
+
 builtins = ('true','false','null','undefined','Infinity',
             'NaN')
 
@@ -1932,5 +1932,4 @@ if __name__=='__main__':
     e = code.InteractiveConsole(globals())
     #e.raw_input = interactor
     e.interact()
-
 
