@@ -1,6 +1,6 @@
 from opcodes import *
 from space import *
-from ctx import *
+from base import *
 
 class Code:
     '''Can generate, store and run sequence of ops representing js code'''
@@ -14,13 +14,17 @@ class Code:
         self.return_locs = []
         self.__label_count = 0
 
+        # useful references
+        self.GLOBAL_THIS = None
+        self.space = None
+
     def get_new_label(self):
         self.__label_count += 1
         return self.__label_count
 
     def emit(self, op_code, *args):
         ''' Adds op_code with specified args to tape '''
-        self.tape.append(OP_CODES[op_code](args))
+        self.tape.append(OP_CODES[op_code](*args))
 
     def compile(self):
         ''' Records locations of labels and compiles the code '''
@@ -47,8 +51,8 @@ class Code:
         self.contexts = [FakeCtx()]
         self.return_locs = [len(self.tape)] # target line after return
 
-        # todo prepare my ctx
-        my_ctx = None
+        # prepare my ctx
+        my_ctx = func._generate_my_context(this, args)
 
         # execute dunction
         ret = self.run(my_ctx, starting_loc=self.label_locs[func.code])
@@ -94,6 +98,10 @@ class Code:
                         continue
             # next instruction
             loc += 1
-
+        assert len(ctx.stack) == 1
         return ctx.stack.pop()
+
+class FakeCtx(object):
+    def __init__(self):
+        self.stack = []
 

@@ -6,11 +6,11 @@ from desc import *
 from simplex import *
 import six
 from pyjsparser import PyJsParser
+from itertools import izip
 
 from conversions import *
-PRIMITIVES = frozenset(['String', 'Number', 'Boolean', 'Undefined', 'Null'])
-Infinity = float('inf')
-NaN = float('nan')
+from simplex import *
+
 
 
 def Type(obj):
@@ -281,7 +281,6 @@ class PyJsObject(PyJs):
     TYPE = 'Object'
     Class = 'Object'
     def __init__(self, prototype=None):
-        self.extensible = True
         self.prototype = prototype
         self.own = {}
 
@@ -322,7 +321,6 @@ class PyJsObject(PyJs):
 class PyJsArray(PyJs):
     Class = 'Array'
     def __init__(self, length, prototype=None):
-        self.extensible = True
         self.prototype = prototype
         self.own = {'length' : {'value': length, 'writable': True,
                                 'enumerable': False, 'configurable': False}}
@@ -423,7 +421,6 @@ class PyJsRegExp(PyJs):
     Class = 'RegExp'
 
     def __init__(self, body, flags, prototype=None):
-        self.extensible = True
         self.prototype = prototype
         self.glob = True if 'g' in flags else False
         self.ignore_case = re.IGNORECASE if 'i' in flags else 0
@@ -487,7 +484,6 @@ class PyJsDate(PyJs):
     UTCToLocal = None # todo UTC to local should be imported!
 
     def __init__(self, value, prototype=None):
-        self.extensible = True
         self.value = value
         self.own = {}
         self.prototype = prototype
@@ -523,6 +519,111 @@ class PyJsDate(PyJs):
         except:
             raise MakeError('TypeError', 'Could not generate date string from this date (limitations of python.datetime)')
 
+# Scope class it will hold all the variables accessible to user
+class Scope(PyJs):
+    Class = 'Global'
+    extensible = True
+    IS_CHILD_SCOPE = True
+    THIS_BINDING = None
+    space = None
+    exe = None
+
+    # todo speed up!
+    # in order to speed up this very important class the top scope should behave differently than
+    # child scopes, child scope should not have this property descriptor thing because they cant be changed anyway
+    # they are all confugurable= False
+
+    def __init__(self, scope, parent=None):
+        """Doc"""
+        self.prototype = parent
+        if parent is None:
+            # global, top level scope
+            self.own = {}
+            for k, v in six.iteritems(scope):
+                # set all the global items
+                self.define_own_property(k, {'value': v, 'configurable': False,
+                                             'writable': False, 'enumerable': False}, False)
+        else:
+            # not global, less powerful but faster closure.
+            self.own = scope  # simple dictionary which maps name directly to js object.
+
+        self.par = super(Scope, self)
+        self.stack = []
+
+    def register(self, var):
+        # registered keeps only global registered variables
+        if self.prototype is None:
+            # define in global scope
+            if var in self.own:
+                self.own[var]['configurable'] = False
+            else:
+                self.define_own_property(var, {'value': undefined, 'configurable': False,
+                                               'writable': True, 'enumerable': True}, False)
+        elif var not in self.own:
+            # define in local scope since it has not been defined yet
+            self.own[var] = undefined  # default value
+
+    def registers(self, vars):
+        """register multiple variables"""
+        for var in vars:
+            self.register(var)
+
+    def put(self, var, val, throw=False):
+        if self.prototype is None:
+            desc = self.own.get(var)  # global scope
+            if desc is None:
+                self.par.put(var, val, False)
+            else:
+                if desc['writable']:  # todo consider getters/setters
+                    desc['value'] = val
+        else:
+            # trying to put in local scope
+            # we dont know yet in which scope we should place this var
+            if var in self.own:
+                self.own[var] = val
+                return val
+            else:
+                # try to put in the lower scope since we cant put in this one (var wasn't registered)
+                return self.prototype.put(var, val)
+
+    def get(self, var, throw=True):
+        if self.prototype is not None:
+            # fast local scope
+            cand = self.own.get(var)
+            if cand is None:
+                return self.prototype.get(var, throw)
+            return cand
+        # slow, global scope
+        if var not in self.own:
+            # try in ObjectPrototype...
+            # if var in self.space.ObjectPrototype.own:
+            #     return self.space.ObjectPrototype.get(var)
+            if throw:
+                raise MakeError('ReferenceError', '%s is not defined' % var)
+            return undefined
+        return self.own[var]['value']  # todo consider getters/setters
+
+    def delete(self, var, throw=False):
+        if self.prototype is not None:
+            if var in self.own:
+                return False
+            return self.prototype.delete(var)
+        # we are in global scope here. Must exist and be configurable to delete
+        if var not in self.own:
+            # this var does not exist, why do you want to delete it???
+            return True
+        if self.own[var]['configurable']:
+            del self.own[var]
+            return True
+        # not configurable, cant delete
+        return False
+
+# there is no point implementing DeclarativeBinding, too much slow down, almost no benefit. Just call register and set the value.
+# assume nobody is stupid enough to change immutable bindings
+
+class Arguments(PyJs):
+    pass
+
 
 #Function
 class PyJsFunction(PyJs):
@@ -530,8 +631,7 @@ class PyJsFunction(PyJs):
     source = '{ [native code] }'
     IS_CONSTRUCTOR = True
 
-    def __init__(self, code, scope, params, name, space, prototype=None):
-        self.extensible = True
+    def __init__(self, code, ctx, params, name, space, is_declaration, definitions, prototype=None):
         self.prototype = prototype
         self.own = {}
 
@@ -541,10 +641,15 @@ class PyJsFunction(PyJs):
         else:
             self.is_native = True  # python function
 
-        self.scope = scope
+        self.ctx = ctx
+
         self.params = params
+        self.arguments_in_params = 'arguments' in params
+        self.definitions = definitions # must include parameters but NOT 'arguments'
+
         self.name = name
         self.space = space
+        self.is_declaration = is_declaration
 
         #set own property length to the number of arguments
         self.own['length'] = {'value': len(params), 'writable': False, 'enumerable': False, 'configurable': False}
@@ -590,3 +695,16 @@ class PyJsFunction(PyJs):
         if is_object(res):
             return res
         return new
+
+    def _generate_my_context(self, this, args):
+        my_ctx = Scope(dict(izip(self.params, args)), parent=self.ctx)
+        my_ctx.registers(self.definitions)
+        my_ctx.THIS_BINDING = this
+        if not self.arguments_in_params:
+            my_ctx.own['arguments'] = Arguments()
+        if not self.is_declaration and self.name:
+            my_ctx.own[self.name] = self  # this should be immutable binding but come on!
+        return my_ctx
+
+
+

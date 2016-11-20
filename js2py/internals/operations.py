@@ -28,7 +28,7 @@ def typeof_uop(self):
 
 # ~u
 def bit_invert_uop(self):
-    return float(to_int32(~to_int32(self)))
+    return float(to_int32(float(~to_int32(self))))
 
 # void
 def void_op(self):
@@ -39,9 +39,9 @@ UNARY_OPERATIONS = {
     '+': plus_uop,
     '-': minus_uop,
     '!': logical_negation_uop,
-    'typeof': typeof_uop,
     '~': bit_invert_uop,
     'void': void_op,
+    'typeof': typeof_uop, # this one only for member expressions! for identifiers its slightly different...
 }
 
 # ------------------------------------------------------------------------------
@@ -57,52 +57,55 @@ def bit_lshift_op(self, other):
     lnum = to_int32(self)
     rnum = to_uint32(other)
     shiftCount = rnum & 0x1F
-    return float(to_int32(lnum << shiftCount))
+    return float(to_int32(float(lnum << shiftCount)))
 
 # >>
 def bit_rshift_op(self, other):
     lnum = to_int32(self)
     rnum = to_uint32(other)
     shiftCount = rnum & 0x1F
-    return float(to_int32(lnum >> shiftCount))
+    return float(to_int32(float(lnum >> shiftCount)))
 
 # >>>
 def bit_bshift_op(self, other):
     lnum = to_uint32(self)
     rnum = to_uint32(other)
     shiftCount = rnum & 0x1F
-    return float(to_uint32(lnum >> shiftCount))
+    return float(to_uint32(float(lnum >> shiftCount)))
 
 # &
 def bit_and_op(self, other):
     lnum = to_int32(self)
     rnum = to_int32(other)
-    return float(to_int32(lnum & rnum))
+    return float(to_int32(float(lnum & rnum)))
 
 # ^
 def bit_xor_op(self, other):
     lnum = to_int32(self)
     rnum = to_int32(other)
-    return float(to_int32(lnum ^ rnum))
+    return float(to_int32(float(lnum ^ rnum)))
 
 # |
 def bit_or_op(self, other):
     lnum = to_int32(self)
     rnum = to_int32(other)
-    return float(to_int32(lnum | rnum))
+    return float(to_int32(float(lnum | rnum)))
 
 # Additive operators
 # + and - are implemented here
 
 # +
 def add_op(self, other):
+    if type(self) is float and type(other) is float:
+        return self + other
+    if type(self) is unicode and type(other) is unicode:
+        return self + other
+    # standard way...
     a = to_primitive(self)
     b = to_primitive(other)
-    if a.TYPE == 'String' or b.TYPE == 'String':  # string wins hehe
-        return a.to_string().value + b.to_string().value
-    a = a.to_number()
-    b = b.to_number()
-    return a.value + b.value
+    if type(a) is unicode or type(b) is unicode:  # string wins hehe
+        return to_string(a) + to_string(b)
+    return to_number(a) + to_number(b)
 
 # -
 def sub_op(self, other):
@@ -146,25 +149,26 @@ def mod_op(self, other):
 
 # Comparisons
 # <, <=, !=, ==, >=, > are implemented here.
-def abstract_relational_comparison(self, other, self_first=True):
+def abstract_relational_comparison(self, other, self_first=True):  # todo speed up!
     ''' self<other if self_first else other<self.
        Returns the result of the question: is self smaller than other?
        in case self_first is false it returns the answer of:
                                            is other smaller than self.
        result is PyJs type: bool or undefined'''
-    px = self.to_primitive('Number')
-    py = other.to_primitive('Number')
+
+    px = to_primitive(self, 'Number')
+    py = to_primitive(other, 'Number')
     if not self_first:  # reverse order
         px, py = py, px
     if not (Type(px) == 'String' and Type(py) == 'String'):
-        px, py = px.to_number(), py.to_number()
-        if px.is_nan() or py.is_nan():
-            return None
-        return px.value < py.value  # same cmp algorithm
+        px, py = to_number(px), to_number(py)
+        if is_nan(px) or is_nan(py):
+            return False
+        return px < py  # same cmp algorithm
     else:
         # I am pretty sure that python has the same
         # string cmp algorithm but I have to confirm it
-        return px.value < py.value
+        return px < py
 
 # <
 def less_op(self, other):

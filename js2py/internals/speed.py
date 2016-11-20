@@ -1,15 +1,18 @@
 from timeit import timeit
 from collections import namedtuple
 from array import array
+from itertools import izip
+from collections import deque
 
-class Y:
+class Y(object):
+    UUU = 88
     def __init__(self, x):
         self.x = x
 
     def s(self, x):
         return self.x + 1
 
-class X(object):
+class X(Y):
     A = 10
     B = 2
     C = 4
@@ -18,21 +21,20 @@ class X(object):
     def __init__(self, x):
         self.x = x
         self.stack = []
+        self.par = super(X, self)
 
-    def s(self):
+    def s(self, x):
         pass
 
     def __add__(self, other):
         return self.x + other.x
 
-    def s(self):
-        return self.x + 1
 
     def another(self):
-        return self.x*2
+        return Y.s(self, 1)
 
     def yet_another(self):
-        return 300*30
+        return self.par.s(1)
 
 def add(a,b):
     return a.x + b.x
@@ -40,11 +42,19 @@ def add(a,b):
 
 
 
-t = X(1)
+t = []
 
 
 Type = None
 try:
-    print timeit("type(t) is X", "from __main__ import X,Y,namedtuple,array,t,add, Type", number=1000000)
+    print timeit(
+"""
+
+t.append(4)
+t.pop()
+
+
+
+""", "from __main__ import X,Y,namedtuple,array,t,add,Type, izip", number=1000000)
 except:
-    pass
+    raise

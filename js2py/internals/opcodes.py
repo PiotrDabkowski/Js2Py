@@ -5,6 +5,8 @@ class OP_CODE(object):
     # def eval(self, ctx):
     #     raise
 
+    def __repr__(self):
+        return self.__class__.__name__ + str(tuple([getattr(self, e) for e in self._params]))
 
 
 # --------------------- UNARY ----------------------
@@ -21,15 +23,30 @@ class UNARY_OP(OP_CODE):
 
 # special unary operations
 
+class TYPEOF(OP_CODE):
+    _params = ['identifier']
+    def __init__(self, identifier):
+        self.identifier = identifier
+
+    def eval(self, ctx):
+        # typeof something_undefined  does not throw reference error
+        val = ctx.get(self.identifier, False) # <= this makes it slightly different!
+        ctx.stack.append(typeof_uop(val))
+
+
+
 class POSTFIX(OP_CODE):
     _params = ['identifier', 'post', 'incr']
     def __init__(self, identifier, post, incr):
         self.identifier = identifier
-        self.post = post
-        self.incr = incr
+        self.change_before = 1 if incr else -1
+        self.change_after = -self.change_before if post else 0
 
     def eval(self, ctx):
-        pass
+        target = to_number(ctx.get(self.identifier)) + self.change_before
+        ctx.put(self.identifier, target)
+        ctx.stack.append(target + self.change_after)
+
 
 class POSTFIX_MEMBER(OP_CODE):
     _params = ['post', 'incr']
@@ -48,42 +65,39 @@ class POSTFIX_MEMBER(OP_CODE):
 
         ctx.stack.append(target + self.change_after)
 
+class POSTFIX_MEMBER_DOT(OP_CODE):
+    _params = ['post', 'incr', 'prop']
 
-class DELETE(OP_CODE):
-    _params = ['name', 'index']
-
-    def __init__(self, name, index):
-        self.name = name
-        self.index = index
+    def __init__(self, post, incr, prop):
+        self.change_before = 1 if incr else -1
+        self.change_after = -self.change_before if post else 0
+        self.prop = prop
 
     def eval(self, ctx):
-        # 11.4.1
-        ref = ctx.get_ref(self.name, self.index)
-        if not isinstance(ref, Reference):
-            res = True
-        if ref.is_unresolvable_reference():
-            if ref.is_strict_reference():
-                raise JsSyntaxError()
-            res = True
-        if ref.is_property_reference():
-            obj = ref.get_base().ToObject()
-            res = obj.delete(ref.get_referenced_name(), ref.is_strict_reference())
-        else:
-            if ref.is_strict_reference():
-                raise JsSyntaxError()
-            bindings = ref.base_env
-            res = bindings.delete_binding(ref.get_referenced_name())
+        left = ctx.stack.pop()
 
-        if res is True:
-            ctx.forget_ref(self.name, self.index)
-        ctx.stack_append(_w(res))
+        target = to_number(get_member_dot(left, self.prop, ctx.space)) + self.change_before
+        if type(left) not in PRIMITIVES:
+            left.put(self.prop, target)
+
+        ctx.stack.append(target + self.change_after)
+
+
+class DELETE(OP_CODE):
+    _params = ['name']
+
+    def __init__(self, name):
+        self.name = name
+
+    def eval(self, ctx):
+        ctx.stack.append(ctx.delete(self.name))
 
 
 class DELETE_MEMBER(OP_CODE):
     def eval(self, ctx):
-        what = to_string(ctx.stack.pop())
+        prop = to_string(ctx.stack.pop())
         obj = to_object(ctx.stack.pop(), ctx)
-        ctx.stack.append(obj.delete(what, False))
+        ctx.stack.append(obj.delete(prop, False))
 
 
 # --------------------- BITWISE ----------------------
@@ -123,13 +137,13 @@ class JUMP(BASE_JUMP):
     def eval(self, ctx):
         return self.label
 
-class JUMP_IF(BASE_JUMP):
+class JUMP_IF_TRUE(BASE_JUMP):
     def eval(self, ctx):
         val = ctx.stack.pop()
         if to_boolean(val):
             return self.label
 
-class JUMP_IF_WITHOUT_POP(BASE_JUMP):
+class JUMP_IF_TRUE_WITHOUT_POP(BASE_JUMP):
     def eval(self, ctx):
         val = ctx.stack[-1]
         if to_boolean(val):
@@ -149,7 +163,14 @@ class JUMP_IF_FALSE_WITHOUT_POP(BASE_JUMP):
 
 class POP(OP_CODE):
     def eval(self, ctx):
-        ctx.stack.pop()
+        del ctx.stack[-1]
+
+class REDUCE(OP_CODE):
+    def eval(self, ctx):
+        assert len(ctx.stack)==2
+        ctx.stack[0] = ctx.stack[1]
+        del ctx.stack[1]
+
 
 # --------------- LOADING --------------
 
@@ -250,31 +271,26 @@ class LOAD_ARRAY(OP_CODE):
         ctx.stack.append(arr)
 
 
-class LOAD_THIS(OP_CODE): # todo check!
-    # 11.1.1
+class LOAD_THIS(OP_CODE):
     def eval(self, ctx):
-        this = ctx.this_binding()
-        ctx.stack_append(this)
+        ctx.stack_append(ctx.THIS_BINDING)
 
 
 class LOAD(OP_CODE): # todo check!
-    _params = ['identifier', 'index']
+    _params = ['identifier']
 
-    def __init__(self, identifier, index):
+    def __init__(self, identifier):
         self.identifier = identifier
-        self.index = index
 
     # 11.1.2
     def eval(self, ctx):
-        ref = ctx.get_ref(self.identifier, self.index)
-        value = ref.get_value(self.identifier)
-        ctx.stack_append(value)
+        ctx.stack.append(ctx.get(self.identifier))
 
 
 class LOAD_MEMBER(OP_CODE):
     def eval(self, ctx):
-        obj = ctx.stack.pop()
         prop = ctx.stack.pop()
+        obj = ctx.stack.pop()
         ctx.stack.append(get_member(obj, prop, ctx.space))
 
 
@@ -293,15 +309,13 @@ class LOAD_MEMBER_DOT(OP_CODE):
 
 
 class STORE(OP_CODE):
-    _params = ['identifier', 'index']
-    def __init__(self, identifier, index):
+    _params = ['identifier']
+    def __init__(self, identifier):
         self.identifier = identifier
-        self.index = index
 
     def eval(self, ctx):
         value = ctx.stack[-1]  # don't pop
-        ref = ctx.get_ref(self.identifier, self.index)
-        ref.put_value(value, self.identifier)
+        ctx.put(self.identifier, value)
 
 
 class STORE_MEMBER(OP_CODE):
@@ -346,17 +360,17 @@ class STORE_MEMBER_DOT(OP_CODE):
 
 
 class STORE_OP(OP_CODE):
-    _params = ['identifier', 'index', 'op']
+    _params = ['identifier', 'op']
 
-    def __init__(self, identifier, index, op):
+    def __init__(self, identifier, op):
         self.identifier = identifier
-        self.index = index
         self.op = op
 
     def eval(self, ctx):
-        value = ctx.stack[-1]  # don't pop
-        ref = ctx.get_ref(self.identifier, self.index)
-        ref.put_value(value, self.identifier)
+        value = ctx.stack.pop()
+        new_value = BINARY_OPERATIONS[self.op](ctx.get(self.identifier), value)
+        ctx.put(self.identifier, new_value)
+        ctx.stack.append(new_value)
 
 
 class STORE_MEMBER_OP(OP_CODE):
@@ -415,17 +429,15 @@ def bytecode_call(ctx, func, this, args):
         return None
 
     # therefore not native. we have to return (new_context, function_label) to instruct interpreter to call
-
+    return func._generate_my_context(this, args), func.code
 
 
 class CALL(OP_CODE):
-    _stack_change = 0
-
     def eval(self, ctx):
         args = ctx.stack_pop()
         func = ctx.stack_pop()
 
-        return bytecode_call(ctx, func, ctx.implicit_this_binding(), args)
+        return bytecode_call(ctx, func, ctx.exe.GLOBAL_THIS, args)
 
 
 class CALL_METHOD(OP_CODE):
@@ -454,12 +466,10 @@ class CALL_METHOD_DOT(OP_CODE):
 
 
 class CALL_NO_ARGS(OP_CODE):
-    _stack_change = 0
-
     def eval(self, ctx):
         func = ctx.stack_pop()
 
-        return bytecode_call(ctx, func, ctx.implicit_this_binding(), ())
+        return bytecode_call(ctx, func, ctx.exe.GLOBAL_THIS, ())
 
 
 class CALL_METHOD_NO_ARGS(OP_CODE):
@@ -530,6 +540,13 @@ class TRY_CATCH_FINALLY(OP_CODE):
 
 
 
-
-
+# all opcodes...
 OP_CODES = {}
+g = ''
+for g in globals():
+    try:
+        if not issubclass(globals()[g], OP_CODE) or g is 'OP_CODE':
+            continue
+    except:
+        continue
+    OP_CODES[g] = globals()[g]

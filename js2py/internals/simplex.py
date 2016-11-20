@@ -1,5 +1,3 @@
-from mes import *
-
 #Undefined
 class PyJsUndefined(object):
     TYPE = 'Undefined'
@@ -74,6 +72,14 @@ class JsException(Exception):
         self.typ = typ
         self.message = message
         self.throw = throw
+
+    def __str__(self):
+        if self.throw:
+            from conversions import to_string
+            return to_string(self.throw)
+        else:
+            return '%s: %s' % (self.typ, self.message)
+
 
 def MakeError(typ, message='no info', throw=None):
     return JsException(typ, message, throw)

@@ -72,7 +72,7 @@ def to_string(self):
         return 'true' if self else 'false'
     elif typ == 'Number':  # or self.Class=='Number':
         if is_nan(self):
-            return NaN
+            return 'NaN'
         elif is_infinity(self):
             sign = '-' if self < 0 else ''
             return sign + 'Infinity'
@@ -80,7 +80,7 @@ def to_string(self):
             return unicode(int(self))
         return unicode(self)  # todo make it print exactly like node.js
     else:  # object
-        return self.to_primitive('String').to_string()
+        return to_string(self.to_primitive('String'))
 
 
 def to_object(self, ctx):
