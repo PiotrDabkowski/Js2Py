@@ -204,7 +204,7 @@ def greater_op(self, other):
 def abstract_equality_op(self, other):
     ''' returns the result of JS == compare.
        result is PyJs type: bool'''
-    tx, ty = self.TYPE, other.TYPE
+    tx, ty = Type(self), Type(other)
     if tx == ty:
         if tx == 'Undefined' or tx == 'Null':
             return True

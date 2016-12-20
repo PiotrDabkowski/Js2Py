@@ -19,7 +19,24 @@ class ByteCodeGenerator:
 
         self.declared_vars = []
 
-        self.function_tape = []
+        self.function_declaration_tape = []
+
+        self.states = []
+
+
+    def record_state(self):
+        self.states.append((self.declared_continue_labels, self.declared_break_labels,
+                            self.implicit_breaks, self.implicit_continues,
+                            self.declared_vars, self.function_declaration_tape))
+        self.declared_continue_labels, self.declared_break_labels, \
+        self.implicit_breaks, self.implicit_continues, \
+        self.declared_vars, self.function_declaration_tape = {}, {}, [], [], [], []
+
+
+    def restore_state(self):
+        self.declared_continue_labels, self.declared_break_labels, \
+        self.implicit_breaks, self.implicit_continues, \
+        self.declared_vars, self.function_declaration_tape = self.states.pop()
 
 
     def ArrayExpression(self, elements, **kwargs):
@@ -68,8 +85,12 @@ class ByteCodeGenerator:
         if label is None:
             self.emit('JUMP', self.implicit_breaks[-1])
         else:
-            raise NotImplementedError('W8')
-                
+            label = label.get('name')
+            if label not in self.declared_break_labels:
+                raise MakeError('SyntaxError', 'Undefined label \'%s\'' % label)
+            else:
+                self.emit('JUMP', self.declared_break_labels[label])
+
     def CallExpression(self, callee, arguments, **kwargs):
         if callee['type'] == 'MemberExpression':
             self.emit(callee['object'])
@@ -129,18 +150,44 @@ class ByteCodeGenerator:
         if label is None:
             self.emit('JUMP', self.implicit_continues[-1])
         else:
-            raise NotImplementedError('W8')
+            label = label.get('name')
+            if label not in self.declared_continue_labels:
+                raise MakeError('SyntaxError', 'Undefined label \'%s\'' % label)
+            else:
+                self.emit('JUMP', self.declared_continue_labels[label])
                 
     def DebuggerStatement(self, **kwargs):
         self.EmptyStatement(**kwargs)
         
     def DoWhileStatement(self, body, test, **kwargs):
-        print('Hey')
+        continue_label = self.exe.get_new_label()
+        break_label = self.exe.get_new_label()
+        initial_do = self.exe.get_new_label()
+
+        self.emit('JUMP', initial_do)
+        self.emit('LABEL', continue_label)
+        self.emit(test)
+        self.emit('JUMP_IF_FALSE', break_label)
+        self.emit('LABEL', initial_do)
+
+        # translate the body, remember to add and afterwards remove implicit break/continue labels
+
+        self.implicit_continues.append(continue_label)
+        self.implicit_breaks.append(break_label)
+        self.emit(body)
+        self.implicit_continues.pop()
+        self.implicit_breaks.pop()
+
+        self.emit('JUMP', continue_label) # loop back
+        self.emit('LABEL', break_label)
                         
     def EmptyStatement(self, **kwargs):
+        # do nothing
         pass
-        
+
     def ExpressionStatement(self, expression, **kwargs):
+        # change the final stack value
+        # pop the previous value and execute expression
         self.emit('POP')
         self.emit(expression)
                 
@@ -180,10 +227,82 @@ class ByteCodeGenerator:
         raise NotImplementedError('Not available yet')
                                         
     def FunctionDeclaration(self, id, params, defaults, body, **kwargs):
-        print('Hey')
-                                                        
+        if defaults:
+            raise NotImplementedError('Defaults not available in ECMA 5.1')
+
+        # compile function
+        self.record_state()  # cleans translator state and appends it to the stack so that it can be later restored
+        function_start = self.exe.get_new_label()
+        function_declarations = self.exe.get_new_label()
+        declarations_done = self.exe.get_new_label()  # put jump to this place at the and of function tape!
+        function_end = self.exe.get_new_label()
+
+        # skip the function if encountered externally
+        self.emit('JUMP', function_end)
+
+        self.emit('LABEL', function_start)
+        # call is made with empty stack so load undefined to fill it
+        self.emit('LOAD_UNDEFINED')
+        # declare all functions
+        self.emit('JUMP', function_declarations)
+        self.emit('LABEL', declarations_done)
+        self.function_declaration_tape.append(LABEL(function_declarations))
+
+        self.emit(body)
+        self.ReturnStatement(None)
+
+        self.function_declaration_tape.append(JUMP(declarations_done))
+        self.exe.tape.extend(self.function_declaration_tape)
+
+        self.emit('LABEL', function_end)
+        declared_vars = self.declared_vars
+        self.restore_state()
+
+        # create function object and append to stack
+        name = id.get('name')
+        assert name is not None
+        self.declared_vars.append(name)
+        self.function_declaration_tape.append(LOAD_FUNCTION(function_start, tuple(p['name'] for p in params), name, True, tuple(declared_vars)))
+        self.function_declaration_tape.append(STORE(name))
+        self.function_declaration_tape.append(POP())
+
     def FunctionExpression(self, id, params, defaults, body, **kwargs):
-        print('Hey')
+        if defaults:
+            raise NotImplementedError('Defaults not available in ECMA 5.1')
+
+        # compile function
+        self.record_state()  # cleans translator state and appends it to the stack so that it can be later restored
+        function_start = self.exe.get_new_label()
+        function_declarations = self.exe.get_new_label()
+        declarations_done = self.exe.get_new_label()  # put jump to this place at the and of function tape!
+        function_end = self.exe.get_new_label()
+
+        # skip the function if encountered externally
+        self.emit('JUMP', function_end)
+
+        self.emit('LABEL', function_start)
+        # call is made with empty stack so load undefined to fill it
+        self.emit('LOAD_UNDEFINED')
+        # declare all functions
+        self.emit('JUMP', function_declarations)
+        self.emit('LABEL', declarations_done)
+        self.function_declaration_tape.append(LABEL(function_declarations))
+
+        self.emit(body)
+        self.ReturnStatement(None)
+
+        self.function_declaration_tape.append(JUMP(declarations_done))
+        self.exe.tape.extend(self.function_declaration_tape)
+
+        self.emit('LABEL', function_end)
+        declared_vars = self.declared_vars
+        self.restore_state()
+
+        # create function object and append to stack
+        name = id.get('name') if id else None
+        self.emit('LOAD_FUNCTION', function_start, tuple(p['name'] for p in params), name, False, tuple(declared_vars))
+
+
                                                         
     def Identifier(self, name, **kwargs):
         if name=='true':
@@ -213,7 +332,23 @@ class ByteCodeGenerator:
 
                                 
     def LabeledStatement(self, label, body, **kwargs):
-        print('Hey')
+        label = label['name']
+        if body['type'] in ('WhileStatement', 'DoWhileStatement', 'ForStatement', 'ForInStatement'):
+            # Continue label available... Simply take labels defined by the loop.
+            # It is important that they request continue label first
+            self.declared_continue_labels[label] = self.exe._label_count + 1
+            self.declared_break_labels[label] = self.exe._label_count + 2
+            self.emit(body)
+            del self.declared_break_labels[label]
+            del self.declared_continue_labels[label]
+        else:
+            # only break label available
+            lbl = self.exe.get_new_label()
+            self.declared_break_labels[label] = lbl
+            self.emit(body)
+            self.emit('LABEL', lbl)
+            del self.declared_break_labels[label]
+
                         
     def Literal(self, value, **kwargs):
         if value is None:
@@ -226,6 +361,8 @@ class ByteCodeGenerator:
             self.emit('LOAD_NUMBER', float(value))
         elif isinstance(value, tuple):
             self.emit('LOAD_REGEXP', *value)
+        else:
+            raise RuntimeError('Unsupported literal')
 
     def LogicalExpression(self, left, right, operator, **kwargs):
         end = self.exe.get_new_label()
@@ -243,7 +380,8 @@ class ByteCodeGenerator:
             self.emit('POP')
             self.emit(right)
             self.emit('LABEL', end)
-
+        else:
+            raise RuntimeError("Unknown logical expression: %s" % operator)
 
     def MemberExpression(self, computed, object, property, **kwargs):
         if computed:
@@ -254,11 +392,11 @@ class ByteCodeGenerator:
             self.emit(object)
             self.emit('LOAD_MEMBER_DOT', property['name'])
                                 
-    def NewExpression(self, callee, args, **kwargs):
+    def NewExpression(self, callee, arguments, **kwargs):
         self.emit(callee)
-        if args:
-            n = len(args)
-            for e in args:
+        if arguments:
+            n = len(arguments)
+            for e in arguments:
                 self.emit(e)
             self.emit('LOAD_N_TUPLE', n)
             self.emit('NEW')
@@ -274,17 +412,12 @@ class ByteCodeGenerator:
                 raise NotImplementedError('ECMA 5.1 does not support computed object properties!')
             data.append((to_key(prop['key']), prop['kind'][0]))
         self.emit('LOAD_OBJECT', tuple(data))
-
-    def PostfixExpression(self, operator, argument, prefix, **kwargs):
-        incr = operator == "++"
-        if argument['type'] == 'MemberExpression':
-            if argument['computed']:
-                pass
-
                                 
     def Program(self, body, **kwargs):
         self.emit('LOAD_UNDEFINED')
         self.emit(body)
+        # add function tape !
+        self.exe.tape = self.function_declaration_tape + self.exe.tape
                 
     def Pyimport(self, imp, **kwargs):
         raise NotImplementedError('Not available for bytecode interpreter yet, use translator.')
@@ -296,6 +429,7 @@ class ByteCodeGenerator:
         raise NotImplementedError('Not available in ECMA 5.1')
                 
     def ReturnStatement(self, argument, **kwargs):
+        self.emit('POP') # pop result of expression statements
         if argument is None:
             self.emit('LOAD_UNDEFINED')
         else:
@@ -309,10 +443,36 @@ class ByteCodeGenerator:
         del self.exe.tape[-1]
 
     def SwitchCase(self, test, consequent, **kwargs):
-        print('Hey')
+        raise NotImplementedError('Already implemented in SwitchStatement')
                         
     def SwitchStatement(self, discriminant, cases, **kwargs):
-        raise NotImplementedError('Will implement it tomorrow!')
+        self.emit(discriminant)
+        labels = [self.exe.get_new_label() for case in cases]
+        tests = [case['test'] for case in cases]
+        consequents = [case['consequent'] for case in cases]
+        end_of_switch = self.exe.get_new_label()
+
+        # translate test cases
+        for test, label in zip(tests, labels):
+            if test is not None:
+                self.emit(test)
+                self.emit('JUMP_IF_EQ', label)
+            else:
+                self.emit('POP')
+                self.emit('JUMP', label)
+        # this will be executed if none of the cases worked
+        self.emit('POP')
+        self.emit('JUMP', end_of_switch)
+
+        # translate consequents
+        self.implicit_breaks.append(end_of_switch)
+        for consequent, label in zip(consequents, labels):
+            self.emit('LABEL', label)
+            self._emit_statement_list(consequent)
+        self.implicit_breaks.pop()
+
+        self.emit('LABEL', end_of_switch)
+
 
 
     def ThisExpression(self, **kwargs):
@@ -346,6 +506,24 @@ class ByteCodeGenerator:
         else:
             raise MakeError('SyntaxError', 'Unknown unary operator %s' % operator)
 
+    def UpdateExpression(self, operator, argument, prefix, **kwargs):
+        incr = int(operator == "++")
+        post = int(not prefix)
+        if argument['type'] == 'MemberExpression':
+            if argument['computed']:
+                self.emit(argument['object'])
+                self.emit(argument['property'])
+                self.emit('POSTFIX_MEMBER', post, incr)
+            else:
+                self.emit(argument['object'])
+                name = to_key(argument['property'])
+                self.emit('POSTFIX_MEMBER_DOT', post, incr, name)
+        elif argument['type'] == 'Identifier':
+            name = to_key(argument)
+            self.emit('POSTFIX', post, incr, name)
+        else:
+            raise MakeError('SyntaxError', 'Invalid left-hand side in assignment')
+
                                 
     def VariableDeclaration(self, declarations, kind, **kwargs):
         if kind != 'var':
@@ -360,13 +538,12 @@ class ByteCodeGenerator:
         name = id['name']
         if  name in SPECIAL_IDENTIFIERS:
             raise MakeError('Invalid left-hand side in assignment')
-        self.declared_vars.append(name);
+        self.declared_vars.append(name)
         if init is not None:
             self.emit(init)
             self.emit('STORE', name)
             self.emit('POP')
 
-                        
     def WhileStatement(self, test, body, **kwargs):
         continue_label = self.exe.get_new_label()
         break_label = self.exe.get_new_label()
@@ -405,15 +582,33 @@ class ByteCodeGenerator:
             return getattr(self, what['type'])(**what)
 
 
+from space import Space
 
+s = Space()
 from pyjsparser import parse
 a = ByteCodeGenerator(Code())
+a.exe.space = s
 
 a.emit(parse('''
-
-for (var a = 0; a < 10; a += 1) {
-a;}
-
+expr = 'kok'
+switch (expr) {
+  case "Oranges":
+    log("Oranges are $0.59 a pound.");
+;
+  case "Apples":
+    log("Apples are $0.32 a pound.");
+    break;
+  case "Bananas":
+    log("Bananas are $0.48 a pound.");
+    break;
+  case "Cherries":
+    log("Cherries are $3.00 a pound.");
+    break;
+  case "Mangoes":
+  case "Papayas":
+    log("Mangoes and papayas are $2.79 a pound.");
+    break;
+}
 '''))
 print a.declared_vars
 print a.exe.tape
@@ -422,7 +617,14 @@ from base import Scope
 
 a.exe.compile()
 
-print a.exe.run(Scope({}))
+def log(this, args):
+    print args[0]
+    return 999
+
+global_scope = Scope({}, s)
+global_scope.registers(a.declared_vars)
+global_scope.put(u'log', s.NewFunction(log, global_scope, [], 'log', False, []))
+print a.exe.run(global_scope)
 
 
 

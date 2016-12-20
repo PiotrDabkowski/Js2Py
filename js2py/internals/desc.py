@@ -25,7 +25,7 @@ def from_property_descriptor(desc, space):
                                           'writable': True,
                                           'enumerable': True,
                                           'configurable': True}, False)
-        obj.define_own_property('writable', {'value': NewBoolean(desc['writable']),
+        obj.define_own_property('writable', {'value': desc['writable'],
                                              'writable': True,
                                              'enumerable': True,
                                              'configurable': True}, False)
@@ -38,11 +38,11 @@ def from_property_descriptor(desc, space):
                                         'writable': True,
                                         'enumerable': True,
                                         'configurable': True}, False)
-    obj.define_own_property('writable', {'value': NewBoolean(desc['writable']),
+    obj.define_own_property('writable', {'value': desc['writable'],
                                          'writable': True,
                                          'enumerable': True,
                                          'configurable': True}, False)
-    obj.define_own_property('enumerable', {'value': NewBoolean(desc['enumerable']),
+    obj.define_own_property('enumerable', {'value': desc['enumerable'],
                                            'writable': True,
                                            'enumerable': True,
                                            'configurable': True}, False)

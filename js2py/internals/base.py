@@ -1,12 +1,15 @@
+from __future__ import unicode_literals
 import re
 
 import datetime
 
 from desc import *
 from simplex import *
+from conversions import *
 import six
 from pyjsparser import PyJsParser
 from itertools import izip
+
 
 from conversions import *
 from simplex import *
@@ -121,7 +124,7 @@ class PyJs(object):
             order = ('toString', 'valueOf')
         for meth_name in order:
             method = self.get(meth_name)
-            if method is not None and method.is_callable():
+            if method is not None and is_callable(method):
                 cand = method.call(self)
                 if cand.is_primitive():
                     return cand
@@ -284,12 +287,12 @@ class PyJsObject(PyJs):
         self.prototype = prototype
         self.own = {}
 
-    def _init(self, props, vals, strict):
+    def _init(self, props, vals):
         i = 0
         for prop, kind in props:
             if prop in self.own: # just check... probably will not happen very often.
                 if is_data_descriptor(self.own[prop]):
-                    if kind!='i' or strict:
+                    if kind!='i':
                         raise MakeError('SyntaxError', 'Invalid object initializer! Duplicate property name "%s"' % prop)
                 else:
                     if kind=='i' or (kind=='g' and 'get' in self.own[prop]) or (kind=='s' and 'set' in self.own[prop]):
@@ -325,7 +328,7 @@ class PyJsArray(PyJs):
         self.own = {'length' : {'value': length, 'writable': True,
                                 'enumerable': False, 'configurable': False}}
 
-    def _init_elements(self, elements):
+    def _init(self, elements):
         for i, ele in enumerate(elements):
             if ele is None: continue
             self.own[unicode(i)] = {'value': ele, 'writable': True,
@@ -533,8 +536,9 @@ class Scope(PyJs):
     # child scopes, child scope should not have this property descriptor thing because they cant be changed anyway
     # they are all confugurable= False
 
-    def __init__(self, scope, parent=None):
+    def __init__(self, scope, space, parent=None):
         """Doc"""
+        self.space = space
         self.prototype = parent
         if parent is None:
             # global, top level scope
@@ -645,7 +649,11 @@ class PyJsFunction(PyJs):
 
         self.params = params
         self.arguments_in_params = 'arguments' in params
-        self.definitions = definitions # must include parameters but NOT 'arguments'
+        self.definitions = definitions
+
+        # todo remove this check later
+        for p in params:
+            assert p in self.definitions
 
         self.name = name
         self.space = space
@@ -697,12 +705,12 @@ class PyJsFunction(PyJs):
         return new
 
     def _generate_my_context(self, this, args):
-        my_ctx = Scope(dict(izip(self.params, args)), parent=self.ctx)
+        my_ctx = Scope(dict(izip(self.params, args)), self.space, parent=self.ctx)
         my_ctx.registers(self.definitions)
         my_ctx.THIS_BINDING = this
         if not self.arguments_in_params:
             my_ctx.own['arguments'] = Arguments()
-        if not self.is_declaration and self.name:
+        if not self.is_declaration and self.name and self.name not in my_ctx.own:
             my_ctx.own[self.name] = self  # this should be immutable binding but come on!
         return my_ctx
 

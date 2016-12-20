@@ -12,15 +12,15 @@ class Code:
 
         self.contexts = []
         self.return_locs = []
-        self.__label_count = 0
+        self._label_count = 0
 
         # useful references
         self.GLOBAL_THIS = None
         self.space = None
 
     def get_new_label(self):
-        self.__label_count += 1
-        return self.__label_count
+        self._label_count += 1
+        return self._label_count
 
     def emit(self, op_code, *args):
         ''' Adds op_code with specified args to tape '''

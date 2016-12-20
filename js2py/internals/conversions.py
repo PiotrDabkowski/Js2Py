@@ -1,5 +1,4 @@
 # Type Conversions. to_type. All must return PyJs subclass instance
-from base import *
 from simplex import *
 
 def to_primitive(self, hint=None):
@@ -65,9 +64,9 @@ def to_string(self):
     if typ == 'String':
         return self
     elif typ == 'Null':
-        return null
+        return 'null'
     elif typ == 'Undefined':
-        return undefined
+        return 'undefined'
     elif typ == 'Boolean':
         return 'true' if self else 'false'
     elif typ == 'Number':  # or self.Class=='Number':
@@ -80,7 +79,7 @@ def to_string(self):
             return unicode(int(self))
         return unicode(self)  # todo make it print exactly like node.js
     else:  # object
-        return to_string(self.to_primitive('String'))
+        return to_string(to_primitive(self, 'String'))
 
 
 def to_object(self, ctx):

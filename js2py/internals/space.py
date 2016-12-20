@@ -1,8 +1,8 @@
 from base import *
+from simplex import *
 
 class Space(object):
     def __init__(self):
-        self.GlobalCtx = None
         self.GlobalObj = None
 
         self.BooleanPrototype = None
@@ -11,6 +11,7 @@ class Space(object):
 
         self.FunctionPrototype = None
         self.ArrayPrototype = None
+        self.RegExpPrototype = None
         self.DatePrototype = None
         self.ObjectPrototype = None
 
@@ -39,8 +40,8 @@ class Space(object):
     def NewObject(self):
         return PyJsObject(self.ObjectPrototype)
 
-    def NewFunction(self, function_code, formal_parameter_list=[], scope=None, strict=False):
-        return PyJsFunction(function_code, formal_parameter_list, scope, strict, )
+    def NewFunction(self, code, ctx, params, name, is_declaration, definitions):
+        return PyJsFunction(code, ctx, params, name, self, is_declaration, definitions, prototype=self.FunctionPrototype)
 
     def NewDate(self, value):
         return PyJsDate(value, self.DatePrototype)
@@ -50,3 +51,6 @@ class Space(object):
 
     def NewError(self, typ, message):
         return PyJsError(message, self.ERROR_TYPES[typ])
+
+    def NewRegExp(self, body, flags):
+        return PyJsRegExp(body, flags, self.RegExpPrototype)

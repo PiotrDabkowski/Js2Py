@@ -1,4 +1,5 @@
 from operations import *
+from base import get_member, get_member_dot, PyJsFunction
 
 class OP_CODE(object):
     _params = []
@@ -36,51 +37,51 @@ class TYPEOF(OP_CODE):
 
 
 class POSTFIX(OP_CODE):
-    _params = ['identifier', 'post', 'incr']
-    def __init__(self, identifier, post, incr):
+    _params = ['cb', 'ca', 'identifier']
+    def __init__(self, post, incr, identifier):
         self.identifier = identifier
-        self.change_before = 1 if incr else -1
-        self.change_after = -self.change_before if post else 0
+        self.cb = 1 if incr else -1
+        self.ca = -self.cb if post else 0
 
     def eval(self, ctx):
-        target = to_number(ctx.get(self.identifier)) + self.change_before
+        target = to_number(ctx.get(self.identifier)) + self.cb
         ctx.put(self.identifier, target)
-        ctx.stack.append(target + self.change_after)
+        ctx.stack.append(target + self.ca)
 
 
 class POSTFIX_MEMBER(OP_CODE):
-    _params = ['post', 'incr']
+    _params = ['cb', 'ca']
 
     def __init__(self, post, incr):
-        self.change_before = 1 if incr else -1
-        self.change_after = -self.change_before if post else 0
+        self.cb = 1 if incr else -1
+        self.ca = -self.cb if post else 0
 
     def eval(self, ctx):
         name = ctx.stack.pop()
         left = ctx.stack.pop()
 
-        target = to_number(get_member(left, name, ctx.space)) + self.change_before
+        target = to_number(get_member(left, name, ctx.space)) + self.cb
         if type(left) not in PRIMITIVES:
             left.put_member(name, target)
 
-        ctx.stack.append(target + self.change_after)
+        ctx.stack.append(target + self.ca)
 
 class POSTFIX_MEMBER_DOT(OP_CODE):
-    _params = ['post', 'incr', 'prop']
+    _params = ['cb', 'ca', 'prop']
 
     def __init__(self, post, incr, prop):
-        self.change_before = 1 if incr else -1
-        self.change_after = -self.change_before if post else 0
+        self.cb = 1 if incr else -1
+        self.ca = -self.cb if post else 0
         self.prop = prop
 
     def eval(self, ctx):
         left = ctx.stack.pop()
 
-        target = to_number(get_member_dot(left, self.prop, ctx.space)) + self.change_before
+        target = to_number(get_member_dot(left, self.prop, ctx.space)) + self.cb
         if type(left) not in PRIMITIVES:
             left.put(self.prop, target)
 
-        ctx.stack.append(target + self.change_after)
+        ctx.stack.append(target + self.ca)
 
 
 class DELETE(OP_CODE):
@@ -143,6 +144,15 @@ class JUMP_IF_TRUE(BASE_JUMP):
         if to_boolean(val):
             return self.label
 
+
+class JUMP_IF_EQ(BASE_JUMP):
+    # this one is used in switch statement - compares last 2 values using === operator and jumps popping both if true else pops last.
+    def eval(self, ctx):
+        cmp = ctx.stack.pop()
+        if strict_equality_op(ctx.stack[-1], cmp):
+            ctx.stack.pop()
+            return self.label
+
 class JUMP_IF_TRUE_WITHOUT_POP(BASE_JUMP):
     def eval(self, ctx):
         val = ctx.stack[-1]
@@ -165,11 +175,11 @@ class POP(OP_CODE):
     def eval(self, ctx):
         del ctx.stack[-1]
 
-class REDUCE(OP_CODE):
-    def eval(self, ctx):
-        assert len(ctx.stack)==2
-        ctx.stack[0] = ctx.stack[1]
-        del ctx.stack[1]
+# class REDUCE(OP_CODE):
+#     def eval(self, ctx):
+#         assert len(ctx.stack)==2
+#         ctx.stack[0] = ctx.stack[1]
+#         del ctx.stack[1]
 
 
 # --------------- LOADING --------------
@@ -243,7 +253,18 @@ class LOAD_REGEXP(OP_CODE):
 
 
 class LOAD_FUNCTION(OP_CODE):
-    pass
+    _params = ['start', 'params', 'name', 'is_declaration', 'definitions']
+    def __init__(self, start, params, name, is_declaration, definitions):
+        assert type(start) == int
+        self.start = start  # its an ID of label pointing to the beginning of the function bytecode
+        self.params = params
+        self.name = name
+        self.is_declaration = bool(is_declaration)
+        print definitions, params
+        self.definitions = tuple(set(definitions+params))
+
+    def eval(self, ctx):
+        ctx.stack.append(ctx.space.NewFunction(self.start, ctx, self.params, self.name, self.is_declaration, self.definitions))
 
 
 class LOAD_OBJECT(OP_CODE):
@@ -254,8 +275,10 @@ class LOAD_OBJECT(OP_CODE):
 
     def eval(self, ctx):
         obj = ctx.space.NewObject()
-        obj._init(self.props, ctx.stack[-self.num:], ctx.strict)
-        del ctx.stack[-self.num:]
+        if self.num:
+            obj._init(self.props, ctx.stack[-self.num:])
+            del ctx.stack[-self.num:]
+
         ctx.stack.append(obj)
 
 
@@ -266,14 +289,15 @@ class LOAD_ARRAY(OP_CODE):
 
     def eval(self, ctx):
         arr = ctx.space.NewArray(self.num)
-        arr._init(ctx.stack[-self.num:])
-        del ctx.stack[-self.num:]
+        if self.num:
+            arr._init(ctx.stack[-self.num:])
+            del ctx.stack[-self.num:]
         ctx.stack.append(arr)
 
 
 class LOAD_THIS(OP_CODE):
     def eval(self, ctx):
-        ctx.stack_append(ctx.THIS_BINDING)
+        ctx.stack.append(ctx.THIS_BINDING)
 
 
 class LOAD(OP_CODE): # todo check!
@@ -434,10 +458,10 @@ def bytecode_call(ctx, func, this, args):
 
 class CALL(OP_CODE):
     def eval(self, ctx):
-        args = ctx.stack_pop()
-        func = ctx.stack_pop()
+        args = ctx.stack.pop()
+        func = ctx.stack.pop()
 
-        return bytecode_call(ctx, func, ctx.exe.GLOBAL_THIS, args)
+        return bytecode_call(ctx, func, ctx.space.GlobalObj, args)
 
 
 class CALL_METHOD(OP_CODE):
@@ -467,9 +491,9 @@ class CALL_METHOD_DOT(OP_CODE):
 
 class CALL_NO_ARGS(OP_CODE):
     def eval(self, ctx):
-        func = ctx.stack_pop()
+        func = ctx.stack.pop()
 
-        return bytecode_call(ctx, func, ctx.exe.GLOBAL_THIS, ())
+        return bytecode_call(ctx, func, ctx.space.GlobalObj, ())
 
 
 class CALL_METHOD_NO_ARGS(OP_CODE):
