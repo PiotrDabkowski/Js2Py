@@ -198,7 +198,6 @@ class ByteCodeGenerator:
 
         if init is not None:
             self.emit(init)
-            print init,9
             if init['type'] != 'VariableDeclaration':
                 self.emit('POP')
 
@@ -206,11 +205,13 @@ class ByteCodeGenerator:
         self.emit('JUMP', first_start)
 
         self.emit('LABEL', continue_label)
-        self.emit(update)
-        self.emit('POP')
+        if update:
+            self.emit(update)
+            self.emit('POP')
         self.emit('LABEL', first_start)
-        self.emit(test)
-        self.emit('JUMP_IF_FALSE', break_label)
+        if test:
+            self.emit(test)
+            self.emit('JUMP_IF_FALSE', break_label)
 
         # translate the body, remember to add and afterwards to remove implicit break/continue labels
 
@@ -224,7 +225,7 @@ class ByteCodeGenerator:
         self.emit('LABEL', break_label)
                                         
     def ForInStatement(self, left, right, body, **kwargs):
-        raise NotImplementedError('Not available yet')
+        print 'Sorry not available yet!'
                                         
     def FunctionDeclaration(self, id, params, defaults, body, **kwargs):
         if defaults:
@@ -479,12 +480,42 @@ class ByteCodeGenerator:
         self.emit('LOAD_THIS')
         
     def ThrowStatement(self, argument, **kwargs):
+        # throw with the empty stack
+        self.emit('POP')
         self.emit(argument)
         self.emit('THROW')
                 
     def TryStatement(self, block, handler, finalizer, **kwargs):
-        raise NotImplementedError('Will implement it tomorrow!')
-                                                
+        try_label = self.exe.get_new_label()
+        catch_label = self.exe.get_new_label()
+        finally_label = self.exe.get_new_label()
+        end_label = self.exe.get_new_label()
+
+        self.emit('JUMP', end_label)
+
+        # try block
+        self.emit('LABEL', try_label)
+        self.emit(block)
+        self.emit('NOP') # needed to distinguish from break/continue vs some internal jumps
+
+        # catch block
+        self.emit('LABEL', catch_label)
+        if handler:
+            self.emit(handler['body'])
+        self.emit('NOP')
+
+        # finally block
+        self.emit('LABEL', finally_label)
+        if finalizer:
+            self.emit(finalizer)
+        self.emit('NOP')
+
+        self.emit('LABEL', end_label)
+
+        # give life to the code
+        self.emit('TRY_CATCH_FINALLY', try_label, catch_label, handler['param']['name'] if handler else None, finally_label, bool(finalizer), end_label)
+
+
     def UnaryExpression(self, operator, argument, **kwargs):
         if operator == 'typeof' and argument['type']=='Identifier':
             self.emit('TYPEOF', argument['name'])
@@ -581,6 +612,22 @@ class ByteCodeGenerator:
         else:
             return getattr(self, what['type'])(**what)
 
+import os, codecs
+
+def path_as_local(path):
+    if os.path.isabs(path):
+        return path
+    # relative to cwd
+    return os.path.join(os.getcwd(), path)
+
+
+def get_file_contents(path_or_file):
+    if hasattr(path_or_file, 'read'):
+        js = path_or_file.read()
+    else:
+        with codecs.open(path_as_local(path_or_file), "r", "utf-8") as f:
+            js = f.read()
+    return js
 
 from space import Space
 
@@ -588,30 +635,13 @@ s = Space()
 from pyjsparser import parse
 a = ByteCodeGenerator(Code())
 a.exe.space = s
+s.exe = a.exe
 
-a.emit(parse('''
-expr = 'kok'
-switch (expr) {
-  case "Oranges":
-    log("Oranges are $0.59 a pound.");
-;
-  case "Apples":
-    log("Apples are $0.32 a pound.");
-    break;
-  case "Bananas":
-    log("Bananas are $0.48 a pound.");
-    break;
-  case "Cherries":
-    log("Cherries are $3.00 a pound.");
-    break;
-  case "Mangoes":
-  case "Papayas":
-    log("Mangoes and papayas are $2.79 a pound.");
-    break;
-}
-'''))
+d = parse(get_file_contents('esprima.js'))
+a.emit(d)
 print a.declared_vars
 print a.exe.tape
+print len(a.exe.tape)
 
 from base import Scope
 
@@ -624,6 +654,7 @@ def log(this, args):
 global_scope = Scope({}, s)
 global_scope.registers(a.declared_vars)
 global_scope.put(u'log', s.NewFunction(log, global_scope, [], 'log', False, []))
+global_scope.put(u'exports', global_scope.get(u'log'))
 print a.exe.run(global_scope)
 
 

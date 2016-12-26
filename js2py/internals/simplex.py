@@ -73,6 +73,12 @@ class JsException(Exception):
         self.message = message
         self.throw = throw
 
+    def get_thrown_value(self, space):
+        if self.throw:
+            return self.throw
+        else:
+            return space.NewError(self.typ, self.message)
+
     def __str__(self):
         if self.throw:
             from conversions import to_string

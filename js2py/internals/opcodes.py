@@ -1,5 +1,5 @@
 from operations import *
-from base import get_member, get_member_dot, PyJsFunction
+from base import get_member, get_member_dot, PyJsFunction, Scope
 
 class OP_CODE(object):
     _params = []
@@ -260,7 +260,6 @@ class LOAD_FUNCTION(OP_CODE):
         self.params = params
         self.name = name
         self.is_declaration = bool(is_declaration)
-        print definitions, params
         self.definitions = tuple(set(definitions+params))
 
     def eval(self, ctx):
@@ -519,6 +518,9 @@ class CALL_METHOD_DOT_NO_ARGS(OP_CODE):
         return bytecode_call(ctx, func, base, ())
 
 
+class NOP(OP_CODE):
+    def eval(self, ctx):
+        pass
 
 class RETURN(OP_CODE):
     def eval(self, ctx):  # remember to load the return value on stack before using RETURN op.
@@ -550,18 +552,83 @@ class THROW(OP_CODE):
         raise MakeError(None, None, ctx.stack.pop())
 
 
+
+
 class TRY_CATCH_FINALLY(OP_CODE):
-    _params = []
-    def __init__(self):
-        pass
+    _params = ['try_label', 'catch_label', 'catch_variable', 'finally_label', 'finally_present', 'end_label']
+    def __init__(self, try_label, catch_label, catch_variable, finally_label, finally_present, end_label):
+        self.try_label = try_label
+        self.catch_label = catch_label
+        self.catch_variable = catch_variable
+        self.finally_label = finally_label
+        self.finally_present = finally_present
+        self.end_label = end_label
 
     def eval(self, ctx):
-        pass
+        # 4 different exectution results
+        # 0=normal, 1=return, 2=jump_outside, 3=errors
+        # execute_fragment_under_context returns:
+        # (return_value, typ, jump_loc/error)
+
+        # execute try statement
+        try_status = ctx.space.exe.execute_fragment_under_context(ctx, self.try_label, self.catch_label)
+
+        # check if errors
+        errors = try_status[1] == 3
+
+        # catch
+        if errors and self.catch_variable is not None:
+            # generate catch block context...
+            catch_context = Scope({self.catch_variable: try_status[2].get_thrown_value(ctx.space)}, ctx.space, ctx)
+            catch_context.stack.append(undefined)
+            catch_status = ctx.space.exe.execute_fragment_under_context(catch_context, self.catch_label, self.finally_label)
+        else:
+            catch_status = None
+
+        # finally
+        if self.finally_present:
+            ctx.stack.append(undefined)  # (ctx.stack is empty after try call)
+            finally_status = ctx.space.exe.execute_fragment_under_context(ctx, self.finally_label, self.end_label)
+        else:
+            finally_status = None
+
+        # now return controls
+        other_status = catch_status or try_status
+        if finally_status is None or (finally_status[1]==0 and other_status[1]!=0):
+            winning_status = other_status
+        else:
+            winning_status = finally_status
+
+        val, typ, spec = winning_status
+        if typ == 0: # normal
+            ctx.stack.append(val)
+            return
+        elif typ == 1: # return
+            ctx.stack.append(spec)
+            return None, None  # send return signal
+        elif typ == 2:  # jump outside
+            ctx.stack.append(val)
+            return spec
+        elif typ == 3:
+            # throw is made with empty stack as usual
+            raise spec
+        else:
+            raise RuntimeError('Invalid return code')
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 # ------------ WITH + ITERATORS ----------
-
 
 
 # all opcodes...
