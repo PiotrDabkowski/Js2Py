@@ -6,6 +6,7 @@ from .translators.friendly_nodes import REGEXP_CONVERTER
 from .utils.injector import fix_js_args
 from types import FunctionType, ModuleType, GeneratorType, BuiltinFunctionType, MethodType, BuiltinMethodType
 import traceback
+import numpy
 
 
 
@@ -65,7 +66,7 @@ def to_dict(js_obj, known=None): # fixed recursion error in self referencing obj
             if output._obj.Class=='Object':
                 output = to_dict(output._obj, known)
                 known[input] = output
-            elif output._obj.Class=='Array':
+            elif output._obj.Class in ['Array','Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
                 output = to_list(output._obj)
                 known[input] = output
         res[name] = output
@@ -87,7 +88,7 @@ def to_list(js_obj, known=None):
         input = js_obj.get(str(name))
         output = to_python(input)
         if isinstance(output, JsObjectWrapper):
-            if output._obj.Class in ['Array', 'Arguments']:
+            if output._obj.Class in ['Array', 'Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array', 'Arguments']:
                 output = to_list(output._obj, known)
                 known[input] = output
             elif output._obj.Class in ['Object']:
@@ -307,7 +308,7 @@ class PyJs(object):
             return val
         own_desc = self.get_own_property(prop)
         if is_data_descriptor(own_desc):
-            if self.Class=='Array': #only array has different define_own_prop
+            if self.Class in ['Array','Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
                 self.define_own_property(prop, {'value':val})
             else:
                 self.own[prop]['value'] = val
@@ -320,7 +321,7 @@ class PyJs(object):
                    'writable' : True,
                    'configurable' : True,
                    'enumerable' : True}
-            if self.Class=='Array':
+            if self.Class in ['Array','Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
                 self.define_own_property(prop, new)
             else:
                 self.own[prop] = new
@@ -849,7 +850,7 @@ class PyJs(object):
             return '{%s}'%', '.join(res)
         elif self.Class=='String':
             return str_repr(self.value)
-        elif self.Class=='Array':
+        elif self.Class in ['Array','Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
             res = []
             for e in self:
                 res.append(repr(self.get(e)))
@@ -1081,7 +1082,7 @@ class JsObjectWrapper(object):
         self._obj.put(str(item), Js(value))
 
     def __iter__(self):
-        if self._obj.Class=='Array':
+        if self._obj.Class in ['Array', 'Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
             return iter(self.to_list())
         elif self._obj.Class=='Object':
             return iter(self.to_dict())
@@ -1091,7 +1092,7 @@ class JsObjectWrapper(object):
     def __repr__(self):
         if self._obj.is_primitive() or self._obj.is_callable():
             return repr(self._obj)
-        elif self._obj.Class in ('Array', 'Arguments'):
+        elif self._obj.Class in ('Array', 'Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array', 'Arguments'):
             return repr(self.to_list())
         return repr(self.to_dict())
 
@@ -1118,6 +1119,8 @@ class PyObjectWrapper(PyJs):
         self.obj = obj
 
     def get(self, prop):
+        if type(self.obj) == numpy.ndarray and prop == "length":
+            return self.length
         if not isinstance(prop, basestring):
             prop = prop.to_string().value
         try:
@@ -1131,7 +1134,12 @@ class PyObjectWrapper(PyJs):
         if not isinstance(prop, basestring):
             prop = prop.to_string().value
         try:
-            setattr(self.obj, prop, to_python(val))
+            if type(self.obj) == numpy.ndarray and prop != "length":
+                self.obj[int(prop)] = to_python(val)
+            elif type(self.obj) == numpy.ndarray and prop == "length":
+                self.length = to_python(val)
+            else:
+                setattr(self.obj, prop, to_python(val))
         except AttributeError:
             raise MakeError('TypeError', 'Read only object probably...')
         return val
@@ -1471,7 +1479,6 @@ class PyJsArray(PyJs):
         for i, e in enumerate(arr):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
-
     def define_own_property(self, prop, desc):
         old_len_desc = self.get_own_property('length')
         old_len = old_len_desc['value'].value  #  value is js type so convert to py.
@@ -1536,11 +1543,307 @@ class PyJsArray(PyJs):
     def __repr__(self):
         return repr(self.to_python().to_list())
 
+class PyJsArrayBuffer(PyJs):
+    Class = 'ArrayBuffer'
+    def __init__(self, arr=[], prototype=None):
+        self.extensible = True
+        self.prototype = prototype
+        self.own = {}
+        for i, e in enumerate(arr):
+            self.define_own_property(str(i), {'value': Js(e), 'writable': True,
+                                              'enumerable': True, 'configurable': True})
+    def define_own_property(self, prop, desc):
+        try:
+            old_len = len(self.obj)
+        except:
+            old_len = 0
+        if prop.isdigit():
+            index = int(int(prop) % 2**32)
+            if index>=old_len and not old_len_desc['writable']:
+                return False
+            if not PyJs.define_own_property(self, prop, desc):
+                return False
+            return True
+        else:
+            return PyJs.define_own_property(self, prop, desc)
+    def to_list(self):
+        return [self.get(str(e)) for e in xrange(len(self.obj))]
+    def __repr__(self):
+        return repr(self.to_python().to_list())
 
+class PyJsInt8Array(PyJs):
+    Class = 'Int8Array'
+    def __init__(self, arr=[], prototype=None):
+        self.extensible = True
+        self.prototype = prototype
+        self.own = {}
+        for i, e in enumerate(arr):
+            self.define_own_property(str(i), {'value': Js(e), 'writable': True,
+                                              'enumerable': True, 'configurable': True})
+    def define_own_property(self, prop, desc):
+        try:
+            old_len = len(self.obj)
+        except:
+            old_len = 0
+        if prop.isdigit():
+            index = int(int(prop) % 2**32)
+            if index>=old_len and not old_len_desc['writable']:
+                return False
+            if not PyJs.define_own_property(self, prop, desc):
+                return False
+            return True
+        else:
+            return PyJs.define_own_property(self, prop, desc)
+    def to_list(self):
+        return [self.get(str(e)) for e in xrange(len(self.obj))]
+    def __repr__(self):
+        return repr(self.to_python().to_list())
 
+class PyJsUint8Array(PyJs):
+    Class = 'Uint8Array'
+    def __init__(self, arr=[], prototype=None):
+        self.extensible = True
+        self.prototype = prototype
+        self.own = {}
+        for i, e in enumerate(arr):
+            self.define_own_property(str(i), {'value': Js(e), 'writable': True,
+                                              'enumerable': True, 'configurable': True})
+    def define_own_property(self, prop, desc):
+        try:
+            old_len = len(self.obj)
+        except:
+            old_len = 0
+        if prop.isdigit():
+            index = int(int(prop) % 2**32)
+            if index>=old_len and not old_len_desc['writable']:
+                return False
+            if not PyJs.define_own_property(self, prop, desc):
+                return False
+            return True
+        else:
+            return PyJs.define_own_property(self, prop, desc)
+    def to_list(self):
+        return [self.get(str(e)) for e in xrange(len(self.obj))]
+    def __repr__(self):
+        return repr(self.to_python().to_list())
 
+class PyJsUint8ClampedArray(PyJs):
+    Class = 'Uint8ClampedArray'
+    def __init__(self, arr=[], prototype=None):
+        self.extensible = True
+        self.prototype = prototype
+        self.own = {}
+        for i, e in enumerate(arr):
+            self.define_own_property(str(i), {'value': Js(e), 'writable': True,
+                                              'enumerable': True, 'configurable': True})
+    def define_own_property(self, prop, desc):
+        try:
+            old_len = len(self.obj)
+        except:
+            old_len = 0
+        if prop.isdigit():
+            index = int(int(prop) % 2**32)
+            if index>=old_len and not old_len_desc['writable']:
+                return False
+            if not PyJs.define_own_property(self, prop, desc):
+                return False
+            return True
+        else:
+            return PyJs.define_own_property(self, prop, desc)
+    def to_list(self):
+        return [self.get(str(e)) for e in xrange(len(self.obj))]
+    def __repr__(self):
+        return repr(self.to_python().to_list())
+
+class PyJsInt16Array(PyJs):
+    Class = 'Int16Array'
+    def __init__(self, arr=[], prototype=None):
+        self.extensible = True
+        self.prototype = prototype
+        self.own = {}
+        for i, e in enumerate(arr):
+            self.define_own_property(str(i), {'value': Js(e), 'writable': True,
+                                              'enumerable': True, 'configurable': True})
+    def define_own_property(self, prop, desc):
+        try:
+            old_len = len(self.obj)
+        except:
+            old_len = 0
+        if prop.isdigit():
+            index = int(int(prop) % 2**32)
+            if index>=old_len and not old_len_desc['writable']:
+                return False
+            if not PyJs.define_own_property(self, prop, desc):
+                return False
+            return True
+        else:
+            return PyJs.define_own_property(self, prop, desc)
+    def to_list(self):
+        return [self.get(str(e)) for e in xrange(len(self.obj))]
+    def __repr__(self):
+        return repr(self.to_python().to_list())
+
+class PyJsUint16Array(PyJs):
+    Class = 'Uint16Array'
+    def __init__(self, arr=[], prototype=None):
+        self.extensible = True
+        self.prototype = prototype
+        self.own = {}
+        for i, e in enumerate(arr):
+            self.define_own_property(str(i), {'value': Js(e), 'writable': True,
+                                              'enumerable': True, 'configurable': True})
+    def define_own_property(self, prop, desc):
+        try:
+            old_len = len(self.obj)
+        except:
+            old_len = 0
+        if prop.isdigit():
+            index = int(int(prop) % 2**32)
+            if index>=old_len and not old_len_desc['writable']:
+                return False
+            if not PyJs.define_own_property(self, prop, desc):
+                return False
+            return True
+        else:
+            return PyJs.define_own_property(self, prop, desc)
+    def to_list(self):
+        return [self.get(str(e)) for e in xrange(len(self.obj))]
+    def __repr__(self):
+        return repr(self.to_python().to_list())
+
+class PyJsInt32Array(PyJs):
+    Class = 'Int32Array'
+    def __init__(self, arr=[], prototype=None):
+        self.extensible = True
+        self.prototype = prototype
+        self.own = {}
+        for i, e in enumerate(arr):
+            self.define_own_property(str(i), {'value': Js(e), 'writable': True,
+                                              'enumerable': True, 'configurable': True})
+    def define_own_property(self, prop, desc):
+        try:
+            old_len = len(self.obj)
+        except:
+            old_len = 0
+        if prop.isdigit():
+            index = int(int(prop) % 2**32)
+            if index>=old_len and not old_len_desc['writable']:
+                return False
+            if not PyJs.define_own_property(self, prop, desc):
+                return False
+            return True
+        else:
+            return PyJs.define_own_property(self, prop, desc)
+    def to_list(self):
+        return [self.get(str(e)) for e in xrange(len(self.obj))]
+    def __repr__(self):
+        return repr(self.to_python().to_list())
+
+class PyJsUint32Array(PyJs):
+    Class = 'Uint32Array'
+    def __init__(self, arr=[], prototype=None):
+        self.extensible = True
+        self.prototype = prototype
+        self.own = {}
+        for i, e in enumerate(arr):
+            self.define_own_property(str(i), {'value': Js(e), 'writable': True,
+                                              'enumerable': True, 'configurable': True})
+    def define_own_property(self, prop, desc):
+        try:
+            old_len = len(self.obj)
+        except:
+            old_len = 0
+        if prop.isdigit():
+            index = int(int(prop) % 2**32)
+            if index>=old_len and not old_len_desc['writable']:
+                return False
+            if not PyJs.define_own_property(self, prop, desc):
+                return False
+            return True
+        else:
+            return PyJs.define_own_property(self, prop, desc)
+    def to_list(self):
+        return [self.get(str(e)) for e in xrange(len(self.obj))]
+    def __repr__(self):
+        return repr(self.to_python().to_list())
+
+class PyJsFloat32Array(PyJs):
+    Class = 'Float32Array'
+    def __init__(self, arr=[], prototype=None):
+        self.extensible = True
+        self.prototype = prototype
+        self.own = {}
+        for i, e in enumerate(arr):
+            self.define_own_property(str(i), {'value': Js(e), 'writable': True,
+                                              'enumerable': True, 'configurable': True})
+    def define_own_property(self, prop, desc):
+        try:
+            old_len = len(self.obj)
+        except:
+            old_len = 0
+        if prop.isdigit():
+            index = int(int(prop) % 2**32)
+            if index>=old_len and not old_len_desc['writable']:
+                return False
+            if not PyJs.define_own_property(self, prop, desc):
+                return False
+            return True
+        else:
+            return PyJs.define_own_property(self, prop, desc)
+    def to_list(self):
+        return [self.get(str(e)) for e in xrange(len(self.obj))]
+    def __repr__(self):
+        return repr(self.to_python().to_list())
+
+class PyJsFloat64Array(PyJs):
+    Class = 'Float64Array'
+    def __init__(self, arr=[], prototype=None):
+        self.extensible = True
+        self.prototype = prototype
+        self.own = {}
+        for i, e in enumerate(arr):
+            self.define_own_property(str(i), {'value': Js(e), 'writable': True,
+                                              'enumerable': True, 'configurable': True})
+    def define_own_property(self, prop, desc):
+        try:
+            old_len = len(self.obj)
+        except:
+            old_len = 0
+        if prop.isdigit():
+            index = int(int(prop) % 2**32)
+            if index>=old_len and not old_len_desc['writable']:
+                return False
+            if not PyJs.define_own_property(self, prop, desc):
+                return False
+            return True
+        else:
+            return PyJs.define_own_property(self, prop, desc)
+    def to_list(self):
+        return [self.get(str(e)) for e in xrange(len(self.obj))]
+    def __repr__(self):
+        return repr(self.to_python().to_list())
 
 ArrayPrototype = PyJsArray([], ObjectPrototype)
+
+ArrayBufferPrototype = PyJsArrayBuffer([], ObjectPrototype)
+
+Int8ArrayPrototype = PyJsInt8Array([], ObjectPrototype)
+
+Uint8ArrayPrototype = PyJsUint8Array([], ObjectPrototype)
+
+Uint8ClampedArrayPrototype = PyJsUint8ClampedArray([], ObjectPrototype)
+
+Int16ArrayPrototype = PyJsInt16Array([], ObjectPrototype)
+
+Uint16ArrayPrototype = PyJsUint16Array([], ObjectPrototype)
+
+Int32ArrayPrototype = PyJsInt32Array([], ObjectPrototype)
+
+Uint32ArrayPrototype = PyJsUint32Array([], ObjectPrototype)
+
+Float32ArrayPrototype = PyJsFloat32Array([], ObjectPrototype)
+
+Float64ArrayPrototype = PyJsFloat64Array([], ObjectPrototype)
 
 class PyJsArguments(PyJs):
     Class = 'Arguments'
@@ -1755,7 +2058,7 @@ def fill_prototype(prototype, Class, attrs, constructor=False):
 PyJs.undefined = undefined
 PyJs.Js = staticmethod(Js)
 
-from .prototypes import jsfunction, jsobject, jsnumber, jsstring, jsboolean, jsarray, jsregexp, jserror
+from .prototypes import jsfunction, jsobject, jsnumber, jsstring, jsboolean, jsarray, jsregexp, jserror, jsarraybuffer, jstypedarray
 
 
 #Object proto
@@ -1786,6 +2089,26 @@ fill_prototype(StringPrototype, jsstring.StringPrototype, default_attrs)
 fill_prototype(BooleanPrototype, jsboolean.BooleanPrototype, default_attrs)
 #Array proto
 fill_prototype(ArrayPrototype, jsarray.ArrayPrototype, default_attrs)
+# ArrayBuffer proto
+fill_prototype(ArrayBufferPrototype, jsarraybuffer.ArrayBufferPrototype, default_attrs)
+# Int8Array proto
+fill_prototype(Int8ArrayPrototype, jstypedarray.TypedArrayPrototype, default_attrs)
+# Uint8Array proto
+fill_prototype(Uint8ArrayPrototype, jstypedarray.TypedArrayPrototype, default_attrs)
+# Uint8ArrayClamped proto
+fill_prototype(Uint8ClampedArrayPrototype, jstypedarray.TypedArrayPrototype, default_attrs)
+# Int16Array proto
+fill_prototype(Int16ArrayPrototype, jstypedarray.TypedArrayPrototype, default_attrs)
+# Uint16Array proto
+fill_prototype(Uint16ArrayPrototype, jstypedarray.TypedArrayPrototype, default_attrs)
+# Int32Array proto
+fill_prototype(Int32ArrayPrototype, jstypedarray.TypedArrayPrototype, default_attrs)
+# Uint32Array proto
+fill_prototype(Uint32ArrayPrototype, jstypedarray.TypedArrayPrototype, default_attrs)
+# Float32Array proto
+fill_prototype(Float32ArrayPrototype, jstypedarray.TypedArrayPrototype, default_attrs)
+# Float64Array proto
+fill_prototype(Float64ArrayPrototype, jstypedarray.TypedArrayPrototype, default_attrs)
 #Error proto
 fill_prototype(ErrorPrototype, jserror.ErrorPrototype, default_attrs)
 #RegExp proto

@@ -8,6 +8,16 @@ from .constructors.jsnumber import Number
 from .constructors.jsboolean import Boolean
 from .constructors.jsregexp import RegExp
 from .constructors.jsarray import Array
+from .constructors.jsarraybuffer import ArrayBuffer
+from .constructors.jsint8array import Int8Array
+from .constructors.jsuint8array import Uint8Array
+from .constructors.jsuint8clampedarray import Uint8ClampedArray
+from .constructors.jsint16array import Int16Array
+from .constructors.jsuint16array import Uint16Array
+from .constructors.jsint32array import Int32Array
+from .constructors.jsuint32array import Uint32Array
+from .constructors.jsfloat32array import Float32Array
+from .constructors.jsfloat64array import Float64Array
 from .prototypes.jsjson import JSON
 from .host.console import console
 from .host.jseval import Eval
@@ -24,6 +34,11 @@ __all__ = ['Js', 'PyJsComma', 'PyJsStrictEq', 'PyJsStrictNeq',
 builtins = ('true','false','null','undefined','Infinity',
             'NaN', 'console', 'String', 'Number', 'Boolean', 'RegExp',
             'Math', 'Date', 'Object', 'Function', 'Array',
+            'Int8Array', 'Uint8Array', 'Uint8ClampedArray',
+            'Int16Array','Uint16Array',
+            'Int32Array', 'Uint32Array',
+            'Float32Array', 'Float64Array',
+            'ArrayBuffer',
             'parseFloat', 'parseInt', 'isFinite', 'isNaN')
             #Array, Function, JSON,   Error is done later :)
             # also some built in functions like eval...
