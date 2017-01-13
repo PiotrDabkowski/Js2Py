@@ -66,7 +66,7 @@ def to_dict(js_obj, known=None): # fixed recursion error in self referencing obj
             if output._obj.Class=='Object':
                 output = to_dict(output._obj, known)
                 known[input] = output
-            elif output._obj.Class in ['Array','Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
+            elif output._obj.Class in ['Array','Int8Array','Uint8Array','Uint8ArrayClamped','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
                 output = to_list(output._obj)
                 known[input] = output
         res[name] = output
@@ -88,7 +88,7 @@ def to_list(js_obj, known=None):
         input = js_obj.get(str(name))
         output = to_python(input)
         if isinstance(output, JsObjectWrapper):
-            if output._obj.Class in ['Array', 'Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array', 'Arguments']:
+            if output._obj.Class in ['Array', 'Int8Array','Uint8Array','Uint8ArrayClamped','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array', 'Arguments']:
                 output = to_list(output._obj, known)
                 known[input] = output
             elif output._obj.Class in ['Object']:
@@ -292,7 +292,7 @@ class PyJs(object):
          cand = self.get_property(prop)
          if cand is None:
              return Js(None)
-         if is_data_descriptor(cand): 
+         if is_data_descriptor(cand):
              return cand['value']
          if cand['get'].is_undefined():
              return cand['get']
@@ -333,7 +333,7 @@ class PyJs(object):
             return val
         own_desc = self.get_own_property(prop)
         if is_data_descriptor(own_desc):
-            if self.Class in ['Array','Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
+            if self.Class in ['Array','Int8Array','Uint8Array','Uint8ArrayClamped','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
                 self.define_own_property(prop, {'value':val})
             else:
                 self.own[prop]['value'] = val
@@ -346,7 +346,7 @@ class PyJs(object):
                    'writable' : True,
                    'configurable' : True,
                    'enumerable' : True}
-            if self.Class in ['Array','Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
+            if self.Class in ['Array','Int8Array','Uint8Array','Uint8ArrayClamped','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
                 self.define_own_property(prop, new)
             else:
                 self.own[prop] = new
@@ -875,7 +875,7 @@ class PyJs(object):
             return '{%s}'%', '.join(res)
         elif self.Class=='String':
             return str_repr(self.value)
-        elif self.Class in ['Array','Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
+        elif self.Class in ['Array','Int8Array','Uint8Array','Uint8ArrayClamped','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
             res = []
             for e in self:
                 res.append(repr(self.get(e)))
@@ -1107,7 +1107,7 @@ class JsObjectWrapper(object):
         self._obj.put(str(item), Js(value))
 
     def __iter__(self):
-        if self._obj.Class in ['Array', 'Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
+        if self._obj.Class in ['Array', 'Int8Array','Uint8Array','Uint8ArrayClamped','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
             return iter(self.to_list())
         elif self._obj.Class=='Object':
             return iter(self.to_dict())
@@ -1117,7 +1117,7 @@ class JsObjectWrapper(object):
     def __repr__(self):
         if self._obj.is_primitive() or self._obj.is_callable():
             return repr(self._obj)
-        elif self._obj.Class in ('Array', 'Int8Array','Uint8Array','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array', 'Arguments'):
+        elif self._obj.Class in ('Array', 'Int8Array','Uint8Array','Uint8ArrayClamped','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array', 'Arguments'):
             return repr(self.to_list())
         return repr(self.to_dict())
 
