@@ -1,7 +1,11 @@
 # this is based on jsarray.py
 
 from ..base import *
-import numpy
+try:
+    import numpy
+except:
+    pass
+
 
 @Js
 def Float32Array():

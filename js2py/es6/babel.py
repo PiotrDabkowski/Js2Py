@@ -49560,7 +49560,7 @@ def PyJs_anonymous_4215_(require, module, exports, this, arguments, var=var):
             var = Scope({u'this':this, u'arguments':arguments}, var)
             var.registers([u'arr'])
             try:
-                var.put(u'arr', var.get(u'Uint8Array').create(Js(1.0)))
+                var.put(u'arr', var.get(u'Uint8ArrayNotExising').create(Js(1.0)))
                 @Js
                 def PyJs_anonymous_4219_(this, arguments, var=var):
                     var = Scope({u'this':this, u'arguments':arguments}, var)

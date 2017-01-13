@@ -1,7 +1,10 @@
 # this is based on jsarray.py
 
 import six
-import numpy
+try:
+    import numpy
+except:
+    pass
 
 if six.PY3:
     xrange = range

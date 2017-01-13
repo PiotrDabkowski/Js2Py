@@ -1,9 +1,13 @@
 # this is based on jsarray.py
 
-# Actually, I don't really know, how buffers work, so it might be buggy af
+# todo check everything :)
 
 from ..base import *
-import numpy
+try:
+    import numpy
+except:
+    pass
+
 
 @Js
 def ArrayBuffer():

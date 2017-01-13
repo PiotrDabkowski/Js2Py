@@ -6,8 +6,11 @@ from .translators.friendly_nodes import REGEXP_CONVERTER
 from .utils.injector import fix_js_args
 from types import FunctionType, ModuleType, GeneratorType, BuiltinFunctionType, MethodType, BuiltinMethodType
 import traceback
-import numpy
-
+try:
+    import numpy
+    NUMPY_AVAILABLE = True
+except:
+    NUMPY_AVAILABLE = False
 
 
 # python 3 support
@@ -163,14 +166,15 @@ def Js(val):
     elif isinstance(val, (list, tuple)): #Convert to array
         return PyJsArray(val, ArrayPrototype)
     # convert to typedarray
-    elif isinstance(val, numpy.ndarray):
-
+    elif isinstance(val, JsObjectWrapper):
+        return val.__dict__['_obj']
+    elif NUMPY_AVAILABLE and isinstance(val, numpy.ndarray):
         if val.dtype == numpy.int8:
             return PyJsInt8Array(val, Int8ArrayPrototype)
         elif val.dtype == numpy.uint8:
             return PyJsUint8Array(val, Uint8ArrayPrototype)
-#        elif val.dtype == numpy.uint8:
-#            return PyJsUint8ClampedArray(val, Uint8ClampedArrayPrototype)
+            #        elif val.dtype == numpy.uint8:
+            #            return PyJsUint8ClampedArray(val, Uint8ClampedArrayPrototype)
 
         elif val.dtype == numpy.int16:
             return PyJsInt16Array(val, Int16ArrayPrototype)
@@ -186,9 +190,6 @@ def Js(val):
             return PyJsFloat32Array(val, Float32ArrayPrototype)
         elif val.dtype == numpy.float64:
             return PyJsFloat64Array(val, Float64ArrayPrototype)
-
-    elif isinstance(val, JsObjectWrapper):
-        return val.__dict__['_obj']
     else: # try to convert to js object
         return py_wrap(val)
         #raise RuntimeError('Cant convert python type to js (%s)' % repr(val))
