@@ -162,6 +162,31 @@ def Js(val):
          return temp
     elif isinstance(val, (list, tuple)): #Convert to array
         return PyJsArray(val, ArrayPrototype)
+    # convert to typedarray
+    elif isinstance(val, numpy.ndarray):
+
+        if val.dtype == numpy.int8:
+            return PyJsInt8Array(val, Int8ArrayPrototype)
+        elif val.dtype == numpy.uint8:
+            return PyJsUint8Array(val, Uint8ArrayPrototype)
+#        elif val.dtype == numpy.uint8:
+#            return PyJsUint8ClampedArray(val, Uint8ClampedArrayPrototype)
+
+        elif val.dtype == numpy.int16:
+            return PyJsInt16Array(val, Int16ArrayPrototype)
+        elif val.dtype == numpy.uint16:
+            return PyJsUint16Array(val, Uint16ArrayPrototype)
+
+        elif val.dtype == numpy.int32:
+            return PyJsInt32Array(val, Int32ArrayPrototype)
+        elif val.dtype == numpy.uint32:
+            return PyJsUint16Array(val, Uint32ArrayPrototype)
+
+        elif val.dtype == numpy.float32:
+            return PyJsFloat32Array(val, Float32ArrayPrototype)
+        elif val.dtype == numpy.float64:
+            return PyJsFloat64Array(val, Float64ArrayPrototype)
+
     elif isinstance(val, JsObjectWrapper):
         return val.__dict__['_obj']
     else: # try to convert to js object
@@ -1111,16 +1136,12 @@ class JsObjectWrapper(object):
     def to_list(self):
         return to_list(self.__dict__['_obj'])
 
-
-
 class PyObjectWrapper(PyJs):
     Class = 'PyObjectWrapper'
     def __init__(self, obj):
         self.obj = obj
 
     def get(self, prop):
-        if type(self.obj) == numpy.ndarray and prop == "length":
-            return self.length
         if not isinstance(prop, basestring):
             prop = prop.to_string().value
         try:
@@ -1134,15 +1155,7 @@ class PyObjectWrapper(PyJs):
         if not isinstance(prop, basestring):
             prop = prop.to_string().value
         try:
-            if type(self.obj) == numpy.ndarray and prop != "length":
-                try:
-                    self.obj[int(prop)] = to_python(val)
-                except ValueError:
-                    pass
-            elif type(self.obj) == numpy.ndarray and prop == "length":
-                self.length = to_python(val)
-            else:
-                setattr(self.obj, prop, to_python(val))
+            setattr(self.obj, prop, to_python(val))
         except AttributeError:
             raise MakeError('TypeError', 'Read only object probably...')
         return val
@@ -1551,26 +1564,73 @@ class PyJsArrayBuffer(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.own = {}
+        self.array = arr
+        self.own = {'length' : {'value': Js(0), 'writable': True,
+                                            'enumerable': False, 'configurable': False}}
         for i, e in enumerate(arr):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
     def define_own_property(self, prop, desc):
-        try:
-            old_len = len(self.obj)
-        except:
-            old_len = 0
-        if prop.isdigit():
+        old_len_desc = self.get_own_property('length')
+        old_len = old_len_desc['value'].value  #  value is js type so convert to py.
+        if prop=='length':
+            if 'value' not in desc:
+                return PyJs.define_own_property(self, prop, desc)
+            new_len =  desc['value'].to_uint32()
+            if new_len!=desc['value'].to_number().value:
+                raise MakeError('RangeError', 'Invalid range!')
+            new_desc = dict((k,v) for k,v in six.iteritems(desc))
+            new_desc['value'] = Js(new_len)
+            if new_len>=old_len:
+                return PyJs.define_own_property(self, prop, new_desc)
+            if not old_len_desc['writable']:
+                return False
+            if 'writable' not in new_desc or new_desc['writable']==True:
+                new_writable = True
+            else:
+                new_writable = False
+                new_desc['writable'] = True
+            if not PyJs.define_own_property(self, prop, new_desc):
+                return False
+            if new_len<old_len:
+                # not very efficient for sparse arrays, so using different method for sparse:
+                if old_len>30*len(self.own):
+                    for ele in self.own.keys():
+                        if ele.isdigit() and int(ele)>=new_len:
+                            if not self.delete(ele): # if failed to delete set len to current len and reject.
+                                new_desc['value'] = Js(old_len+1)
+                                if not new_writable:
+                                    new_desc['writable'] = False
+                                PyJs.define_own_property(self, prop, new_desc)
+                                return False
+                    old_len = new_len
+                else: # standard method
+                    while new_len<old_len:
+                        old_len -= 1
+                        if not self.delete(str(int(old_len))): # if failed to delete set len to current len and reject.
+                            new_desc['value'] = Js(old_len+1)
+                            if not new_writable:
+                                new_desc['writable'] = False
+                            PyJs.define_own_property(self, prop, new_desc)
+                            return False
+            if not new_writable:
+                self.own['length']['writable'] = False
+            return True
+        elif prop.isdigit():
             index = int(int(prop) % 2**32)
             if index>=old_len and not old_len_desc['writable']:
                 return False
             if not PyJs.define_own_property(self, prop, desc):
                 return False
+            if index>=old_len:
+                old_len_desc['value'] = Js(index + 1)
             return True
         else:
             return PyJs.define_own_property(self, prop, desc)
+
     def to_list(self):
-        return [self.get(str(e)) for e in xrange(len(self.obj))]
+        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
     def __repr__(self):
         return repr(self.to_python().to_list())
 
@@ -1579,26 +1639,74 @@ class PyJsInt8Array(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.own = {}
+        self.array = arr
+        self.own = {'length' : {'value': Js(0), 'writable': True,
+                                            'enumerable': False, 'configurable': False}}
+
         for i, e in enumerate(arr):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
     def define_own_property(self, prop, desc):
-        try:
-            old_len = len(self.obj)
-        except:
-            old_len = 0
-        if prop.isdigit():
+        old_len_desc = self.get_own_property('length')
+        old_len = old_len_desc['value'].value  #  value is js type so convert to py.
+        if prop=='length':
+            if 'value' not in desc:
+                return PyJs.define_own_property(self, prop, desc)
+            new_len =  desc['value'].to_uint32()
+            if new_len!=desc['value'].to_number().value:
+                raise MakeError('RangeError', 'Invalid range!')
+            new_desc = dict((k,v) for k,v in six.iteritems(desc))
+            new_desc['value'] = Js(new_len)
+            if new_len>=old_len:
+                return PyJs.define_own_property(self, prop, new_desc)
+            if not old_len_desc['writable']:
+                return False
+            if 'writable' not in new_desc or new_desc['writable']==True:
+                new_writable = True
+            else:
+                new_writable = False
+                new_desc['writable'] = True
+            if not PyJs.define_own_property(self, prop, new_desc):
+                return False
+            if new_len<old_len:
+                # not very efficient for sparse arrays, so using different method for sparse:
+                if old_len>30*len(self.own):
+                    for ele in self.own.keys():
+                        if ele.isdigit() and int(ele)>=new_len:
+                            if not self.delete(ele): # if failed to delete set len to current len and reject.
+                                new_desc['value'] = Js(old_len+1)
+                                if not new_writable:
+                                    new_desc['writable'] = False
+                                PyJs.define_own_property(self, prop, new_desc)
+                                return False
+                    old_len = new_len
+                else: # standard method
+                    while new_len<old_len:
+                        old_len -= 1
+                        if not self.delete(str(int(old_len))): # if failed to delete set len to current len and reject.
+                            new_desc['value'] = Js(old_len+1)
+                            if not new_writable:
+                                new_desc['writable'] = False
+                            PyJs.define_own_property(self, prop, new_desc)
+                            return False
+            if not new_writable:
+                self.own['length']['writable'] = False
+            return True
+        elif prop.isdigit():
             index = int(int(prop) % 2**32)
             if index>=old_len and not old_len_desc['writable']:
                 return False
             if not PyJs.define_own_property(self, prop, desc):
                 return False
+            if index>=old_len:
+                old_len_desc['value'] = Js(index + 1)
             return True
         else:
             return PyJs.define_own_property(self, prop, desc)
+
     def to_list(self):
-        return [self.get(str(e)) for e in xrange(len(self.obj))]
+        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
     def __repr__(self):
         return repr(self.to_python().to_list())
 
@@ -1607,26 +1715,74 @@ class PyJsUint8Array(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.own = {}
+        self.array = arr
+        self.own = {'length' : {'value': Js(0), 'writable': True,
+                                            'enumerable': False, 'configurable': False}}
+
         for i, e in enumerate(arr):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
     def define_own_property(self, prop, desc):
-        try:
-            old_len = len(self.obj)
-        except:
-            old_len = 0
-        if prop.isdigit():
+        old_len_desc = self.get_own_property('length')
+        old_len = old_len_desc['value'].value  #  value is js type so convert to py.
+        if prop=='length':
+            if 'value' not in desc:
+                return PyJs.define_own_property(self, prop, desc)
+            new_len =  desc['value'].to_uint32()
+            if new_len!=desc['value'].to_number().value:
+                raise MakeError('RangeError', 'Invalid range!')
+            new_desc = dict((k,v) for k,v in six.iteritems(desc))
+            new_desc['value'] = Js(new_len)
+            if new_len>=old_len:
+                return PyJs.define_own_property(self, prop, new_desc)
+            if not old_len_desc['writable']:
+                return False
+            if 'writable' not in new_desc or new_desc['writable']==True:
+                new_writable = True
+            else:
+                new_writable = False
+                new_desc['writable'] = True
+            if not PyJs.define_own_property(self, prop, new_desc):
+                return False
+            if new_len<old_len:
+                # not very efficient for sparse arrays, so using different method for sparse:
+                if old_len>30*len(self.own):
+                    for ele in self.own.keys():
+                        if ele.isdigit() and int(ele)>=new_len:
+                            if not self.delete(ele): # if failed to delete set len to current len and reject.
+                                new_desc['value'] = Js(old_len+1)
+                                if not new_writable:
+                                    new_desc['writable'] = False
+                                PyJs.define_own_property(self, prop, new_desc)
+                                return False
+                    old_len = new_len
+                else: # standard method
+                    while new_len<old_len:
+                        old_len -= 1
+                        if not self.delete(str(int(old_len))): # if failed to delete set len to current len and reject.
+                            new_desc['value'] = Js(old_len+1)
+                            if not new_writable:
+                                new_desc['writable'] = False
+                            PyJs.define_own_property(self, prop, new_desc)
+                            return False
+            if not new_writable:
+                self.own['length']['writable'] = False
+            return True
+        elif prop.isdigit():
             index = int(int(prop) % 2**32)
             if index>=old_len and not old_len_desc['writable']:
                 return False
             if not PyJs.define_own_property(self, prop, desc):
                 return False
+            if index>=old_len:
+                old_len_desc['value'] = Js(index + 1)
             return True
         else:
             return PyJs.define_own_property(self, prop, desc)
+
     def to_list(self):
-        return [self.get(str(e)) for e in xrange(len(self.obj))]
+        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
     def __repr__(self):
         return repr(self.to_python().to_list())
 
@@ -1635,26 +1791,74 @@ class PyJsUint8ClampedArray(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.own = {}
+        self.array = arr
+        self.own = {'length' : {'value': Js(0), 'writable': True,
+                                            'enumerable': False, 'configurable': False}}
+
         for i, e in enumerate(arr):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
     def define_own_property(self, prop, desc):
-        try:
-            old_len = len(self.obj)
-        except:
-            old_len = 0
-        if prop.isdigit():
+        old_len_desc = self.get_own_property('length')
+        old_len = old_len_desc['value'].value  #  value is js type so convert to py.
+        if prop=='length':
+            if 'value' not in desc:
+                return PyJs.define_own_property(self, prop, desc)
+            new_len =  desc['value'].to_uint32()
+            if new_len!=desc['value'].to_number().value:
+                raise MakeError('RangeError', 'Invalid range!')
+            new_desc = dict((k,v) for k,v in six.iteritems(desc))
+            new_desc['value'] = Js(new_len)
+            if new_len>=old_len:
+                return PyJs.define_own_property(self, prop, new_desc)
+            if not old_len_desc['writable']:
+                return False
+            if 'writable' not in new_desc or new_desc['writable']==True:
+                new_writable = True
+            else:
+                new_writable = False
+                new_desc['writable'] = True
+            if not PyJs.define_own_property(self, prop, new_desc):
+                return False
+            if new_len<old_len:
+                # not very efficient for sparse arrays, so using different method for sparse:
+                if old_len>30*len(self.own):
+                    for ele in self.own.keys():
+                        if ele.isdigit() and int(ele)>=new_len:
+                            if not self.delete(ele): # if failed to delete set len to current len and reject.
+                                new_desc['value'] = Js(old_len+1)
+                                if not new_writable:
+                                    new_desc['writable'] = False
+                                PyJs.define_own_property(self, prop, new_desc)
+                                return False
+                    old_len = new_len
+                else: # standard method
+                    while new_len<old_len:
+                        old_len -= 1
+                        if not self.delete(str(int(old_len))): # if failed to delete set len to current len and reject.
+                            new_desc['value'] = Js(old_len+1)
+                            if not new_writable:
+                                new_desc['writable'] = False
+                            PyJs.define_own_property(self, prop, new_desc)
+                            return False
+            if not new_writable:
+                self.own['length']['writable'] = False
+            return True
+        elif prop.isdigit():
             index = int(int(prop) % 2**32)
             if index>=old_len and not old_len_desc['writable']:
                 return False
             if not PyJs.define_own_property(self, prop, desc):
                 return False
+            if index>=old_len:
+                old_len_desc['value'] = Js(index + 1)
             return True
         else:
             return PyJs.define_own_property(self, prop, desc)
+
     def to_list(self):
-        return [self.get(str(e)) for e in xrange(len(self.obj))]
+        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
     def __repr__(self):
         return repr(self.to_python().to_list())
 
@@ -1663,26 +1867,74 @@ class PyJsInt16Array(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.own = {}
+        self.array = arr
+        self.own = {'length' : {'value': Js(0), 'writable': True,
+                                            'enumerable': False, 'configurable': False}}
+
         for i, e in enumerate(arr):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
     def define_own_property(self, prop, desc):
-        try:
-            old_len = len(self.obj)
-        except:
-            old_len = 0
-        if prop.isdigit():
+        old_len_desc = self.get_own_property('length')
+        old_len = old_len_desc['value'].value  #  value is js type so convert to py.
+        if prop=='length':
+            if 'value' not in desc:
+                return PyJs.define_own_property(self, prop, desc)
+            new_len =  desc['value'].to_uint32()
+            if new_len!=desc['value'].to_number().value:
+                raise MakeError('RangeError', 'Invalid range!')
+            new_desc = dict((k,v) for k,v in six.iteritems(desc))
+            new_desc['value'] = Js(new_len)
+            if new_len>=old_len:
+                return PyJs.define_own_property(self, prop, new_desc)
+            if not old_len_desc['writable']:
+                return False
+            if 'writable' not in new_desc or new_desc['writable']==True:
+                new_writable = True
+            else:
+                new_writable = False
+                new_desc['writable'] = True
+            if not PyJs.define_own_property(self, prop, new_desc):
+                return False
+            if new_len<old_len:
+                # not very efficient for sparse arrays, so using different method for sparse:
+                if old_len>30*len(self.own):
+                    for ele in self.own.keys():
+                        if ele.isdigit() and int(ele)>=new_len:
+                            if not self.delete(ele): # if failed to delete set len to current len and reject.
+                                new_desc['value'] = Js(old_len+1)
+                                if not new_writable:
+                                    new_desc['writable'] = False
+                                PyJs.define_own_property(self, prop, new_desc)
+                                return False
+                    old_len = new_len
+                else: # standard method
+                    while new_len<old_len:
+                        old_len -= 1
+                        if not self.delete(str(int(old_len))): # if failed to delete set len to current len and reject.
+                            new_desc['value'] = Js(old_len+1)
+                            if not new_writable:
+                                new_desc['writable'] = False
+                            PyJs.define_own_property(self, prop, new_desc)
+                            return False
+            if not new_writable:
+                self.own['length']['writable'] = False
+            return True
+        elif prop.isdigit():
             index = int(int(prop) % 2**32)
             if index>=old_len and not old_len_desc['writable']:
                 return False
             if not PyJs.define_own_property(self, prop, desc):
                 return False
+            if index>=old_len:
+                old_len_desc['value'] = Js(index + 1)
             return True
         else:
             return PyJs.define_own_property(self, prop, desc)
+
     def to_list(self):
-        return [self.get(str(e)) for e in xrange(len(self.obj))]
+        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
     def __repr__(self):
         return repr(self.to_python().to_list())
 
@@ -1690,27 +1942,75 @@ class PyJsUint16Array(PyJs):
     Class = 'Uint16Array'
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
+        self.array = arr
         self.prototype = prototype
-        self.own = {}
+        self.own = {'length' : {'value': Js(0), 'writable': True,
+                                            'enumerable': False, 'configurable': False}}
+
         for i, e in enumerate(arr):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
     def define_own_property(self, prop, desc):
-        try:
-            old_len = len(self.obj)
-        except:
-            old_len = 0
-        if prop.isdigit():
+        old_len_desc = self.get_own_property('length')
+        old_len = old_len_desc['value'].value  #  value is js type so convert to py.
+        if prop=='length':
+            if 'value' not in desc:
+                return PyJs.define_own_property(self, prop, desc)
+            new_len =  desc['value'].to_uint32()
+            if new_len!=desc['value'].to_number().value:
+                raise MakeError('RangeError', 'Invalid range!')
+            new_desc = dict((k,v) for k,v in six.iteritems(desc))
+            new_desc['value'] = Js(new_len)
+            if new_len>=old_len:
+                return PyJs.define_own_property(self, prop, new_desc)
+            if not old_len_desc['writable']:
+                return False
+            if 'writable' not in new_desc or new_desc['writable']==True:
+                new_writable = True
+            else:
+                new_writable = False
+                new_desc['writable'] = True
+            if not PyJs.define_own_property(self, prop, new_desc):
+                return False
+            if new_len<old_len:
+                # not very efficient for sparse arrays, so using different method for sparse:
+                if old_len>30*len(self.own):
+                    for ele in self.own.keys():
+                        if ele.isdigit() and int(ele)>=new_len:
+                            if not self.delete(ele): # if failed to delete set len to current len and reject.
+                                new_desc['value'] = Js(old_len+1)
+                                if not new_writable:
+                                    new_desc['writable'] = False
+                                PyJs.define_own_property(self, prop, new_desc)
+                                return False
+                    old_len = new_len
+                else: # standard method
+                    while new_len<old_len:
+                        old_len -= 1
+                        if not self.delete(str(int(old_len))): # if failed to delete set len to current len and reject.
+                            new_desc['value'] = Js(old_len+1)
+                            if not new_writable:
+                                new_desc['writable'] = False
+                            PyJs.define_own_property(self, prop, new_desc)
+                            return False
+            if not new_writable:
+                self.own['length']['writable'] = False
+            return True
+        elif prop.isdigit():
             index = int(int(prop) % 2**32)
             if index>=old_len and not old_len_desc['writable']:
                 return False
             if not PyJs.define_own_property(self, prop, desc):
                 return False
+            if index>=old_len:
+                old_len_desc['value'] = Js(index + 1)
             return True
         else:
             return PyJs.define_own_property(self, prop, desc)
+
     def to_list(self):
-        return [self.get(str(e)) for e in xrange(len(self.obj))]
+        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
     def __repr__(self):
         return repr(self.to_python().to_list())
 
@@ -1719,26 +2019,74 @@ class PyJsInt32Array(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.own = {}
+        self.array = arr
+        self.own = {'length' : {'value': Js(0), 'writable': True,
+                                            'enumerable': False, 'configurable': False}}
+
         for i, e in enumerate(arr):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
     def define_own_property(self, prop, desc):
-        try:
-            old_len = len(self.obj)
-        except:
-            old_len = 0
-        if prop.isdigit():
+        old_len_desc = self.get_own_property('length')
+        old_len = old_len_desc['value'].value  #  value is js type so convert to py.
+        if prop=='length':
+            if 'value' not in desc:
+                return PyJs.define_own_property(self, prop, desc)
+            new_len =  desc['value'].to_uint32()
+            if new_len!=desc['value'].to_number().value:
+                raise MakeError('RangeError', 'Invalid range!')
+            new_desc = dict((k,v) for k,v in six.iteritems(desc))
+            new_desc['value'] = Js(new_len)
+            if new_len>=old_len:
+                return PyJs.define_own_property(self, prop, new_desc)
+            if not old_len_desc['writable']:
+                return False
+            if 'writable' not in new_desc or new_desc['writable']==True:
+                new_writable = True
+            else:
+                new_writable = False
+                new_desc['writable'] = True
+            if not PyJs.define_own_property(self, prop, new_desc):
+                return False
+            if new_len<old_len:
+                # not very efficient for sparse arrays, so using different method for sparse:
+                if old_len>30*len(self.own):
+                    for ele in self.own.keys():
+                        if ele.isdigit() and int(ele)>=new_len:
+                            if not self.delete(ele): # if failed to delete set len to current len and reject.
+                                new_desc['value'] = Js(old_len+1)
+                                if not new_writable:
+                                    new_desc['writable'] = False
+                                PyJs.define_own_property(self, prop, new_desc)
+                                return False
+                    old_len = new_len
+                else: # standard method
+                    while new_len<old_len:
+                        old_len -= 1
+                        if not self.delete(str(int(old_len))): # if failed to delete set len to current len and reject.
+                            new_desc['value'] = Js(old_len+1)
+                            if not new_writable:
+                                new_desc['writable'] = False
+                            PyJs.define_own_property(self, prop, new_desc)
+                            return False
+            if not new_writable:
+                self.own['length']['writable'] = False
+            return True
+        elif prop.isdigit():
             index = int(int(prop) % 2**32)
             if index>=old_len and not old_len_desc['writable']:
                 return False
             if not PyJs.define_own_property(self, prop, desc):
                 return False
+            if index>=old_len:
+                old_len_desc['value'] = Js(index + 1)
             return True
         else:
             return PyJs.define_own_property(self, prop, desc)
+
     def to_list(self):
-        return [self.get(str(e)) for e in xrange(len(self.obj))]
+        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
     def __repr__(self):
         return repr(self.to_python().to_list())
 
@@ -1746,27 +2094,75 @@ class PyJsUint32Array(PyJs):
     Class = 'Uint32Array'
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
+        self.array = arr
         self.prototype = prototype
-        self.own = {}
+        self.own = {'length' : {'value': Js(0), 'writable': True,
+                                            'enumerable': False, 'configurable': False}}
+
         for i, e in enumerate(arr):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
     def define_own_property(self, prop, desc):
-        try:
-            old_len = len(self.obj)
-        except:
-            old_len = 0
-        if prop.isdigit():
+        old_len_desc = self.get_own_property('length')
+        old_len = old_len_desc['value'].value  #  value is js type so convert to py.
+        if prop=='length':
+            if 'value' not in desc:
+                return PyJs.define_own_property(self, prop, desc)
+            new_len =  desc['value'].to_uint32()
+            if new_len!=desc['value'].to_number().value:
+                raise MakeError('RangeError', 'Invalid range!')
+            new_desc = dict((k,v) for k,v in six.iteritems(desc))
+            new_desc['value'] = Js(new_len)
+            if new_len>=old_len:
+                return PyJs.define_own_property(self, prop, new_desc)
+            if not old_len_desc['writable']:
+                return False
+            if 'writable' not in new_desc or new_desc['writable']==True:
+                new_writable = True
+            else:
+                new_writable = False
+                new_desc['writable'] = True
+            if not PyJs.define_own_property(self, prop, new_desc):
+                return False
+            if new_len<old_len:
+                # not very efficient for sparse arrays, so using different method for sparse:
+                if old_len>30*len(self.own):
+                    for ele in self.own.keys():
+                        if ele.isdigit() and int(ele)>=new_len:
+                            if not self.delete(ele): # if failed to delete set len to current len and reject.
+                                new_desc['value'] = Js(old_len+1)
+                                if not new_writable:
+                                    new_desc['writable'] = False
+                                PyJs.define_own_property(self, prop, new_desc)
+                                return False
+                    old_len = new_len
+                else: # standard method
+                    while new_len<old_len:
+                        old_len -= 1
+                        if not self.delete(str(int(old_len))): # if failed to delete set len to current len and reject.
+                            new_desc['value'] = Js(old_len+1)
+                            if not new_writable:
+                                new_desc['writable'] = False
+                            PyJs.define_own_property(self, prop, new_desc)
+                            return False
+            if not new_writable:
+                self.own['length']['writable'] = False
+            return True
+        elif prop.isdigit():
             index = int(int(prop) % 2**32)
             if index>=old_len and not old_len_desc['writable']:
                 return False
             if not PyJs.define_own_property(self, prop, desc):
                 return False
+            if index>=old_len:
+                old_len_desc['value'] = Js(index + 1)
             return True
         else:
             return PyJs.define_own_property(self, prop, desc)
+
     def to_list(self):
-        return [self.get(str(e)) for e in xrange(len(self.obj))]
+        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
     def __repr__(self):
         return repr(self.to_python().to_list())
 
@@ -1775,26 +2171,74 @@ class PyJsFloat32Array(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.own = {}
+        self.array = arr
+        self.own = {'length' : {'value': Js(0), 'writable': True,
+                                            'enumerable': False, 'configurable': False}}
+
         for i, e in enumerate(arr):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
     def define_own_property(self, prop, desc):
-        try:
-            old_len = len(self.obj)
-        except:
-            old_len = 0
-        if prop.isdigit():
+        old_len_desc = self.get_own_property('length')
+        old_len = old_len_desc['value'].value  #  value is js type so convert to py.
+        if prop=='length':
+            if 'value' not in desc:
+                return PyJs.define_own_property(self, prop, desc)
+            new_len =  desc['value'].to_uint32()
+            if new_len!=desc['value'].to_number().value:
+                raise MakeError('RangeError', 'Invalid range!')
+            new_desc = dict((k,v) for k,v in six.iteritems(desc))
+            new_desc['value'] = Js(new_len)
+            if new_len>=old_len:
+                return PyJs.define_own_property(self, prop, new_desc)
+            if not old_len_desc['writable']:
+                return False
+            if 'writable' not in new_desc or new_desc['writable']==True:
+                new_writable = True
+            else:
+                new_writable = False
+                new_desc['writable'] = True
+            if not PyJs.define_own_property(self, prop, new_desc):
+                return False
+            if new_len<old_len:
+                # not very efficient for sparse arrays, so using different method for sparse:
+                if old_len>30*len(self.own):
+                    for ele in self.own.keys():
+                        if ele.isdigit() and int(ele)>=new_len:
+                            if not self.delete(ele): # if failed to delete set len to current len and reject.
+                                new_desc['value'] = Js(old_len+1)
+                                if not new_writable:
+                                    new_desc['writable'] = False
+                                PyJs.define_own_property(self, prop, new_desc)
+                                return False
+                    old_len = new_len
+                else: # standard method
+                    while new_len<old_len:
+                        old_len -= 1
+                        if not self.delete(str(int(old_len))): # if failed to delete set len to current len and reject.
+                            new_desc['value'] = Js(old_len+1)
+                            if not new_writable:
+                                new_desc['writable'] = False
+                            PyJs.define_own_property(self, prop, new_desc)
+                            return False
+            if not new_writable:
+                self.own['length']['writable'] = False
+            return True
+        elif prop.isdigit():
             index = int(int(prop) % 2**32)
             if index>=old_len and not old_len_desc['writable']:
                 return False
             if not PyJs.define_own_property(self, prop, desc):
                 return False
+            if index>=old_len:
+                old_len_desc['value'] = Js(index + 1)
             return True
         else:
             return PyJs.define_own_property(self, prop, desc)
+
     def to_list(self):
-        return [self.get(str(e)) for e in xrange(len(self.obj))]
+        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
     def __repr__(self):
         return repr(self.to_python().to_list())
 
@@ -1803,26 +2247,74 @@ class PyJsFloat64Array(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.own = {}
+        self.array = arr
+        self.own = {'length' : {'value': Js(0), 'writable': True,
+                                            'enumerable': False, 'configurable': False}}
+
         for i, e in enumerate(arr):
             self.define_own_property(str(i), {'value': Js(e), 'writable': True,
                                               'enumerable': True, 'configurable': True})
     def define_own_property(self, prop, desc):
-        try:
-            old_len = len(self.obj)
-        except:
-            old_len = 0
-        if prop.isdigit():
+        old_len_desc = self.get_own_property('length')
+        old_len = old_len_desc['value'].value  #  value is js type so convert to py.
+        if prop=='length':
+            if 'value' not in desc:
+                return PyJs.define_own_property(self, prop, desc)
+            new_len =  desc['value'].to_uint32()
+            if new_len!=desc['value'].to_number().value:
+                raise MakeError('RangeError', 'Invalid range!')
+            new_desc = dict((k,v) for k,v in six.iteritems(desc))
+            new_desc['value'] = Js(new_len)
+            if new_len>=old_len:
+                return PyJs.define_own_property(self, prop, new_desc)
+            if not old_len_desc['writable']:
+                return False
+            if 'writable' not in new_desc or new_desc['writable']==True:
+                new_writable = True
+            else:
+                new_writable = False
+                new_desc['writable'] = True
+            if not PyJs.define_own_property(self, prop, new_desc):
+                return False
+            if new_len<old_len:
+                # not very efficient for sparse arrays, so using different method for sparse:
+                if old_len>30*len(self.own):
+                    for ele in self.own.keys():
+                        if ele.isdigit() and int(ele)>=new_len:
+                            if not self.delete(ele): # if failed to delete set len to current len and reject.
+                                new_desc['value'] = Js(old_len+1)
+                                if not new_writable:
+                                    new_desc['writable'] = False
+                                PyJs.define_own_property(self, prop, new_desc)
+                                return False
+                    old_len = new_len
+                else: # standard method
+                    while new_len<old_len:
+                        old_len -= 1
+                        if not self.delete(str(int(old_len))): # if failed to delete set len to current len and reject.
+                            new_desc['value'] = Js(old_len+1)
+                            if not new_writable:
+                                new_desc['writable'] = False
+                            PyJs.define_own_property(self, prop, new_desc)
+                            return False
+            if not new_writable:
+                self.own['length']['writable'] = False
+            return True
+        elif prop.isdigit():
             index = int(int(prop) % 2**32)
             if index>=old_len and not old_len_desc['writable']:
                 return False
             if not PyJs.define_own_property(self, prop, desc):
                 return False
+            if index>=old_len:
+                old_len_desc['value'] = Js(index + 1)
             return True
         else:
             return PyJs.define_own_property(self, prop, desc)
+
     def to_list(self):
-        return [self.get(str(e)) for e in xrange(len(self.obj))]
+        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
     def __repr__(self):
         return repr(self.to_python().to_list())
 
@@ -2054,7 +2546,6 @@ def fill_prototype(prototype, Class, attrs, constructor=False):
         if constructor:
             attrs['value'] = constructor
             prototype.define_own_property('constructor', attrs)
-            
 
 
 
@@ -2080,7 +2571,6 @@ ObjectPrototype.define_own_property('__proto__', {'set': setter,
                                                   'get': getter,
                                                   'enumerable': False,
                                                   'configurable':True})
-
 
 #Function proto
 fill_prototype(FunctionPrototype, jsfunction.FunctionPrototype, default_attrs)

@@ -28,7 +28,21 @@ def Int32Array():
         temp = Js(numpy.array(array, dtype=numpy.int32))
         temp.put('length', Js(len(array)))
         return temp
-    elif isinstance(a,PyObjectWrapper): # object (Python object: TypedArray (numpy.ndarray), ArrayBuffer (bytearray), etc)
+
+    elif isinstance(a,TypedArray) or isinstance(a,PyJsArrayBuffer): # TypedArray / buffer
+        if len(arguments) > 1:
+            offset = int(arguments[1].value)
+        else:
+            offset = 0
+        if len(arguments) == 3:
+            length = int(arguments[2].value)
+        else:
+            length = a.get('length').to_uint32()
+        temp = Js(numpy.frombuffer(a.array, dtype=numpy.int32, count=length, offset=offset))
+        temp.put('length', Js(length))
+        return temp
+
+    elif isinstance(a,PyObjectWrapper): # object (Python object)
         if len(arguments) > 1:
             offset = int(arguments[1].value)
         else:
@@ -40,6 +54,7 @@ def Int32Array():
         temp = Js(numpy.frombuffer(a.obj, dtype=numpy.int32, count=length, offset=offset))
         temp.put('length', Js(length))
         return temp
+
     temp = Js(numpy.full(0, 0, dtype=numpy.int32))
     temp.put('length', Js(0))
     return temp
