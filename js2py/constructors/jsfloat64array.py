@@ -20,11 +20,7 @@ def Float64Array():
         return temp
     elif isinstance(a, PyJsArray): # object (array)
         array = a.to_list()
-        for item in array:
-            if item.value != None:
-                item = int(item.value)
-            else:
-                item = 0
+        array = [(int(item.value) if item.value != None else 0) for item in array]
         temp = Js(numpy.array(array, dtype=numpy.float64))
         temp.put('length', Js(len(array)))
         return temp
