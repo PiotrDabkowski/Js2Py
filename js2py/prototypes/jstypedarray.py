@@ -27,7 +27,7 @@ class TypedArrayPrototype:
 
     def toLocaleString(locales=None,options=None):
         array = this.to_object()
-        arr_len = len(array.obj)
+        arr_len = array.get("length").to_uint32()
         # separator is simply a comma ','
         if not arr_len:
             return ''
@@ -47,7 +47,7 @@ class TypedArrayPrototype:
     def join(separator):
         ARR_STACK.add(this)
         array = this.to_object()
-        arr_len = len(array.obj)
+        arr_len = array.get("length").to_uint32()
         separator = ',' if separator.is_undefined() else separator.to_string().value
         elems = []
         for e in xrange(arr_len):
@@ -76,7 +76,7 @@ class TypedArrayPrototype:
 
     def slice(start, end): # todo check
         array = this.to_object()
-        arr_len = len(array.obj)
+        arr_len = array.get("length").to_uint32()
         relative_start = start.to_int()
         k = max((arr_len + relative_start), 0) if relative_start<0 else  min(relative_start, arr_len)
         relative_end = arr_len if end.is_undefined() else end.to_int()
@@ -115,7 +115,7 @@ class TypedArrayPrototype:
 
     def indexOf(searchElement):
         array = this.to_object()
-        arr_len = len(array.obj)
+        arr_len = array.get("length").to_uint32()
         if arr_len == 0:
             return -1
         if len(arguments)>1:
@@ -140,7 +140,7 @@ class TypedArrayPrototype:
 
     def lastIndexOf(searchElement):
         array = this.to_object()
-        arr_len = len(array.obj)
+        arr_len = array.get("length").to_uint32()
         if arr_len == 0:
             return -1
         if len(arguments)>1:
@@ -161,7 +161,7 @@ class TypedArrayPrototype:
 
     def every(callbackfn):
         array = this.to_object()
-        arr_len = len(array.obj)
+        arr_len = array.get("length").to_uint32()
         if not callbackfn.is_callable():
             raise this.MakeError('TypeError', 'callbackfn must be a function')
         T = arguments[1]
@@ -176,7 +176,7 @@ class TypedArrayPrototype:
 
     def some(callbackfn):
         array = this.to_object()
-        arr_len = len(array.obj)
+        arr_len = array.get("length").to_uint32()
         if not callbackfn.is_callable():
             raise this.MakeError('TypeError', 'callbackfn must be a function')
         T = arguments[1]
@@ -191,7 +191,7 @@ class TypedArrayPrototype:
 
     def forEach(callbackfn):
         array = this.to_object()
-        arr_len = len(array.obj)
+        arr_len = array.get("length").to_uint32()
         if not callbackfn.is_callable():
             raise this.MakeError('TypeError', 'callbackfn must be a function')
         T = arguments[1]
@@ -204,7 +204,7 @@ class TypedArrayPrototype:
 
     def map(callbackfn):
         array = this.to_object()
-        arr_len = len(array.obj)
+        arr_len = array.get("length").to_uint32()
         if not callbackfn.is_callable():
             raise this.MakeError('TypeError', 'callbackfn must be a function')
         T = arguments[1]
@@ -222,7 +222,7 @@ class TypedArrayPrototype:
 
     def filter(callbackfn):
         array = this.to_object()
-        arr_len = len(array.obj)
+        arr_len = array.get("length").to_uint32()
         if not callbackfn.is_callable():
             raise this.MakeError('TypeError', 'callbackfn must be a function')
         T = arguments[1]
@@ -238,7 +238,7 @@ class TypedArrayPrototype:
 
     def reduce(callbackfn):
         array = this.to_object()
-        arr_len = len(array.obj)
+        arr_len = array.get("length").to_uint32()
         if not callbackfn.is_callable():
             raise this.MakeError('TypeError', 'callbackfn must be a function')
         if not arr_len and len(arguments)<2:
@@ -265,7 +265,7 @@ class TypedArrayPrototype:
 
     def reduceRight(callbackfn):
         array = this.to_object()
-        arr_len = len(array.obj)
+        arr_len = array.get("length").to_uint32()
         if not callbackfn.is_callable():
             raise this.MakeError('TypeError', 'callbackfn must be a function')
         if not arr_len and len(arguments)<2:
