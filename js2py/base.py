@@ -1135,7 +1135,10 @@ class PyObjectWrapper(PyJs):
             prop = prop.to_string().value
         try:
             if type(self.obj) == numpy.ndarray and prop != "length":
-                self.obj[int(prop)] = to_python(val)
+                try:
+                    self.obj[int(prop)] = to_python(val)
+                except ValueError:
+                    pass
             elif type(self.obj) == numpy.ndarray and prop == "length":
                 self.length = to_python(val)
             else:
