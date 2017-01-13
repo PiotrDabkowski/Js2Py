@@ -20,11 +20,11 @@ def Uint16Array():
         return temp
     elif isinstance(a, PyJsArray): # object (array)
         array = a.to_list()
-        for i in xrange(len(array)):
-            if array[i].value != None:
-                array[i] = int(array[i].value)
+        for item in array:
+            if item.value != None:
+                item = int(item.value)
             else:
-                array[i] = 0
+                item = 0
         temp = Js(numpy.array(array, dtype=numpy.uint16))
         temp.put('length', Js(len(array)))
         return temp
