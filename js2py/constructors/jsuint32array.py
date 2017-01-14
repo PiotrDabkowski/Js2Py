@@ -21,34 +21,33 @@ def Uint32Array():
         temp = Js(numpy.array(list(a.value), dtype=numpy.uint32))
         temp.put('length', Js(len(list(a.value))))
         return temp
-    elif isinstance(a, PyJsArray): # object (array)
+    elif isinstance(a, PyJsArray) or isinstance(a,TypedArray) or isinstance(a,PyJsArrayBuffer): # object (Array, TypedArray)
         array = a.to_list()
         array = [(int(item.value) if item.value != None else 0) for item in array]
-        temp = Js(numpy.array(array, dtype=numpy.uint32))
-        temp.put('length', Js(len(array)))
-        return temp
-    elif isinstance(a,TypedArray) or isinstance(a,PyJsArrayBuffer): # TypedArray / buffer
         if len(arguments) > 1:
             offset = int(arguments[1].value)
         else:
             offset = 0
-        if len(arguments) == 3:
+        if len(arguments) > 2:
             length = int(arguments[2].value)
         else:
-            length = a.get('length').to_uint32()
-        temp = Js(numpy.frombuffer(a.array, dtype=numpy.uint32, count=length, offset=offset))
+            length = len(array)-offset
+        temp = Js(numpy.array(array[offset:offset+length], dtype=numpy.uint32))
         temp.put('length', Js(length))
         return temp
-
-    elif isinstance(a,PyObjectWrapper): # object (Python object)
+    elif isinstance(a,PyObjectWrapper): # object (ArrayBuffer, etc)
+        if len(a.obj) % 4 != 0:
+            raise MakeError('RangeError', 'Byte length of Uint32Array should be a multiple of 4')
         if len(arguments) > 1:
             offset = int(arguments[1].value)
+            if offset % 4 != 0:
+                raise MakeError('RangeError', 'Start offset of Uint32Array should be a multiple of 4')
         else:
             offset = 0
-        if len(arguments) == 3:
+        if len(arguments) > 2:
             length = int(arguments[2].value)
         else:
-            length = len(a.obj)
+            length = int((len(a.obj)/4)-offset)
         temp = Js(numpy.frombuffer(a.obj, dtype=numpy.uint32, count=length, offset=offset))
         temp.put('length', Js(length))
         return temp

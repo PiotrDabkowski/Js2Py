@@ -21,36 +21,29 @@ def Int16Array():
         temp = Js(numpy.array(list(a.value), dtype=numpy.int16))
         temp.put('length', Js(len(list(a.value))))
         return temp
-    elif isinstance(a, PyJsArray): # object (array)
+    elif isinstance(a, PyJsArray) or isinstance(a,TypedArray) or isinstance(a,PyJsArrayBuffer): # object (Array, TypedArray)
         array = a.to_list()
         array = [(int(item.value) if item.value != None else 0) for item in array]
         temp = Js(numpy.array(array, dtype=numpy.int16))
         temp.put('length', Js(len(array)))
         return temp
-    elif isinstance(a,TypedArray) or isinstance(a,PyJsArrayBuffer): # TypedArray / buffer
+    elif isinstance(a,PyObjectWrapper): # object (ArrayBuffer, etc)
+        if len(a.obj) % 2 != 0:
+            raise MakeError('RangeError', 'Byte length of Int16Array should be a multiple of 2')
         if len(arguments) > 1:
             offset = int(arguments[1].value)
+            if offset % 2 != 0:
+                raise MakeError('RangeError', 'Start offset of Int16Array should be a multiple of 2')
         else:
             offset = 0
-        if len(arguments) == 3:
+        if len(arguments) > 2:
             length = int(arguments[2].value)
         else:
-            length = a.get('length').to_uint32()
-        temp = Js(numpy.frombuffer(a.array, dtype=numpy.int16, count=length, offset=offset))
+            length = int((len(a.obj)/2)-offset)
+        array = numpy.frombuffer(a.obj, dtype=numpy.int16, count=length, offset=offset)
+        temp = Js(array)
         temp.put('length', Js(length))
-        return temp
-
-    elif isinstance(a,PyObjectWrapper): # object (Python object)
-        if len(arguments) > 1:
-            offset = int(arguments[1].value)
-        else:
-            offset = 0
-        if len(arguments) == 3:
-            length = int(arguments[2].value)
-        else:
-            length = len(a.obj)
-        temp = Js(numpy.frombuffer(a.obj, dtype=numpy.int16, count=length, offset=offset))
-        temp.put('length', Js(length))
+        temp.buff = array
         return temp
     temp = Js(numpy.full(0, 0, dtype=numpy.int16))
     temp.put('length', Js(0))

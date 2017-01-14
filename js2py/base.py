@@ -126,7 +126,7 @@ def HJs(val):
         val = list(val)
     return Js(val)
 
-def Js(val):
+def Js(val, Clamped=False):
     '''Converts Py type to PyJs type'''
     if isinstance(val, PyJs):
         return val
@@ -136,7 +136,10 @@ def Js(val):
         return PyJsString(val, StringPrototype)
     elif isinstance(val, bool):
         return true if val else false
-    elif isinstance(val, float) or isinstance(val, int) or isinstance(val, long):
+    elif isinstance(val, float) or isinstance(val, int) or isinstance(val, long) or isinstance(val, (numpy.int8,numpy.uint8,
+                                                                                                     numpy.int16,numpy.uint16,
+                                                                                                     numpy.int32,numpy.uint32,
+                                                                                                     numpy.float32,numpy.float64)):
         # This is supposed to speed things up. may not be the case
         if val in NUM_BANK:
             return NUM_BANK[val]
@@ -171,11 +174,10 @@ def Js(val):
     elif NUMPY_AVAILABLE and isinstance(val, numpy.ndarray):
         if val.dtype == numpy.int8:
             return PyJsInt8Array(val, Int8ArrayPrototype)
-        elif val.dtype == numpy.uint8:
+        elif val.dtype == numpy.uint8 and not Clamped:
             return PyJsUint8Array(val, Uint8ArrayPrototype)
-            #        elif val.dtype == numpy.uint8:
-            #            return PyJsUint8ClampedArray(val, Uint8ClampedArrayPrototype)
-
+        elif val.dtype == numpy.uint8 and Clamped:
+            return PyJsUint8ClampedArray(val, Uint8ClampedArrayPrototype)
         elif val.dtype == numpy.int16:
             return PyJsInt16Array(val, Int16ArrayPrototype)
         elif val.dtype == numpy.uint16:
@@ -237,6 +239,7 @@ class PyJs(object):
     GlobalObject = None
     IS_CHILD_SCOPE = False
     value = None
+    buff = None
     
     def __init__(self, value=None, prototype=None, extensible=False):
         '''Constructor for Number String and Boolean'''
@@ -254,6 +257,7 @@ class PyJs(object):
         self.extensible = extensible
         self.prototype = prototype
         self.own = {}
+        self.buff = None
         
     def is_undefined(self):
         return self.Class=='Undefined'
@@ -282,6 +286,10 @@ class PyJs(object):
             return cand
         if self.prototype is not None:
             return self.prototype.get_property(prop)
+
+    def update_array(self):
+        for i in range(self.get('length').to_uint32()):
+            self.put(str(i),Js(self.buff[i]))
     
     def get(self, prop): #external use!
          #prop = prop.value
@@ -290,6 +298,9 @@ class PyJs(object):
          if not isinstance(prop, basestring):
              prop = prop.to_string().value
          if not isinstance(prop, basestring): raise RuntimeError('Bug')
+         if prop.isdigit():
+             if isinstance(self.buff,numpy.ndarray):
+                 self.update_array()
          cand = self.get_property(prop)
          if cand is None:
              return Js(None)
@@ -327,6 +338,32 @@ class PyJs(object):
              raise MakeError('TypeError', 'Undefined and null dont have properties!')
         if not isinstance(prop, basestring):
              prop = prop.to_string().value
+        if prop.isdigit():
+            if self.Class == 'Int8Array':
+                val = Js(numpy.int8(val.to_number().value))
+            elif self.Class == 'Uint8Array':
+                val = Js(numpy.uint8(val.to_number().value))
+            elif self.Class == 'Uint8ClampedArray':
+                if val < Js(numpy.uint8(0)):
+                    val = Js(numpy.uint8(0))
+                elif val > Js(numpy.uint8(255)):
+                    val = Js(numpy.uint8(255))
+                else:
+                    val = Js(numpy.uint8(val.to_number().value))
+            elif self.Class == 'Int16Array':
+                val = Js(numpy.int16(val.to_number().value))
+            elif self.Class == 'Uint16Array':
+                val = Js(numpy.uint16(val.to_number().value))
+            elif self.Class == 'Int32Array':
+                val = Js(numpy.int32(val.to_number().value))
+            elif self.Class == 'Uint32Array':
+                val = Js(numpy.uint32(val.to_number().value))
+            elif self.Class == 'Float32Array':
+                val = Js(numpy.float32(val.to_number().value))
+            elif self.Class == 'Float64Array':
+                val = Js(numpy.float64(val.to_number().value))
+            if isinstance(self.buff,numpy.ndarray):
+                self.buff[int(prop)] = int(val.to_number().value)
         #we need to set the value to the incremented one
         if op is not None:
             val = getattr(self.get(prop), OP_METHODS[op])(val)
@@ -1565,7 +1602,6 @@ class PyJsArrayBuffer(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.array = arr
         self.own = {'length' : {'value': Js(0), 'writable': True,
                                             'enumerable': False, 'configurable': False}}
         for i, e in enumerate(arr):
@@ -1640,7 +1676,6 @@ class PyJsInt8Array(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.array = arr
         self.own = {'length' : {'value': Js(0), 'writable': True,
                                             'enumerable': False, 'configurable': False}}
 
@@ -1716,7 +1751,6 @@ class PyJsUint8Array(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.array = arr
         self.own = {'length' : {'value': Js(0), 'writable': True,
                                             'enumerable': False, 'configurable': False}}
 
@@ -1792,7 +1826,6 @@ class PyJsUint8ClampedArray(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.array = arr
         self.own = {'length' : {'value': Js(0), 'writable': True,
                                             'enumerable': False, 'configurable': False}}
 
@@ -1868,7 +1901,6 @@ class PyJsInt16Array(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.array = arr
         self.own = {'length' : {'value': Js(0), 'writable': True,
                                             'enumerable': False, 'configurable': False}}
 
@@ -1943,7 +1975,6 @@ class PyJsUint16Array(PyJs):
     Class = 'Uint16Array'
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
-        self.array = arr
         self.prototype = prototype
         self.own = {'length' : {'value': Js(0), 'writable': True,
                                             'enumerable': False, 'configurable': False}}
@@ -2020,7 +2051,6 @@ class PyJsInt32Array(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.array = arr
         self.own = {'length' : {'value': Js(0), 'writable': True,
                                             'enumerable': False, 'configurable': False}}
 
@@ -2095,7 +2125,6 @@ class PyJsUint32Array(PyJs):
     Class = 'Uint32Array'
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
-        self.array = arr
         self.prototype = prototype
         self.own = {'length' : {'value': Js(0), 'writable': True,
                                             'enumerable': False, 'configurable': False}}
@@ -2172,7 +2201,6 @@ class PyJsFloat32Array(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.array = arr
         self.own = {'length' : {'value': Js(0), 'writable': True,
                                             'enumerable': False, 'configurable': False}}
 
@@ -2248,7 +2276,6 @@ class PyJsFloat64Array(PyJs):
     def __init__(self, arr=[], prototype=None):
         self.extensible = True
         self.prototype = prototype
-        self.array = arr
         self.own = {'length' : {'value': Js(0), 'writable': True,
                                             'enumerable': False, 'configurable': False}}
 
