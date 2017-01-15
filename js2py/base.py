@@ -136,10 +136,10 @@ def Js(val, Clamped=False):
         return PyJsString(val, StringPrototype)
     elif isinstance(val, bool):
         return true if val else false
-    elif isinstance(val, float) or isinstance(val, int) or isinstance(val, long) or isinstance(val, (numpy.int8,numpy.uint8,
-                                                                                                     numpy.int16,numpy.uint16,
-                                                                                                     numpy.int32,numpy.uint32,
-                                                                                                     numpy.float32,numpy.float64)):
+    elif isinstance(val, float) or isinstance(val, int) or isinstance(val, long) or (NUMPY_AVAILABLE and isinstance(val, (numpy.int8,numpy.uint8,
+                                                                                                                          numpy.int16,numpy.uint16,
+                                                                                                                          numpy.int32,numpy.uint32,
+                                                                                                                          numpy.float32,numpy.float64))):
         # This is supposed to speed things up. may not be the case
         if val in NUM_BANK:
             return NUM_BANK[val]
@@ -298,7 +298,7 @@ class PyJs(object):
          if not isinstance(prop, basestring):
              prop = prop.to_string().value
          if not isinstance(prop, basestring): raise RuntimeError('Bug')
-         if prop.isdigit():
+         if NUMPY_AVAILABLE and prop.isdigit():
              if isinstance(self.buff,numpy.ndarray):
                  self.update_array()
          cand = self.get_property(prop)
@@ -338,7 +338,7 @@ class PyJs(object):
              raise MakeError('TypeError', 'Undefined and null dont have properties!')
         if not isinstance(prop, basestring):
              prop = prop.to_string().value
-        if prop.isdigit():
+        if NUMPY_AVAILABLE and prop.isdigit():
             if self.Class == 'Int8Array':
                 val = Js(numpy.int8(val.to_number().value))
             elif self.Class == 'Uint8Array':
