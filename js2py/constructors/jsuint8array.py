@@ -36,7 +36,7 @@ def Uint8Array():
         if len(arguments) > 2:
             length = int(arguments[2].value)
         else:
-            length = int((len(a.obj))-offset)
+            length = int(len(a.obj)-offset)
         array = numpy.frombuffer(a.obj, dtype=numpy.uint8, count=length, offset=offset)
         temp = Js(array)
         temp.put('length', Js(length))

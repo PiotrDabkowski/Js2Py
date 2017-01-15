@@ -39,7 +39,7 @@ def Uint16Array():
         if len(arguments) > 2:
             length = int(arguments[2].value)
         else:
-            length = int((len(a.obj)/2)-offset)
+            length = int((len(a.obj)-offset)/2)
         array = numpy.frombuffer(a.obj, dtype=numpy.uint16, count=length, offset=offset)
         temp = Js(array)
         temp.put('length', Js(length))

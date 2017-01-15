@@ -40,7 +40,7 @@ def Int32Array():
         if len(arguments) > 2:
             length = int(arguments[2].value)
         else:
-            length = int((len(a.obj)/4)-offset)
+            length = int((len(a.obj)-offset)/4)
         array = numpy.frombuffer(a.obj, dtype=numpy.int32, count=length, offset=offset)
         temp = Js(array)
         temp.put('length', Js(length))

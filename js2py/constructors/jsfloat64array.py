@@ -40,7 +40,7 @@ def Float64Array():
         if len(arguments) > 2:
             length = int(arguments[2].value)
         else:
-            length = int((len(a.obj)/8)-offset)
+            length = int((len(a.obj)-offset)/8)
         array = numpy.frombuffer(a.obj, dtype=numpy.float64, count=length, offset=offset)
         temp = Js(array)
         temp.put('length', Js(length))
