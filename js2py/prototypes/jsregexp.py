@@ -2,12 +2,15 @@
 class RegExpPrototype:
     def toString():
         flags = u''
-        if this.glob:
-            flags += u'g'
-        if this.ignore_case:
-            flags += u'i'
-        if this.multiline:
-            flags += u'm'
+        try:
+            if this.glob:
+                flags += u'g'
+            if this.ignore_case:
+                flags += u'i'
+            if this.multiline:
+                flags += u'm'
+        except:
+            pass
         v = this.value if this.value else '(?:)'
         return u'/%s/'%v + flags
 

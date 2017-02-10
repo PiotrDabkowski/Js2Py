@@ -126,6 +126,7 @@ def HJs(val):
         val = list(val)
     return Js(val)
 
+
 def Js(val, Clamped=False):
     '''Converts Py type to PyJs type'''
     if isinstance(val, PyJs):

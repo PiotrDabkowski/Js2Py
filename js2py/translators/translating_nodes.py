@@ -523,7 +523,7 @@ def FunctionDeclaration(type, id, params, defaults, body, generator, expression)
     if defaults:
         raise NotImplementedError('Defaults not supported')
     if not id:
-        return FunctionExpression(type, id, params, defaults, body, generator, expression)
+        return FunctionExpression(type, id, params, defaults, body, generator, expression) + '\n'
     JsName = id['name']
     PyName = 'PyJsHoisted_%s_' % JsName
     PyName = PyName if is_valid_py_name(PyName) else 'PyJsHoistedNonPyName'

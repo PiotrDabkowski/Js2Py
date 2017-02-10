@@ -84,7 +84,7 @@ class NumberPrototype:
         if this.Class!='Number':
             raise this.MakeError('TypeError', 'Number.prototype.toPrecision called on incompatible receiver')
         if precision.is_undefined():
-            return this.to_String()
+            return this.to_string()
         prec = precision.to_int()
         if this.is_nan():
             return 'NaN'

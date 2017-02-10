@@ -14,5 +14,4 @@ def to_arr(this):
 ARR_STACK = set({})
 
 class ArrayBufferPrototype:
-
     pass
