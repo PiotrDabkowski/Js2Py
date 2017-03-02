@@ -963,6 +963,8 @@ def PyJsStrictEq(a, b):
         return true
     if a.is_primitive(): #string bool and number case
         return Js(a.value==b.value)
+    if a.Class == b.Class == 'PyObjectWrapper':
+        return Js(a.obj == b.obj)
     return Js(a is b) # object comparison
     
   
