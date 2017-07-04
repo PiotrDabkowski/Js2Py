@@ -186,6 +186,7 @@ class POP(OP_CODE):
 
 
 class LOAD_NONE(OP_CODE):  # be careful with this :)
+    _params = []
     def eval(self, ctx):
         ctx.stack.append(None)
 
@@ -439,7 +440,7 @@ class STORE_MEMBER_DOT_OP(OP_CODE):
             return
         else:
             ctx.stack.append(BINARY_OPERATIONS[self.op](value, get_member_dot(left, self.prop, ctx.space)))
-            left.put_member_dot(self.prop, ctx.stack[-1])
+            left.put(self.prop, ctx.stack[-1])
 
 
 # --------------- CALLS --------------
@@ -448,10 +449,11 @@ def bytecode_call(ctx, func, this, args):
     if type(func) is not PyJsFunction:
         raise MakeError('TypeError', "%s is not a function" % Type(func) )
     if func.is_native: # call to built-in function or method
-        ctx.stack.append(func.code(this, args))
+        ctx.stack.append(func.call(this, args))
         return None
 
     # therefore not native. we have to return (new_context, function_label) to instruct interpreter to call
+    print func.name
     return func._generate_my_context(this, args), func.code
 
 
@@ -531,17 +533,17 @@ class NEW(OP_CODE):
     def eval(self, ctx):
         args = ctx.stack.pop()
         constructor = ctx.stack.pop()
-        if type(constructor) in PRIMITIVES or not constructor.IS_CONTRUCTOR:
+        if type(constructor) in PRIMITIVES or not hasattr(constructor, 'create'):
             raise MakeError('TypeError', '%s is not a constructor' % Type(constructor))
-        ctx.stack.append(constructor.create(args))
+        ctx.stack.append(constructor.create(args, space=ctx.space))
 
 
 class NEW_NO_ARGS(OP_CODE):
     def eval(self, ctx):
-        constructor = ctx.stack_pop()
-        if type(constructor) in PRIMITIVES or not constructor.IS_CONTRUCTOR:
+        constructor = ctx.stack.pop()
+        if type(constructor) in PRIMITIVES or not hasattr(constructor, 'create'):
             raise MakeError('TypeError', '%s is not a constructor' % Type(constructor))
-        ctx.stack.append(constructor.create(()))
+        ctx.stack.append(constructor.create((), space=ctx.space))
 
 
 # --------------- EXCEPTIONS --------------
@@ -611,6 +613,7 @@ class TRY_CATCH_FINALLY(OP_CODE):
             return spec
         elif typ == 3:
             # throw is made with empty stack as usual
+
             raise spec
         else:
             raise RuntimeError('Invalid return code')

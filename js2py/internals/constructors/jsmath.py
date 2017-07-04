@@ -1,9 +1,10 @@
-from ..base import *
+from __future__ import unicode_literals
+
+from ..conversions import *
+from ..func_utils import *
+
 import math
 import random
-
-Math = PyJsObject(prototype=ObjectPrototype)
-Math.Class = 'Math'
 
 CONSTANTS = {'E': 2.7182818284590452354,
              'LN10': 2.302585092994046,
@@ -14,21 +15,19 @@ CONSTANTS = {'E': 2.7182818284590452354,
              'SQRT1_2': 0.7071067811865476,
              'SQRT2': 1.4142135623730951}
 
-for constant, value in CONSTANTS.items():
-    Math.define_own_property(constant, {'value': Js(value),
-                                        'writable': False,
-                                        'enumerable': False,
-                                        'configurable': False})
+
 
 class MathFunctions:
-    def abs(x):
-        a = x.to_number().value
+    def abs(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
         return abs(a)
 
-    def acos(x):
-        a = x.to_number().value
+    def acos(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
         try:
@@ -36,8 +35,9 @@ class MathFunctions:
         except:
             return NaN
 
-    def asin(x):
-        a = x.to_number().value
+    def asin(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
         try:
@@ -45,57 +45,67 @@ class MathFunctions:
         except:
             return NaN
 
-    def atan(x):
-        a = x.to_number().value
+    def atan(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
         return math.atan(a)
 
-    def atan2(y, x):
-        a = x.to_number().value
-        b = y.to_number().value
+    def atan2(this, args):
+        x = get_arg(args, 0)
+        y = get_arg(args, 1)
+        a = to_number(x)
+        b = to_number(y)
         if a!=a or b!=b: # it must be a nan
             return NaN
-        return math.atan2(b, a)
+        return math.atan2(a, b)
 
-    def ceil(x):
-        a = x.to_number().value
+    def ceil(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
-        return math.ceil(a)
+        return float(math.ceil(a))
 
-    def floor(x):
-        a = x.to_number().value
+    def floor(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
-        return math.floor(a)
+        return float(math.floor(a))
 
-    def round(x):
-        a = x.to_number().value
+    def round(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
-        return round(a)
+        return float(round(a))
 
-    def sin(x):
-        a = x.to_number().value
+    def sin(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
         return math.sin(a)
 
-    def cos(x):
-        a = x.to_number().value
+    def cos(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
         return  math.cos(a)
 
-    def tan(x):
-        a = x.to_number().value
+    def tan(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
         return math.tan(a)
 
-    def log(x):
-        a = x.to_number().value
+    def log(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
         try:
@@ -103,15 +113,18 @@ class MathFunctions:
         except:
             return NaN
 
-    def exp(x):
-        a = x.to_number().value
+    def exp(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
         return math.exp(a)
 
-    def pow(x, y):
-        a = x.to_number().value
-        b = y.to_number().value
+    def pow(this, args):
+        x = get_arg(args, 0)
+        y = get_arg(args, 1)
+        a = to_number(x)
+        b = to_number(y)
         if a!=a or b!=b: # it must be a nan
             return NaN
         try:
@@ -119,8 +132,9 @@ class MathFunctions:
         except:
             return NaN
 
-    def sqrt(x):
-        a = x.to_number().value
+    def sqrt(this, args):
+        x = get_arg(args, 0)
+        a = to_number(x)
         if a!=a: # it must be a nan
             return NaN
         try:
@@ -128,24 +142,16 @@ class MathFunctions:
         except:
             return NaN
 
-    def min():
-        if not len(arguments):
+    def min(this, args):
+        if len(args)==0:
             return Infinity
-        lis = tuple(e.to_number().value for e in arguments.to_list())
-        if any(e!=e for e in lis): # we dont want NaNs
-            return NaN
-        return min(*lis)
+        return min(map(to_number, tuple(args)))
 
-    def max():
-        if not len(arguments):
+    def max(this, args):
+        if len(args)==0:
             return -Infinity
-        lis = tuple(e.to_number().value for e in arguments.to_list())
-        if any(e!=e for e in lis): # we dont want NaNs
-            return NaN
-        return max(*lis)
+        return max(map(to_number, tuple(args)))
 
-    def random():
+
+    def random(this, args):
         return random.random()
-
-
-fill_prototype(Math, MathFunctions, default_attrs)

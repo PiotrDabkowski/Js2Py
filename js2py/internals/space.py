@@ -4,6 +4,16 @@ from simplex import *
 class Space(object):
     def __init__(self):
         self.GlobalObj = None
+        self.ctx = None
+        self.byte_generator = None
+
+        self.Number = None
+        self.String = None
+        self.Boolean = None
+        self.RegExp = None
+        self.Object = None
+        self.Array = None
+        self.Function = None
 
         self.BooleanPrototype = None
         self.NumberPrototype = None
@@ -22,7 +32,12 @@ class Space(object):
         self.SyntaxErrorPrototype = None
         self.TypeErrorPrototype = None
         self.URIErrorPrototype = None
-        self.ERROR_TYPES = {
+
+        self.interpreter = None
+
+    @property
+    def ERROR_TYPES(self):
+        return {
             'Error': self.ErrorPrototype,
             'EvalError': self.EvalErrorPrototype,
             'RangeError': self.RangeErrorPrototype,
@@ -32,7 +47,7 @@ class Space(object):
             'URIError': self.URIErrorPrototype,
         }
 
-        self.interpreter = None
+
 
     def get_global_environment(self):
         return self.GlobalCtx.variable_environment()
@@ -54,3 +69,16 @@ class Space(object):
 
     def NewRegExp(self, body, flags):
         return PyJsRegExp(body, flags, self.RegExpPrototype)
+
+    def ConstructArray(self, py_arr):
+        ''' note py_arr elems are NOT converted to PyJs types!'''
+        arr = self.NewArray(len(py_arr))
+        arr._init(py_arr)
+        return arr
+
+    def ConstructObject(self, py_obj):
+        ''' note py_obj items are NOT converted to PyJs types! '''
+        obj = self.NewObject()
+        for k, v in py_obj.items():
+            obj.put(unicode(k), v)
+        return obj

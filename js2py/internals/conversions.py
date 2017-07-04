@@ -56,7 +56,7 @@ def to_number(self):
             return NaN  # could not convert to decimal  > return NaN
         return float(num)
     else:  # object -  most likely it will be NaN.
-        return self.to_primitive('Number').to_number()
+        return to_number(to_primitive(self, 'Number'))
 
 
 def to_string(self):
@@ -82,16 +82,16 @@ def to_string(self):
         return to_string(to_primitive(self, 'String'))
 
 
-def to_object(self, ctx):
+def to_object(self, space):
     typ = Type(self)
     if typ == 'Object':
         return self
     elif typ == 'Boolean':  # Unsure ... todo check here
-        return ctx.space.Boolean.create(self)
+        return space.Boolean.create((self,), space)
     elif typ == 'Number':  # ?
-        return ctx.space.Number.create(self)
+        return space.Number.create((self,), space)
     elif typ == 'String':  # ?
-        return ctx.space.NewString.create(self)
+        return space.String.create((self,), space)
     elif typ == 'Null' or typ == 'Undefined':
         raise MakeError('TypeError', 'undefined or null can\'t be converted to object')
     else:

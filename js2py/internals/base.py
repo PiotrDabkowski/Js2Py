@@ -35,6 +35,9 @@ class PyJs(object):
     def get_member(self, unconverted_prop):
         return self.get(to_string(unconverted_prop))
 
+    def put_member(self, unconverted_prop, val):
+        return self.put(to_string(unconverted_prop), val)
+
     def get(self, prop):
         assert type(prop)==unicode
         cand = self.get_property(prop)
@@ -125,8 +128,8 @@ class PyJs(object):
         for meth_name in order:
             method = self.get(meth_name)
             if method is not None and is_callable(method):
-                cand = method.call(self)
-                if cand.is_primitive():
+                cand = method.call(self, ())
+                if is_primitive(cand):
                     return cand
         raise MakeError('TypeError', 'Cannot convert object to primitive value')
 
@@ -229,14 +232,13 @@ def get_member(self, prop, space): # general member getter, prop has to be uncon
                 return self[index]
         s_prop = to_string(prop)
         if s_prop == 'length':
-            return len(self)
+            return float(len(self))
         elif s_prop.isdigit():
             index = int(s_prop)
             if 0 <= index < len(self):
                 return self[index]
-        else:
-            # use standard string prototype
-            return space.StringPrototype.get(s_prop)
+        # use standard string prototype
+        return space.StringPrototype.get(s_prop)
         # maybe an index
     elif typ == float:
         # use standard number prototype
@@ -258,7 +260,7 @@ def get_member_dot(self, prop, space):
         return self.get(prop)
     elif typ == unicode:  # then probably a String
         if prop == 'length':
-            return len(self)
+            return float(len(self))
         elif prop.isdigit():
             index = int(prop)
             if 0 <= index < len(self):
@@ -325,7 +327,7 @@ class PyJsArray(PyJs):
     Class = 'Array'
     def __init__(self, length, prototype=None):
         self.prototype = prototype
-        self.own = {'length' : {'value': length, 'writable': True,
+        self.own = {'length' : {'value': float(length), 'writable': True,
                                 'enumerable': False, 'configurable': False}}
 
     def _init(self, elements):
@@ -335,6 +337,7 @@ class PyJsArray(PyJs):
                                     'enumerable': True, 'configurable': True}
 
     def put(self, prop, val, throw=False):
+        assert type(val) != int
         # takes py, returns none
         if not self.can_put(prop):
             if throw:
@@ -355,18 +358,19 @@ class PyJsArray(PyJs):
 
 
     def define_own_property(self, prop, desc, throw):
+        assert type(desc.get('value')) != int
         old_len_desc = self.get_own_property('length')
-        old_len = old_len_desc['value'].value  #  value is js type so convert to py.
+        old_len = old_len_desc['value']  #  value is js type so convert to py.
         if prop=='length':
             if 'value' not in desc:
-                return PyJs.define_own_property(self, prop, desc)
+                return PyJs.define_own_property(self, prop, desc, False)
             new_len =  to_uint32(desc['value'])
-            if new_len!=desc['value'].to_number().value:
+            if new_len!=to_number(desc['value']):
                 raise MakeError('RangeError', 'Invalid range!')
             new_desc = dict((k,v) for k,v in six.iteritems(desc))
-            new_desc['value'] = new_len
+            new_desc['value'] = float(new_len)
             if new_len>=old_len:
-                return PyJs.define_own_property(self, prop, new_desc)
+                return PyJs.define_own_property(self, prop, new_desc, False)
             if not old_len_desc['writable']:
                 return False
             if 'writable' not in new_desc or new_desc['writable']==True:
@@ -374,7 +378,7 @@ class PyJsArray(PyJs):
             else:
                 new_writable = False
                 new_desc['writable'] = True
-            if not PyJs.define_own_property(self, prop, new_desc):
+            if not PyJs.define_own_property(self, prop, new_desc, False):
                 return False
             if new_len<old_len:
                 # not very efficient for sparse arrays, so using different method for sparse:
@@ -382,20 +386,20 @@ class PyJsArray(PyJs):
                     for ele in self.own.keys():
                         if ele.isdigit() and int(ele)>=new_len:
                             if not self.delete(ele): # if failed to delete set len to current len and reject.
-                                new_desc['value'] = old_len+1
+                                new_desc['value'] = old_len+1.
                                 if not new_writable:
                                     new_desc['writable'] = False
-                                PyJs.define_own_property(self, prop, new_desc)
+                                PyJs.define_own_property(self, prop, new_desc, False)
                                 return False
                     old_len = new_len
                 else: # standard method
                     while new_len<old_len:
                         old_len -= 1
-                        if not self.delete(str(int(old_len))): # if failed to delete set len to current len and reject.
-                            new_desc['value'] = old_len+1
+                        if not self.delete(unicode(int(old_len))): # if failed to delete set len to current len and reject.
+                            new_desc['value'] = old_len+1.
                             if not new_writable:
                                 new_desc['writable'] = False
-                            PyJs.define_own_property(self, prop, new_desc)
+                            PyJs.define_own_property(self, prop, new_desc, False)
                             return False
             if not new_writable:
                 self.own['length']['writable'] = False
@@ -405,13 +409,13 @@ class PyJsArray(PyJs):
             index = to_uint32(prop)
             if index>=old_len and not old_len_desc['writable']:
                 return False
-            if not PyJs.define_own_property(self, prop, desc):
+            if not PyJs.define_own_property(self, prop, desc, False):
                 return False
             if index>=old_len:
-                old_len_desc['value'] = index + 1
+                old_len_desc['value'] = index + 1.
             return True
         else:
-            return PyJs.define_own_property(self, prop, desc)
+            return PyJs.define_own_property(self, prop, desc, False)
 
     def to_list(self):
         return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
@@ -467,7 +471,7 @@ class PyJsRegExp(PyJs):
 
     def match(self, string, pos):
         '''string is of course a py string'''
-        return self.pat.match(string, pos)
+        return self.pat.match(string, int(pos))
 
 
 class PyJsError(PyJs):
@@ -676,7 +680,9 @@ class PyJsFunction(PyJs):
     def call(self, this, args=()):
         ''' Dont use this method from inside bytecode to call other bytecode. '''
         if self.is_native:
-            return self.code(this, args) # must return valid js object - undefined, null, float, unicode, bool, or PyJs
+            _args = SpaceTuple(args) # we have to do that unfortunately to pass all the necessary info to the funcs
+            _args.space = self.space
+            return self.code(this, _args) # must return valid js object - undefined, null, float, unicode, bool, or PyJs
         else:
             return self.space.exe._call(self, this, args) # will run inside bytecode
 
@@ -694,10 +700,10 @@ class PyJsFunction(PyJs):
             if other is proto:
                 return True
 
-    def create(self, args):
+    def create(self, args, space):
         proto = self.get('prototype')
         if not is_object(proto):
-            proto = self.space.ObjectPrototype
+            proto = space.ObjectPrototype
         new = PyJsObject(prototype=proto)
         res = self.call(new, args)
         if is_object(res):
@@ -715,4 +721,17 @@ class PyJsFunction(PyJs):
         return my_ctx
 
 
+
+class SpaceTuple:
+    def __init__(self, tup):
+        self.tup = tup
+
+    def __len__(self):
+        return len(self.tup)
+
+    def __getitem__(self, item):
+        return self.tup[item]
+
+    def __iter__(self):
+        return iter(self.tup)
 

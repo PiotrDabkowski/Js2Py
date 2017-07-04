@@ -41,7 +41,10 @@ class ByteCodeGenerator:
 
     def ArrayExpression(self, elements, **kwargs):
         for e in elements:
-            self.emit(e)
+            if e is None:
+                self.emit('LOAD_NONE')
+            else:
+                self.emit(e)
         self.emit('LOAD_ARRAY', len(elements))
                                                         
     def AssignmentExpression(self, operator, left, right, **kwargs):
@@ -129,7 +132,7 @@ class ByteCodeGenerator:
         raise NotImplementedError('Not available in ECMA 5.1')
                                 
     def ClassExpression(self, id, superClass, body, **kwargs):
-        raise NotImplementedError('Not available in ECMA 5.1')
+        raise NotImplementedError('Classes not available in ECMA 5.1')
 
     def ConditionalExpression(self, test, consequent, alternate, **kwargs):
         alt = self.exe.get_new_label()
@@ -421,7 +424,7 @@ class ByteCodeGenerator:
         self.exe.tape = self.function_declaration_tape + self.exe.tape
                 
     def Pyimport(self, imp, **kwargs):
-        raise NotImplementedError('Not available for bytecode interpreter yet, use translator.')
+        raise NotImplementedError('Not available for bytecode interpreter yet, use the Js2Py translator.')
                         
     def Property(self, kind, key, computed, value, method, shorthand, **kwargs):
         raise NotImplementedError('Not available in ECMA 5.1')
@@ -475,7 +478,6 @@ class ByteCodeGenerator:
         self.emit('LABEL', end_of_switch)
 
 
-
     def ThisExpression(self, **kwargs):
         self.emit('LOAD_THIS')
         
@@ -517,7 +519,7 @@ class ByteCodeGenerator:
 
 
     def UnaryExpression(self, operator, argument, **kwargs):
-        if operator == 'typeof' and argument['type']=='Identifier':
+        if operator == 'typeof' and argument['type']=='Identifier': # todo fix typeof
             self.emit('TYPEOF', argument['name'])
         elif operator == 'delete':
             if argument['type'] == 'MemberExpression':
@@ -597,7 +599,7 @@ class ByteCodeGenerator:
 
                         
     def WithStatement(self, object, body, **kwargs):
-        raise NotImplementedError('Not implmented yet, wait 3 more days for it. Have to do my coursework :)')
+        raise NotImplementedError('I am too tired to think about this crazy statement now')
 
     def _emit_statement_list(self, statements):
         for statement in statements:
@@ -629,33 +631,52 @@ def get_file_contents(path_or_file):
             js = f.read()
     return js
 
-from space import Space
+def main():
+    from space import Space
+    import fill_space
 
-s = Space()
-from pyjsparser import parse
-a = ByteCodeGenerator(Code())
-a.exe.space = s
-s.exe = a.exe
 
-d = parse(get_file_contents('esprima.js'))
-a.emit(d)
-print a.declared_vars
-print a.exe.tape
-print len(a.exe.tape)
+    from pyjsparser import parse
+    import json
+    a = ByteCodeGenerator(Code())
 
-from base import Scope
+    s = Space()
+    fill_space.fill_space(s, a)
 
-a.exe.compile()
+    a.exe.space = s
+    s.exe = a.exe
+    con = get_file_contents('internals/esprima.js')
+    d = parse(con+(''';JSON.stringify(exports.parse(%s), 4, 4)''' % json.dumps(con)))
+    # d = parse('''
+    # function x(n) {
+    #     log(n)
+    #     return x(n+1)
+    # }
+    # x(0)
+    # ''')
 
-def log(this, args):
-    print args[0]
-    return 999
+    # var v = 333333;
+    # while (v) {
+    #     v--
+    #
+    # }
+    a.emit(d)
+    print a.declared_vars
+    print a.exe.tape
+    print len(a.exe.tape)
 
-global_scope = Scope({}, s)
-global_scope.registers(a.declared_vars)
-global_scope.put(u'log', s.NewFunction(log, global_scope, [], 'log', False, []))
-global_scope.put(u'exports', global_scope.get(u'log'))
-print a.exe.run(global_scope)
 
+    a.exe.compile()
+
+    def log(this, args):
+        print args[0]
+        return 999
+
+
+    print a.exe.run(a.exe.space.GlobalObj)
+
+
+if __name__=='__main__':
+    main()
 
 

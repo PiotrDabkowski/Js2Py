@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 #Undefined
 class PyJsUndefined(object):
     TYPE = 'Undefined'
@@ -68,7 +70,7 @@ def is_finite(self):
 
 class JsException(Exception):
     def __init__(self, typ, message, throw=None):
-        assert throw is None or (typ is None and message is None)
+        assert throw is None or (typ is None and message is None), (throw, typ, message)
         self.typ = typ
         self.message = message
         self.throw = throw
@@ -80,15 +82,16 @@ class JsException(Exception):
             return space.NewError(self.typ, self.message)
 
     def __str__(self):
-        if self.throw:
+        if self.throw is not None:
             from conversions import to_string
             return to_string(self.throw)
         else:
-            return '%s: %s' % (self.typ, self.message)
+            return self.typ+': '+self.message
 
 
-def MakeError(typ, message='no info', throw=None):
-    return JsException(typ, message, throw)
+
+def MakeError(typ, message=u'no info', throw=None):
+    return JsException(typ, unicode(message) if message is not None else message, throw)
 
 def value_from_js_exception(js_exception, space):
     if js_exception.throw is not None:

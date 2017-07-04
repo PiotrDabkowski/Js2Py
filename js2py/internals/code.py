@@ -11,8 +11,10 @@ class Code:
         self.is_strict = is_strict
 
         self.contexts = []
+        self.current_ctx = None
         self.return_locs = []
         self._label_count = 0
+        self.label_locs = None
 
         # useful references
         self.GLOBAL_THIS = None
@@ -28,9 +30,7 @@ class Code:
 
     def compile(self):
         ''' Records locations of labels and compiles the code '''
-        if self.compiled:
-            return # already compiled
-        self.label_locs = {}
+        self.label_locs = {} if self.label_locs is None else self.label_locs
         loc = 0
         while loc < len(self.tape):
             if type(self.tape[loc]) == LABEL:
@@ -47,17 +47,20 @@ class Code:
         # fake call - the the runner to return to the end of the file
         old_contexts = self.contexts
         old_return_locs = self.return_locs
+        old_curr_ctx = self.current_ctx
 
         self.contexts = [FakeCtx()]
         self.return_locs = [len(self.tape)] # target line after return
 
         # prepare my ctx
         my_ctx = func._generate_my_context(this, args)
+        self.current_ctx = my_ctx
 
         # execute dunction
         ret = self.run(my_ctx, starting_loc=self.label_locs[func.code])
 
         # bring back old execution
+        self.current_ctx = old_curr_ctx
         self.contexts = old_contexts
         self.return_locs = old_return_locs
 
@@ -71,10 +74,14 @@ class Code:
             # (return_value, typ, return_value/jump_loc/py_error)
             # ctx.stack must be len 1 and its always empty after the call.
         '''
+        old_curr_ctx = self.current_ctx
         try:
+            self.current_ctx = ctx
             return self._execute_fragment_under_context(ctx, start_label, end_label)
         except JsException as err:
             return undefined, 3, err
+        finally:
+            self.current_ctx = old_curr_ctx
 
     def _execute_fragment_under_context(self, ctx, start_label, end_label):
         start, end = self.label_locs[start_label], self.label_locs[end_label]
@@ -83,6 +90,7 @@ class Code:
         entry_level = len(self.contexts)
 
         while loc < len(self.tape):
+            #print loc, self.tape[loc]
             if len(self.contexts) == entry_level and loc >= end:
                 assert loc == end
                 assert len(ctx.stack) == 1
@@ -111,6 +119,7 @@ class Code:
                         # set new state
                         loc = self.label_locs[status[1]]
                         ctx = status[0]
+                        self.current_ctx = ctx
                         continue
 
                     # return: (None, None)
@@ -120,19 +129,21 @@ class Code:
                             return undefined, 1, ctx.stack.pop() # return signal
                         return_value = ctx.stack.pop()
                         ctx = self.contexts.pop()
+                        self.current_ctx = ctx
                         ctx.stack.append(return_value)
 
                         loc = self.return_locs.pop()
                         continue
             # next instruction
             loc += 1
-        assert False
+        assert False, 'Remember to add NOP at the end!'
 
     def run(self, ctx, starting_loc=0):
         loc = starting_loc
-        end = len(self.tape)
-        while loc < end:
+        self.current_ctx = ctx
+        while loc < len(self.tape):
             # execute instruction
+            #print loc, self.tape[loc]
             status = self.tape[loc].eval(ctx)
 
             # check status for special actions
@@ -150,19 +161,21 @@ class Code:
                         # set new state
                         loc = self.label_locs[status[1]]
                         ctx = status[0]
+                        self.current_ctx = ctx
                         continue
 
                     # return: (None, None)
                     else:
                         return_value = ctx.stack.pop()
                         ctx = self.contexts.pop()
+                        self.current_ctx = ctx
                         ctx.stack.append(return_value)
 
                         loc = self.return_locs.pop()
                         continue
             # next instruction
             loc += 1
-        assert len(ctx.stack) == 1
+        assert len(ctx.stack) == 1, ctx.stack
         return ctx.stack.pop()
 
 class FakeCtx(object):

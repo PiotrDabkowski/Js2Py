@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from simplex import *
 from conversions import *
 
@@ -20,10 +21,10 @@ def logical_negation_uop(self):  # !u  cant do 'not u' :(
 # typeof x
 def typeof_uop(self):
     if is_callable(self):
-        return 'function'
+        return u'function'
     typ = Type(self).lower()
-    if typ == 'null':
-        typ = 'object'  # absolutely idiotic...
+    if typ == u'null':
+        typ = u'object'  # absolutely idiotic...
     return typ
 
 # ~u
@@ -163,7 +164,7 @@ def abstract_relational_comparison(self, other, self_first=True):  # todo speed 
     if not (Type(px) == 'String' and Type(py) == 'String'):
         px, py = to_number(px), to_number(py)
         if is_nan(px) or is_nan(py):
-            return False
+            return None # watch out here!
         return px < py  # same cmp algorithm
     else:
         # I am pretty sure that python has the same
@@ -223,7 +224,7 @@ def abstract_equality_op(self, other):
         return abstract_equality_op(self, to_number(other))
     elif (tx == 'String' or tx == 'Number') and is_object(other):
         return abstract_equality_op(self, to_primitive(other))
-    elif (ty == 'String' or ty == 'Number') and self.is_object():
+    elif (ty == 'String' or ty == 'Number') and is_object(self):
         return abstract_equality_op(to_primitive(self), other)
     else:
         return False
@@ -284,5 +285,7 @@ BINARY_OPERATIONS = {
     '<=': less_eq_op,
     '>': greater_op,
     '>=': greater_eq_op,
+
+    'instanceof': instanceof_op,
 }
 
