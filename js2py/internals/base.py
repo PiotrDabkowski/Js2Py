@@ -39,6 +39,10 @@ class PyJs(object):
         return self.put(to_string(unconverted_prop), val)
 
     def get(self, prop):
+        print prop, self.TYPE, self.Class
+        if self.Class == None:
+            print self
+            print self.own
         assert type(prop)==unicode
         cand = self.get_property(prop)
         if cand is None:
@@ -626,11 +630,15 @@ class Scope(PyJs):
         # not configurable, cant delete
         return False
 
-# there is no point implementing DeclarativeBinding, too much slow down, almost no benefit. Just call register and set the value.
-# assume nobody is stupid enough to change immutable bindings
 
-class Arguments(PyJs):
-    pass
+def get_new_arguments_obj(args, space):
+    obj = space.NewObject()
+    obj.Class = 'Arguments'
+    obj.define_own_property('length', {'value': float(len(args)), 'writable': True, 'enumerable': False, 'configurable': True}, False)
+    for i, e in enumerate(args):
+        obj.put(unicode(i), e)
+    return obj
+
 
 
 #Function
@@ -715,7 +723,7 @@ class PyJsFunction(PyJs):
         my_ctx.registers(self.definitions)
         my_ctx.THIS_BINDING = this
         if not self.arguments_in_params:
-            my_ctx.own['arguments'] = Arguments()
+            my_ctx.own['arguments'] = get_new_arguments_obj(args, self.space)
         if not self.is_declaration and self.name and self.name not in my_ctx.own:
             my_ctx.own[self.name] = self  # this should be immutable binding but come on!
         return my_ctx

@@ -2429,8 +2429,10 @@
 
     function tolerateError(messageFormat) {
         var args, msg, error;
-        log(arguments)
+        log(JSON.stringify(arguments))
         args = Array.prototype.slice.call(arguments, 1);
+        log('here')
+        log(args)
         /* istanbul ignore next */
         msg = messageFormat.replace(/%(\d)/g,
             function (whole, idx) {
@@ -4601,6 +4603,7 @@
         }
 
         param = parsePattern(params);
+        log(JSON.stringify(param))
         for (i = 0; i < params.length; i++) {
             key = '$' + params[i].value;
             if (Object.prototype.hasOwnProperty.call(paramMap, key)) {

@@ -25,7 +25,7 @@ class ObjectPrototype:
     def hasOwnProperty(this, args):
         prop = get_arg(args, 0)
         o = to_object(this, args.space)
-        return o.get_own_property(to_string(prop)) is not undefined
+        return o.get_own_property(to_string(prop)) is not None
 
     def isPrototypeOf(this, args):
         # a bit stupid specification because of object conversion that will cause invalid values for primitives
@@ -36,7 +36,7 @@ class ObjectPrototype:
         o = to_object(this, args.space)
         while 1:
             obj = obj.prototype
-            if obj is None or obj.is_null():
+            if obj is None or is_null(obj):
                 return False
             if obj is o:
                 return True

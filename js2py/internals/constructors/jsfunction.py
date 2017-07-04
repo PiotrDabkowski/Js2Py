@@ -28,6 +28,7 @@ def executable_function(_body, _args, space, global_context=True):
     space.byte_generator.emit('JUMP', skip)
     space.byte_generator.emit(parse(func_str)['body'])
     space.byte_generator.emit('LABEL', skip)
+    space.byte_generator.emit('NOP')
     space.byte_generator.exe.compile()
 
     ctx = space.GlobalObj if global_context else space.exe.current_ctx
