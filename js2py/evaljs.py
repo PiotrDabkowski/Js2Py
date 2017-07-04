@@ -9,7 +9,7 @@ import os
 import hashlib
 import codecs
 
-__all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js', 'translate_file', 'eval_js6', 'translate_js6', 'run_file', 'disable_pyimport']
+__all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js', 'translate_file', 'eval_js6', 'translate_js6', 'run_file', 'disable_pyimport', 'get_file_contents', 'write_file_contents']
 DEBUG = False
 
 def disable_pyimport():

@@ -1,8 +1,11 @@
 __all__ = ['fix_js_args']
 
 import types
+from collections import namedtuple
 import opcode
 import six
+import sys
+import dis
 
 if six.PY3:
     xrange = range
@@ -36,7 +39,7 @@ def append_arguments(code_obj, new_locals):
     # left in code_obj.co_names.
     not_removed = set(opcode.hasname) - set([LOAD_GLOBAL])
     saved_names = set()
-    for inst in instructions(co_code):
+    for inst in instructions(code_obj):
         if inst[0] in not_removed:
             saved_names.add(co_names[inst[1]])
 
@@ -70,24 +73,25 @@ def append_arguments(code_obj, new_locals):
 
     # Now we modify the actual bytecode
     modified = []
-    for inst in instructions(code_obj.co_code):
+    for inst in instructions(code_obj):
+        op, arg = inst.opcode, inst.arg
         # If the instruction is a LOAD_GLOBAL, we have to check to see if
         # it's one of the globals that we are replacing. Either way,
         # update its arg using the appropriate dict.
-        if inst[0] == LOAD_GLOBAL:
-            if inst[1] in names_to_varnames:
-                inst[0] = LOAD_FAST
-                inst[1] = names_to_varnames[inst[1]]
-            elif inst[1] in name_translations:    
-                inst[1] = name_translations[inst[1]]
+        if inst.opcode == LOAD_GLOBAL:
+            if inst.arg in names_to_varnames:
+                op = LOAD_FAST
+                arg = names_to_varnames[inst.arg]
+            elif inst.arg in name_translations:
+                arg = name_translations[inst.arg]
             else:
                 raise ValueError("a name was lost in translation")
         # If it accesses co_varnames or co_names then update its argument.
-        elif inst[0] in opcode.haslocal:
-            inst[1] = varname_translations[inst[1]]
-        elif inst[0] in opcode.hasname:
-            inst[1] = name_translations[inst[1]]
-        modified.extend(write_instruction(inst))
+        elif inst.opcode in opcode.haslocal:
+            arg = varname_translations[inst.arg]
+        elif inst.opcode in opcode.hasname:
+            arg = name_translations[inst.arg]
+        modified.extend(write_instruction(op, arg))
     if six.PY2:
         code = ''.join(modified)
         args = (co_argcount + new_locals_len,
@@ -105,9 +109,7 @@ def append_arguments(code_obj, new_locals):
                               code_obj.co_freevars,
                               code_obj.co_cellvars)
     else:
-        #print(modified)
         code = bytes(modified)
-        #print(code)
         args = (co_argcount + new_locals_len,
                 0,
                 code_obj.co_nlocals + new_locals_len,
@@ -128,44 +130,97 @@ def append_arguments(code_obj, new_locals):
     return types.CodeType(*args)
 
 
-def instructions(code):
-    if six.PY2:
-        code = map(ord, code)
-    i, L = 0, len(code)
-    extended_arg = 0
-    while i < L:
-        op = code[i]
-        i+= 1
-        if op < opcode.HAVE_ARGUMENT:
-            yield [op, None]
-            continue
-        oparg = code[i] + (code[i+1] << 8) + extended_arg
-        extended_arg = 0
-        i += 2
-        if op == opcode.EXTENDED_ARG:
-            extended_arg = oparg << 16
-            continue
-        yield [op, oparg]
-
-def write_instruction(inst):
-    op, oparg = inst
-    if oparg is None:
-        return [chr(op)]
-    elif oparg <= 65536:
-        return [chr(op), chr(oparg & 255), chr((oparg >> 8) & 255)]
-    elif oparg <= 4294967296:
-        return [chr(opcode.EXTENDED_ARG),
-                chr((oparg >> 16) & 255),
-                chr((oparg >> 24) & 255),
-                chr(op),
-                chr(oparg & 255),
-                chr((oparg >> 8) & 255)]
+def instructions(code_obj):
+    # easy for python 3.4+
+    if sys.version_info >= (3, 4):
+        for inst in dis.Bytecode(code_obj):
+            yield inst
     else:
-        raise ValueError("Invalid oparg: {0} is too large".format(oparg))
+        # otherwise we have to manually parse
+        code = code_obj.co_code
+        NewInstruction = namedtuple('Instruction', ('opcode', 'arg'))
+        if six.PY2:
+            code = map(ord, code)
+        i, L = 0, len(code)
+        extended_arg = 0
+        while i < L:
+            op = code[i]
+            i+= 1
+            if op < opcode.HAVE_ARGUMENT:
+                yield NewInstruction(op, None)
+                continue
+            oparg = code[i] + (code[i+1] << 8) + extended_arg
+            extended_arg = 0
+            i += 2
+            if op == opcode.EXTENDED_ARG:
+                extended_arg = oparg << 16
+                continue
+            yield NewInstruction(op, oparg)
+
+def write_instruction(op, arg):
+    if sys.version_info < (3, 6):
+        if arg is None:
+            return [chr(op)]
+        elif arg <= 65536:
+            return [chr(op), chr(arg & 255), chr((arg >> 8) & 255)]
+        elif arg <= 4294967296:
+            return [chr(opcode.EXTENDED_ARG),
+                    chr((arg >> 16) & 255),
+                    chr((arg >> 24) & 255),
+                    chr(op),
+                    chr(arg & 255),
+                    chr((arg >> 8) & 255)]
+        else:
+            raise ValueError("Invalid oparg: {0} is too large".format(oparg))
+    else:  # python 3.6+ uses wordcode instead of bytecode and they already supply all the EXTENDEND_ARG ops :)
+        if arg is None:
+            return [chr(op), 0]
+        return [chr(op), arg & 255]
+        # the code below is for case when extended args are to be determined automatically
+        # if op == opcode.EXTENDED_ARG:
+        #     return []  # this will be added automatically
+        # elif arg < 1 << 8:
+        #     return [chr(op), arg]
+        # elif arg < 1 << 32:
+        #     subs = [1<<24, 1<<16, 1<<8]  # allowed op extension sizes
+        #     for sub in subs:
+        #         if arg >= sub:
+        #             fit = int(arg / sub)
+        #             return [chr(opcode.EXTENDED_ARG), fit]  + write_instruction(op, arg - fit * sub)
+        # else:
+        #     raise ValueError("Invalid oparg: {0} is too large".format(oparg))
 
 
+def check(code_obj):
+    old_bytecode = code_obj.co_code
+    insts = list(instructions(code_obj))
+
+    pos_to_inst = {}
+    bytelist = []
+
+    for inst in insts:
+        pos_to_inst[len(bytelist)] = inst
+        bytelist.extend(write_instruction(inst.opcode, inst.arg))
+    if six.PY2:
+        new_bytecode = ''.join(bytelist)
+    else:
+        new_bytecode = bytes(bytelist)
+    if new_bytecode != old_bytecode:
+        print(new_bytecode)
+        print(old_bytecode)
+        for i in range(min(len(new_bytecode), len(old_bytecode))):
+            if old_bytecode[i] != new_bytecode[i]:
+                while 1:
+                    if i in pos_to_inst:
+                        print(pos_to_inst[i])
+                        print(pos_to_inst[i-2])
+                        print(list(map(chr, old_bytecode))[i-4:i+8])
+                        print(bytelist[i-4:i+8])
+                        break
+            raise RuntimeError('Your python version made changes to the bytecode')
 
 
+check(six.get_function_code(check))
 
 
 

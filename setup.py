@@ -27,7 +27,8 @@ More examples at: https://github.com/PiotrDabkowski/Js2Py
 # python setup.py sdist upload -r pypi
 setup(
     name='Js2Py',
-    version='0.44',
+    version='0.45',
+
     packages=['js2py', 'js2py.utils', 'js2py.prototypes', 'js2py.translators',
               'js2py.constructors', 'js2py.host', 'js2py.es6'],
     url='https://github.com/PiotrDabkowski/Js2Py',
