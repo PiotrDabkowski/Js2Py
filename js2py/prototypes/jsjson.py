@@ -20,7 +20,7 @@ def parse(text):
     unfiltered = to_js(this, unfiltered)
     if reviver.is_callable():
         root = this.Js({'': unfiltered})
-        walk(root, '', reviver)
+        return walk(root, '', reviver)
     else:
         return unfiltered
 
