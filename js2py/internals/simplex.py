@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-
+import six
 #Undefined
 class PyJsUndefined(object):
     TYPE = 'Undefined'
@@ -17,7 +17,7 @@ NaN = float('nan')
 
 UNDEFINED_TYPE = PyJsUndefined
 NULL_TYPE = PyJsNull
-STRING_TYPE = unicode
+STRING_TYPE = unicode if six.PY2 else str
 NUMBER_TYPE = float
 BOOLEAN_TYPE = bool
 
@@ -91,7 +91,7 @@ class JsException(Exception):
             if self.mes.Class == 'Error':
                 return self.mes.callprop('toString').value
             else:
-                return unicode(self.mes)
+                return self.mes.to_string().value
         else:
             if self.throw is not None:
                 from conversions import to_string

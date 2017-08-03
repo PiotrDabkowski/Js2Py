@@ -981,7 +981,7 @@ def PyJsComma(a, b):
     return b
 
 
-from internals.simplex import JsException as PyJsException
+from .internals.simplex import JsException as PyJsException
 import pyjsparser
 pyjsparser.parser.ENABLE_JS2PY_ERRORS = lambda msg: MakeError('SyntaxError', msg)
 
