@@ -27,12 +27,12 @@ More examples at: https://github.com/PiotrDabkowski/Js2Py
 # python setup.py sdist upload -r pypi
 setup(
     name='Js2Py',
-    version='0.45',
+    version='0.47',
 
     packages=['js2py', 'js2py.utils', 'js2py.prototypes', 'js2py.translators',
               'js2py.constructors', 'js2py.host', 'js2py.es6'],
     url='https://github.com/PiotrDabkowski/Js2Py',
-    install_requires = ['tzlocal>=1.2', 'six>=1.10', 'pyjsparser>=2.4.5'],
+    install_requires = ['tzlocal>=1.2', 'six>=1.10', 'pyjsparser>=2.5.1'],
     license='MIT',
     author='Piotr Dabkowski',
     author_email='piodrus@gmail.com',

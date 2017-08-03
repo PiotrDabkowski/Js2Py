@@ -69,11 +69,16 @@ def is_finite(self):
 
 
 class JsException(Exception):
-    def __init__(self, typ, message, throw=None):
-        assert throw is None or (typ is None and message is None), (throw, typ, message)
-        self.typ = typ
-        self.message = message
-        self.throw = throw
+    def __init__(self, typ=None, message=None, throw=None):
+        if typ is None and message is None and throw is None:
+            # it means its the trasnlator based error (old format), do nothing
+            self._translator_based = True
+        else:
+            assert throw is None or (typ is None and message is None), (throw, typ, message)
+            self._translator_based = False
+            self.typ = typ
+            self.message = message
+            self.throw = throw
 
     def get_thrown_value(self, space):
         if self.throw:
@@ -82,11 +87,17 @@ class JsException(Exception):
             return space.NewError(self.typ, self.message)
 
     def __str__(self):
-        if self.throw is not None:
-            from conversions import to_string
-            return to_string(self.throw)
+        if self._translator_based:
+            if self.mes.Class == 'Error':
+                return self.mes.callprop('toString').value
+            else:
+                return unicode(self.mes)
         else:
-            return self.typ+': '+self.message
+            if self.throw is not None:
+                from conversions import to_string
+                return to_string(self.throw)
+            else:
+                return self.typ+': '+self.message
 
 
 

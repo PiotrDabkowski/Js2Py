@@ -28,10 +28,10 @@ class Code:
         ''' Adds op_code with specified args to tape '''
         self.tape.append(OP_CODES[op_code](*args))
 
-    def compile(self):
+    def compile(self, start_loc=0):
         ''' Records locations of labels and compiles the code '''
         self.label_locs = {} if self.label_locs is None else self.label_locs
-        loc = 0
+        loc = start_loc
         while loc < len(self.tape):
             if type(self.tape[loc]) == LABEL:
                 self.label_locs[self.tape[loc].num] = loc
@@ -79,13 +79,14 @@ class Code:
             self.current_ctx = ctx
             return self._execute_fragment_under_context(ctx, start_label, end_label)
         except JsException as err:
+            del ctx.stack[:] # undo the things that were put on the stack (if any)
             return undefined, 3, err
         finally:
             self.current_ctx = old_curr_ctx
 
     def _execute_fragment_under_context(self, ctx, start_label, end_label):
         start, end = self.label_locs[start_label], self.label_locs[end_label]
-
+        initial_len = len(ctx.stack)
         loc = start
         entry_level = len(self.contexts)
 
@@ -93,7 +94,7 @@ class Code:
             #print loc, self.tape[loc]
             if len(self.contexts) == entry_level and loc >= end:
                 assert loc == end
-                assert len(ctx.stack) == 1
+                assert len(ctx.stack) == (1 + initial_len), 'Stack change must be equal to +1!'
                 return ctx.stack.pop(), 0, None # means normal return
 
             # execute instruction
@@ -106,7 +107,7 @@ class Code:
                     if len(self.contexts) == entry_level:
                         # check if jumped outside of the fragment and break if so
                         if not start <= loc < end:
-                            assert len(ctx.stack) == 1
+                            assert len(ctx.stack) == (1+initial_len), 'Stack change must be equal to +1!'
                             return ctx.stack.pop(), 2, status  # jump outside
                     continue
 

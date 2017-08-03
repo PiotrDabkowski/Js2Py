@@ -980,12 +980,11 @@ def PyJsBshift(a, b):
 def PyJsComma(a, b):
     return b
 
-class PyJsException(Exception):
-    def __str__(self):
-        if self.mes.Class=='Error':
-            return self.mes.callprop('toString').value
-        else:
-            return unicode(self.mes)
+
+from internals.simplex import JsException as PyJsException
+import pyjsparser
+pyjsparser.parser.ENABLE_JS2PY_ERRORS = lambda msg: MakeError('SyntaxError', msg)
+
 
 class PyJsSwitchException(Exception): pass
 

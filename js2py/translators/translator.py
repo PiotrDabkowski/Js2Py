@@ -7,7 +7,6 @@ import re
 
 
 # Enable Js2Py exceptions and pyimport in parser
-pyjsparser.parser.ENABLE_JS2PY_ERRORS = True
 pyjsparser.parser.ENABLE_PYIMPORT = True
 
 # the re below is how we'll recognise numeric constants.

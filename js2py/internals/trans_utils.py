@@ -1,3 +1,4 @@
+
 def to_key(literal_or_identifier):
     ''' returns string representation of this object'''
     if literal_or_identifier['type'] == 'Identifier':

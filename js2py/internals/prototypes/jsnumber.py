@@ -31,7 +31,7 @@ class NumberPrototype:
     def toString(this, args):
         if GetClass(this)!='Number':
             raise MakeError('TypeError', 'Number.prototype.valueOf is not generic')
-        if type(this)!= unicode:
+        if type(this)!= float:
             this = this.value
         radix = get_arg(args, 0)
         if is_undefined(radix):
@@ -64,10 +64,10 @@ class NumberPrototype:
     def toFixed (this, args):
         if GetClass(this)!='Number':
             raise MakeError('TypeError', 'Number.prototype.toFixed called on incompatible receiver')
-        if type(this)!= unicode:
+        if type(this)!= float:
             this = this.value
         fractionDigits = get_arg(args, 0)
-        digs = fractionDigits.to_int()
+        digs = to_int(fractionDigits)
         if digs<0 or digs>20:
             raise MakeError('RangeError', 'toFixed() digits argument must be between 0 and 20')
         elif is_infinity(this):
@@ -80,7 +80,7 @@ class NumberPrototype:
     def toExponential(this, args):
         if GetClass(this)!='Number':
             raise MakeError('TypeError', 'Number.prototype.toExponential called on incompatible receiver')
-        if type(this)!= unicode:
+        if type(this)!= float:
             this = this.value
         fractionDigits = get_arg(args, 0)
         digs = to_int(fractionDigits)
@@ -95,12 +95,12 @@ class NumberPrototype:
     def toPrecision (this, args):
         if GetClass(this)!='Number':
             raise MakeError('TypeError', 'Number.prototype.toPrecision called on incompatible receiver')
-        if type(this)!= unicode:
+        if type(this)!= float:
             this = this.value
         precision = get_arg(args, 0)
         if is_undefined(precision):
             return to_string(this)
-        prec = precision.to_int()
+        prec = to_int(precision)
         if is_nan(this):
             return 'NaN'
         elif is_infinity(this):

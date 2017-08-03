@@ -173,6 +173,8 @@ class JUMP_IF_FALSE_WITHOUT_POP(BASE_JUMP):
 
 class POP(OP_CODE):
     def eval(self, ctx):
+        # todo remove this check later
+        assert len(ctx.stack), 'Popped from empty stack!'
         del ctx.stack[-1]
 
 # class REDUCE(OP_CODE):
@@ -308,7 +310,7 @@ class LOAD(OP_CODE): # todo check!
 
     # 11.1.2
     def eval(self, ctx):
-        ctx.stack.append(ctx.get(self.identifier))
+        ctx.stack.append(ctx.get(self.identifier, throw=True))
 
 
 class LOAD_MEMBER(OP_CODE):
@@ -453,7 +455,6 @@ def bytecode_call(ctx, func, this, args):
         return None
 
     # therefore not native. we have to return (new_context, function_label) to instruct interpreter to call
-    print func.name
     return func._generate_my_context(this, args), func.code
 
 
@@ -572,24 +573,24 @@ class TRY_CATCH_FINALLY(OP_CODE):
         # execute_fragment_under_context returns:
         # (return_value, typ, jump_loc/error)
 
+        ctx.stack.pop()
+
         # execute try statement
         try_status = ctx.space.exe.execute_fragment_under_context(ctx, self.try_label, self.catch_label)
 
-        # check if errors
         errors = try_status[1] == 3
 
         # catch
         if errors and self.catch_variable is not None:
             # generate catch block context...
             catch_context = Scope({self.catch_variable: try_status[2].get_thrown_value(ctx.space)}, ctx.space, ctx)
-            catch_context.stack.append(undefined)
+            catch_context.THIS_BINDING = ctx.THIS_BINDING
             catch_status = ctx.space.exe.execute_fragment_under_context(catch_context, self.catch_label, self.finally_label)
         else:
             catch_status = None
 
         # finally
         if self.finally_present:
-            ctx.stack.append(undefined)  # (ctx.stack is empty after try call)
             finally_status = ctx.space.exe.execute_fragment_under_context(ctx, self.finally_label, self.end_label)
         else:
             finally_status = None
@@ -613,7 +614,6 @@ class TRY_CATCH_FINALLY(OP_CODE):
             return spec
         elif typ == 3:
             # throw is made with empty stack as usual
-
             raise spec
         else:
             raise RuntimeError('Invalid return code')
@@ -632,6 +632,41 @@ class TRY_CATCH_FINALLY(OP_CODE):
 
 
 # ------------ WITH + ITERATORS ----------
+
+class WITH(OP_CODE):
+    _params = ['beg_label', 'end_label']
+    def __init__(self, beg_label, end_label):
+        self.beg_label = beg_label
+        self.end_label = end_label
+
+    def eval(self, ctx):
+        obj = to_object(ctx.stack.pop(), ctx.space)
+
+        with_context = Scope(obj, ctx.space, ctx) # todo actually use the obj to modify the ctx
+        with_context.THIS_BINDING = ctx.THIS_BINDING
+        status = ctx.space.exe.execute_fragment_under_context(with_context, self.beg_label, self.end_label)
+
+
+
+        val, typ, spec = status
+        if typ!=3:
+            print typ
+            ctx.stack.pop()
+
+        if typ == 0:  # normal
+            ctx.stack.append(val)
+            return
+        elif typ == 1:  # return
+            ctx.stack.append(spec)
+            return None, None  # send return signal
+        elif typ == 2:  # jump outside
+            ctx.stack.append(val)
+            return spec
+        elif typ == 3:
+            # throw is made with empty stack as usual
+            raise spec
+        else:
+            raise RuntimeError('Invalid return code')
 
 
 # all opcodes...

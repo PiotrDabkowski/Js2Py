@@ -1,12 +1,42 @@
 from __future__ import print_function
 import js2py
 from js2py.base import PyJsException, PyExceptionToJs
+from js2py.internals import seval
+from js2py.internals.simplex import JsException
 import os, sys, re, traceback, threading, ctypes, time, six
 from distutils.version import LooseVersion
+import codecs
+import json
+import traceback
+
+TEST_TIMEOUT =  120
+INCLUDE_PATH = 'includes/'
+TEST_PATH = 'test_cases/language/statements'
+
+
+# choose which JS runtime to test. Js2Py has 2 independent runtimes. Translation based (translator) and the vm interpreter based.
+RUNTIME_TO_TEST = 'vm'
+
+if RUNTIME_TO_TEST == 'translator':
+    JS_EVALUATOR = js2py.eval_js
+    PY_JS_EXCEPTION = PyJsException
+    MESSAGE_FROM_PY_JS_EXCEPTION = lambda x: PyExceptionToJs(x).get('message').to_python()
+elif RUNTIME_TO_TEST == 'vm':
+    JS_EVALUATOR = seval.eval_js_vm
+    PY_JS_EXCEPTION = PyJsException
+    MESSAGE_FROM_PY_JS_EXCEPTION = lambda x: str(x)
+elif RUNTIME_TO_TEST == 'execjs':
+    import execjs
+    JS_EVALUATOR = lambda x: execjs.eval('eval(%s)'% json.dumps('{;%s}' % x))
+    PY_JS_EXCEPTION = execjs._exceptions.RuntimeError
+    MESSAGE_FROM_PY_JS_EXCEPTION = lambda x: str(x)
+else:
+    raise RuntimeError("Js2Py has currently only 2 runtimes available - 'translator' and the 'vm' - RUNTIME_TO_TEST must be one of these.")
+
 
 
 def load(path):
-    with open(path, 'r') as f:
+    with codecs.open(path, "r", "utf-8") as f:
         return f.read()
 
 def terminate_thread(thread):
@@ -29,13 +59,11 @@ def terminate_thread(thread):
         raise SystemError("PyThreadState_SetAsyncExc failed")
 
 
-TEST_TIMEOUT =  10
-INCLUDE_PATH = 'includes/'
-TEST_PATH = 'test_cases/'
+
 INIT = load(os.path.join(INCLUDE_PATH, 'init.js'))
 
 
-class TestCase:
+class FestCase:
     description = None
     includes = None
     author = None
@@ -102,7 +130,7 @@ class TestCase:
         crashed = True
         label = None
         try:
-            js2py.eval_js(self.code)
+            JS_EVALUATOR(self.code)
             errors = False
             crashed = False
 
@@ -115,14 +143,14 @@ class TestCase:
             full_error = traceback.format_exc()
             label = 'NOT_IMPLEMENTED'
 
-        except PyJsException as e:
+        except PY_JS_EXCEPTION as e:
             crashed = False
             full_error = traceback.format_exc()
             if self.negative:
                 passed = True
             else:
                 passed = False
-                reason = PyExceptionToJs(e).get('message').to_python()
+                reason = MESSAGE_FROM_PY_JS_EXCEPTION(e)
                 label = 'FAILED'
 
 
@@ -138,7 +166,7 @@ class TestCase:
         except:
             full_error = traceback.format_exc()
             passed = False
-            reason = 'UNKNOWN - URGENT, FIX NOW!'
+            reason = 'UNKNOWN - URGENT, FIX NOW!\n' + traceback.format_exc()+'\n\n'
             label = 'CRASHED'
 
         if not errors:
@@ -179,14 +207,14 @@ def list_path(path, folders=False):
             print('Fuck python 3!')
             return sorted(res)  # python 3
 
-def test_all(path):
+def fest_all(path):
     files = list_path(path)
     folders = list_path(path, folders=True)
     for f in files:
         if not f.endswith('.js'):
             continue
         try:
-            test = TestCase(f)
+            test = FestCase(f)
             if test.strict_only:
                 continue
 
@@ -205,12 +233,12 @@ def test_all(path):
         except:
             print(traceback.format_exc())
             print(f)
-            input()
+            raw_input()
     for folder in folders:
-        test_all(folder)
+        fest_all(folder)
 
 
 
-test_all(TEST_PATH)
+fest_all(TEST_PATH)
 
 

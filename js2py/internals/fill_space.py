@@ -65,6 +65,8 @@ def set_protected(obj, name, prop):
 def fill_space(space, byte_generator):
     # set global scope
     global_scope = Scope({}, space, parent=None)
+    global_scope.THIS_BINDING = global_scope
+    global_scope.registers(byte_generator.declared_vars)
     space.GlobalObj = global_scope
 
     space.byte_generator = byte_generator

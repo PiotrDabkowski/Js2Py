@@ -228,7 +228,8 @@ class ByteCodeGenerator:
         self.emit('LABEL', break_label)
                                         
     def ForInStatement(self, left, right, body, **kwargs):
-        print 'Sorry not available yet!'
+        raise NotImplementedError('Sorry FOR-IN not available yet!')
+
                                         
     def FunctionDeclaration(self, id, params, defaults, body, **kwargs):
         if defaults:
@@ -497,17 +498,20 @@ class ByteCodeGenerator:
 
         # try block
         self.emit('LABEL', try_label)
+        self.emit('LOAD_UNDEFINED')
         self.emit(block)
         self.emit('NOP') # needed to distinguish from break/continue vs some internal jumps
 
         # catch block
         self.emit('LABEL', catch_label)
+        self.emit('LOAD_UNDEFINED')
         if handler:
             self.emit(handler['body'])
         self.emit('NOP')
 
         # finally block
         self.emit('LABEL', finally_label)
+        self.emit('LOAD_UNDEFINED')
         if finalizer:
             self.emit(finalizer)
         self.emit('NOP')
@@ -599,7 +603,23 @@ class ByteCodeGenerator:
 
                         
     def WithStatement(self, object, body, **kwargs):
-        raise NotImplementedError('I am too tired to think about this crazy statement now')
+        beg_label = self.exe.get_new_label()
+        end_label = self.exe.get_new_label()
+        # scope
+        self.emit(object)
+
+        # now the body
+        self.emit('JUMP', end_label)
+        self.emit('LABEL', beg_label)
+        self.emit('LOAD_UNDEFINED')
+        self.emit(body)
+        self.emit('LABEL', end_label)
+        self.emit('NOP')
+
+        # with statement implementation
+        self.emit('WITH', beg_label, end_label)
+
+
 
     def _emit_statement_list(self, statements):
         for statement in statements:
@@ -631,10 +651,11 @@ def get_file_contents(path_or_file):
             js = f.read()
     return js
 
+
+
 def main():
     from space import Space
     import fill_space
-
 
     from pyjsparser import parse
     import json

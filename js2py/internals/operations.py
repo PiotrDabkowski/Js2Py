@@ -255,11 +255,11 @@ def instanceof_op(self, other):
     return other.has_instance(self)
 
 
-def contains_op(self, other):
-    '''checks if self contains other'''
-    if not self.is_object():
+def in_op(self, other):
+    '''checks if self is in other'''
+    if not is_object(self):
         raise MakeError('TypeError', "You can\'t use 'in' operator to search in non-objects")
-    return self.has_property(to_string(other).value)
+    return other.has_property(to_string(self))
 
 
 BINARY_OPERATIONS = {
@@ -286,6 +286,7 @@ BINARY_OPERATIONS = {
     '>': greater_op,
     '>=': greater_eq_op,
 
+    'in': in_op,
     'instanceof': instanceof_op,
 }
 
