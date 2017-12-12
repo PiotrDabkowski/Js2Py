@@ -69,5 +69,5 @@ __all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js', 'parse_js', 'trans
 from .base import PyJsException
 from .evaljs import *
 from .translators import parse as parse_js
-from node_import import require
+from .node_import import require
 
