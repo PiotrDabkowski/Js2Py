@@ -9,7 +9,7 @@ def _init():
     if DID_INIT:
         return
     assert subprocess.call('node -v', shell=True, cwd=DIRNAME)==0, 'You must have node installed! run: brew install node'
-    assert subprocess.call('cd %s;npm link babel-core babel-cli babel-preset-es2015 babelify browserify' % repr(DIRNAME), shell=True, cwd=DIRNAME)==0, 'Could not link required node_modules'
+    assert subprocess.call('cd %s;npm install babel-core babel-cli babel-preset-es2015 babelify browserify' % repr(DIRNAME), shell=True, cwd=DIRNAME)==0, 'Could not link required node_modules'
     DID_INIT = True
 
 ADD_TO_GLOBALS_FUNC = '''
@@ -54,7 +54,7 @@ def require(module_name, update=False):
             f.write(code)
 
         # make sure the module is installed
-        assert subprocess.call('cd %s;npm link %s' %(repr(DIRNAME), module_name), shell=True, cwd=DIRNAME)==0, 'Could not install the required module: ' + module_name
+        assert subprocess.call('cd %s;npm install %s' %(repr(DIRNAME), module_name), shell=True, cwd=DIRNAME)==0, 'Could not install the required module: ' + module_name
 
         # convert the module
         assert subprocess.call(

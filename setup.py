@@ -23,11 +23,11 @@ More examples at: https://github.com/PiotrDabkowski/Js2Py
 
 
 
-# python setup.py register -r pypi
-# python3 setup.py sdist upload -r pypi
+# python setup.py sdist bdist_wheel
+# twine upload dist/*
 setup(
     name='Js2Py',
-    version='0.52',
+    version='0.53',
 
     packages=['js2py', 'js2py.utils', 'js2py.prototypes', 'js2py.translators',
               'js2py.constructors', 'js2py.host', 'js2py.es6', 'js2py.internals',
