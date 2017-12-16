@@ -1,4 +1,6 @@
 from ..base import *
+from six.moves.urllib.parse import quote, unquote
+
 
 RADIX_CHARS = {'1': 1, '0': 0, '3': 3, '2': 2, '5': 5, '4': 4, '7': 7, '6': 6, '9': 9, '8': 8, 'a': 10, 'c': 12,
                'b': 11, 'e': 14, 'd': 13, 'g': 16, 'f': 15, 'i': 18, 'h': 17, 'k': 20, 'j': 19, 'm': 22, 'l': 21,
@@ -79,7 +81,28 @@ def isFinite(number):
     return true
 
 
-#todo URI handling!
+# todo test them properly
 
+@Js
+def escape(text):
+    return quote(text.to_string().value)
 
+@Js
+def unescape(text):
+    return unquote(text.to_string().value)
 
+@Js
+def encodeURI(text):
+    return quote(text.to_string().value, safe='~@#$&()*!+=:;,.?/\'')
+
+@Js
+def decodeURI(text):
+    return unquote(text.to_string().value)
+
+@Js
+def encodeURIComponent(text):
+    return quote(text.to_string().value, safe='~()*!.\'')
+
+@Js
+def decodeURIComponent(text):
+    return unquote(text.to_string().value)

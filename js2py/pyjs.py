@@ -21,7 +21,9 @@ from .constructors.jsfloat64array import Float64Array
 from .prototypes.jsjson import JSON
 from .host.console import console
 from .host.jseval import Eval
-from .host.jsfunctions import parseFloat, parseInt, isFinite, isNaN
+from .host.jsfunctions import parseFloat, parseInt, isFinite, \
+    isNaN, escape, unescape, encodeURI, decodeURI, encodeURIComponent, decodeURIComponent
+
 
 # Now we have all the necessary items to create global environment for script
 __all__ = ['Js', 'PyJsComma', 'PyJsStrictEq', 'PyJsStrictNeq',
@@ -39,7 +41,9 @@ builtins = ('true','false','null','undefined','Infinity',
             'Int32Array', 'Uint32Array',
             'Float32Array', 'Float64Array',
             'ArrayBuffer',
-            'parseFloat', 'parseInt', 'isFinite', 'isNaN')
+            'parseFloat', 'parseInt', 'isFinite', 'isNaN',
+            'escape', 'unescape', 'encodeURI', 'decodeURI', 'encodeURIComponent', 'decodeURIComponent',
+            )
             #Array, Function, JSON,   Error is done later :)
             # also some built in functions like eval...
 
@@ -52,6 +56,9 @@ def set_global_object(obj):
     # make this available
     obj.register('this')
     obj.put('this', this)
+    # also add window and set it to be a global object for compatibility
+    obj.register('window')
+    obj.put('window', this)
 
 
 
