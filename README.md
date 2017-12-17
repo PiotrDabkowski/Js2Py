@@ -16,7 +16,8 @@ Simple Example:
     6
     >>> add.constructor
     function Function() { [python code] }
-    >> CryptoJS = js2py.require('crypto-js')
+    >>> js2py.require('underscore')
+    'function _(obj) { [python code] }'
 ```
 You can also import a big number of node modules as if they were written in Python!
 For example, here we import a pure JS library [crypto-js](https://www.npmjs.com/package/crypto-js):
