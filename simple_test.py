@@ -34,15 +34,16 @@ print('Now harder tests - test on huge JS libraries:')
 
 # crypto-js ( https://www.npmjs.com/package/crypto-js )
 print('Testing crypto-js')
-jsjson = js2py.eval_js('JSON')
 CryptoJS = js2py.require('crypto-js')
 data = [{'id': 1}, {'id': 2}]
-ciphertext = CryptoJS.AES.encrypt(jsjson.stringify(data), 'secret key 123')
+JSON = js2py.eval_js('JSON')
+ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), 'secret key 123')
+bytes  = CryptoJS.AES.decrypt(ciphertext.toString(), 'secret key 123')
+decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8)).to_list()
+assert decryptedData == data
+
 wrong_bytes  = CryptoJS.AES.decrypt(ciphertext.toString(), 'wrong key')
 assert not wrong_bytes.toString()
-bytes  = CryptoJS.AES.decrypt(ciphertext.toString(), 'secret key 123')
-decryptedData = jsjson.parse(bytes.toString(CryptoJS.enc.Utf8)).to_list()
-assert decryptedData == data
 
 # esprima ( https://www.npmjs.com/package/esprima )
 # escodegen ( https://github.com/estools/escodegen )

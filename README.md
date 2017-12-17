@@ -16,7 +16,23 @@ Simple Example:
     6
     >>> add.constructor
     function Function() { [python code] }
+    >> CryptoJS = js2py.require('crypto-js')
 ```
+You can also import a big number of node modules as if they were written in Python!
+For example, here we import a pure JS library [crypto-js](https://www.npmjs.com/package/crypto-js):
+
+```python
+    >>> CryptoJS = js2py.require('crypto-js')
+    >>> data = [{'id': 1}, {'id': 2}]
+    >>> JSON = js2py.eval_js('JSON')
+    >>> ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), 'secret key 123')
+    >>> bytes  = CryptoJS.AES.decrypt(ciphertext.toString(), 'secret key 123')
+    >>> decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8)).to_list()
+    >>> decryptedData
+    [{u'id': 1}, {u'id': 2}]
+```
+
+
 
 Now also supports JavaScript 6 (still experimental):
 

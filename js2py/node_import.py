@@ -1,6 +1,7 @@
 __all__ = ['require']
 import subprocess, os, codecs
 from .evaljs import translate_js
+import six
 DID_INIT = False
 DIRNAME = os.path.dirname(os.path.abspath(__file__))
 PY_NODE_MODULES_PATH = os.path.join(DIRNAME, 'py_node_modules')
@@ -53,7 +54,7 @@ def require(module_name, include_polyfill=False, update=False):
         addToGlobals(%s, module_temp_love_python);
         """ % (repr(module_name), repr(module_name))
         with open(os.path.join(DIRNAME, in_file_name), 'wb') as f:
-            f.write(code.encode('utf-8'))
+            f.write(code.encode('utf-8') if six.PY3 else code)
 
         # make sure the module is installed
         assert subprocess.call('cd %s;npm install %s' %(repr(DIRNAME), module_name), shell=True, cwd=DIRNAME)==0, 'Could not install the required module: ' + module_name
@@ -76,7 +77,7 @@ def require(module_name, include_polyfill=False, update=False):
         py_code = translate_js(js_code)
 
         with open(os.path.join(PY_NODE_MODULES_PATH, module_filename), 'wb') as f:
-            f.write(py_code.encode('utf-8'))
+            f.write(py_code.encode('utf-8') if six.PY3 else code)
     else:
         with codecs.open(os.path.join(PY_NODE_MODULES_PATH, module_filename), "r", "utf-8") as f:
             py_code = f.read()
