@@ -77,7 +77,7 @@ def require(module_name, include_polyfill=False, update=False):
         py_code = translate_js(js_code)
 
         with open(os.path.join(PY_NODE_MODULES_PATH, module_filename), 'wb') as f:
-            f.write(py_code.encode('utf-8') if six.PY3 else code)
+            f.write(py_code.encode('utf-8') if six.PY3 else py_code)
     else:
         with codecs.open(os.path.join(PY_NODE_MODULES_PATH, module_filename), "r", "utf-8") as f:
             py_code = f.read()

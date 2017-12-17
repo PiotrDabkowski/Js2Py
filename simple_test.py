@@ -42,9 +42,6 @@ bytes  = CryptoJS.AES.decrypt(ciphertext.toString(), 'secret key 123')
 decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8)).to_list()
 assert decryptedData == data
 
-wrong_bytes  = CryptoJS.AES.decrypt(ciphertext.toString(), 'wrong key')
-assert not wrong_bytes.toString()
-
 # esprima ( https://www.npmjs.com/package/esprima )
 # escodegen ( https://github.com/estools/escodegen )
 print('Testing esprima & escodegen')
