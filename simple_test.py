@@ -42,6 +42,13 @@ bytes  = CryptoJS.AES.decrypt(ciphertext.toString(), 'secret key 123')
 decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8)).to_list()
 assert decryptedData == data
 
+AES = js2py.require('crypto-js/aes')
+ciphertext = AES.encrypt(JSON.stringify(data), 'secret key 123')
+bytes  = AES.decrypt(ciphertext.toString(), 'secret key 123')
+decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8)).to_list()
+assert decryptedData == data
+
+
 # esprima ( https://www.npmjs.com/package/esprima )
 # escodegen ( https://github.com/estools/escodegen )
 print('Testing esprima & escodegen')
