@@ -1,5 +1,5 @@
 __all__ = ['require']
-import subprocess, os, codecs
+import subprocess, os, codecs, glob
 from .evaljs import translate_js
 import six
 DID_INIT = False
@@ -41,7 +41,11 @@ def require(module_name, include_polyfill=False, update=False):
     assert isinstance(module_name, str), 'module_name must be a string!'
     py_name = module_name.replace('-', '_')
     module_filename = '%s.py'%py_name
-    cached_py_npm_modules = os.listdir(PY_NODE_MODULES_PATH)
+    var_name = py_name.rpartition('/')[-1]
+    oldcwd = os.getcwd()
+    os.chdir(PY_NODE_MODULES_PATH)
+    cached_py_npm_modules = glob.glob('**', recursive=True)
+    os.chdir(oldcwd)
     if module_filename not in cached_py_npm_modules or update:
         _init()
         in_file_name = 'tmp0in439341018923js2py.js'
@@ -56,8 +60,9 @@ def require(module_name, include_polyfill=False, update=False):
         with open(os.path.join(DIRNAME, in_file_name), 'wb') as f:
             f.write(code.encode('utf-8') if six.PY3 else code)
 
+        pkg_name = module_name.partition('/')[0]
         # make sure the module is installed
-        assert subprocess.call('cd %s;npm install %s' %(repr(DIRNAME), module_name), shell=True, cwd=DIRNAME)==0, 'Could not install the required module: ' + module_name
+        assert subprocess.call('cd %s;npm install %s' %(repr(DIRNAME), pkg_name), shell=True, cwd=DIRNAME)==0, 'Could not install the required module: ' + pkg_name
 
         # convert the module
         assert subprocess.call(
@@ -72,10 +77,13 @@ def require(module_name, include_polyfill=False, update=False):
         os.remove(os.path.join(DIRNAME, out_file_name))
 
         js_code += GET_FROM_GLOBALS_FUNC
-        js_code += ';var %s = getFromGlobals(%s);%s' % (py_name, repr(module_name), py_name)
+        js_code += ';var %s = getFromGlobals(%s);%s' % (var_name, repr(module_name), var_name)
         print('Please wait, translating...')
         py_code = translate_js(js_code)
 
+        dirname = os.path.dirname(os.path.join(PY_NODE_MODULES_PATH, module_filename))
+        if not os.path.isdir(dirname):
+            os.makedirs(dirname)
         with open(os.path.join(PY_NODE_MODULES_PATH, module_filename), 'wb') as f:
             f.write(py_code.encode('utf-8') if six.PY3 else py_code)
     else:
@@ -84,5 +92,5 @@ def require(module_name, include_polyfill=False, update=False):
 
     context = {}
     exec(py_code, context)
-    return context['var'][py_name].to_py()
+    return context['var'][var_name].to_py()
 
