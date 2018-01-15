@@ -42,11 +42,7 @@ def require(module_name, include_polyfill=False, update=False):
     py_name = module_name.replace('-', '_')
     module_filename = '%s.py'%py_name
     var_name = py_name.rpartition('/')[-1]
-    oldcwd = os.getcwd()
-    os.chdir(PY_NODE_MODULES_PATH)
-    cached_py_npm_modules = glob.glob('**', recursive=True)
-    os.chdir(oldcwd)
-    if module_filename not in cached_py_npm_modules or update:
+    if not os.path.exists(os.path.join(PY_NODE_MODULES_PATH, module_filename)) or update:
         _init()
         in_file_name = 'tmp0in439341018923js2py.js'
         out_file_name = 'tmp0out439341018923js2py.js'
