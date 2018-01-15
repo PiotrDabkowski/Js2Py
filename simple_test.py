@@ -123,3 +123,4 @@ class Shape {
 a = new Shape(1,2,3)
 ''').x == 2
 print("Passed ECMA 6!")
+
