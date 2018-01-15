@@ -93,4 +93,3 @@ def require(module_name, include_polyfill=False, update=False):
     context = {}
     exec(py_code, context)
     return context['var'][var_name].to_py()
-
