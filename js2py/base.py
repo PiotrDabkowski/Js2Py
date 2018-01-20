@@ -2381,6 +2381,9 @@ class PyJsArguments(PyJs):
     def to_list(self):
         return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
 
+    def to_dict(self):
+        return dict([(str(e), self.get(str(e))) for e in xrange(self.get('length').to_uint32())])
+
 
 #We can define function proto after number proto because func uses number in its init
 FunctionPrototype = PyJsFunction(Empty, ObjectPrototype)
