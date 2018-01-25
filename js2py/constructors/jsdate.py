@@ -96,7 +96,10 @@ class PyJsDate(PyJs):
 
 def parse_date(py_string):   # todo support all date string formats
     try:
-        dt = datetime.datetime.strptime(py_string, "%Y-%m-%dT%H:%M:%S.%fZ")
+        try:
+            dt = datetime.datetime.strptime(py_string, "%Y-%m-%dT%H:%M:%S.%fZ")
+        except:
+            dt = datetime.datetime.strptime(py_string, "%Y-%m-%dT%H:%M:%SZ")
         return MakeDate(MakeDay(Js(dt.year), Js(dt.month-1), Js(dt.day)), MakeTime(Js(dt.hour), Js(dt.minute), Js(dt.second), Js(dt.microsecond//1000)))
     except:
         raise MakeError('TypeError', 'Could not parse date %s - unsupported date format. Currently only supported format is RFC3339 utc. Sorry!' % py_string)
