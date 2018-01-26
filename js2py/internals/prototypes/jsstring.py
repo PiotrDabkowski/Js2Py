@@ -259,7 +259,7 @@ class StringPrototype:
     def substring (this, args):
         cok(this)
         s = to_string(this)
-        start = get_arg(args, 0)
+        start = to_int(get_arg(args, 0))
         length = len(s)
         end = get_arg(args, 1)
         end = length if is_undefined(end) else to_int(end)
