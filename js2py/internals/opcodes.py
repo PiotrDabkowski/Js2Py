@@ -646,11 +646,9 @@ class WITH(OP_CODE):
         with_context.THIS_BINDING = ctx.THIS_BINDING
         status = ctx.space.exe.execute_fragment_under_context(with_context, self.beg_label, self.end_label)
 
-
-
         val, typ, spec = status
-        if typ!=3:
-            print typ
+
+        if typ != 3:  # exception
             ctx.stack.pop()
 
         if typ == 0:  # normal
@@ -662,7 +660,7 @@ class WITH(OP_CODE):
         elif typ == 2:  # jump outside
             ctx.stack.append(val)
             return spec
-        elif typ == 3:
+        elif typ == 3:  # exception
             # throw is made with empty stack as usual
             raise spec
         else:

@@ -613,8 +613,8 @@ class ByteCodeGenerator:
         self.emit('LABEL', beg_label)
         self.emit('LOAD_UNDEFINED')
         self.emit(body)
-        self.emit('LABEL', end_label)
         self.emit('NOP')
+        self.emit('LABEL', end_label)
 
         # with statement implementation
         self.emit('WITH', beg_label, end_label)

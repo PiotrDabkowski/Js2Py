@@ -457,7 +457,7 @@ class PyJsRegExp(PyJs):
                         reg = reg.replace(fix, rep)
                        # print 'Fix', fix, '->', rep, '=', reg
                 else:
-                    raise
+                    raise Exception()
                 REGEXP_DB[body, flags] = self.pat
             except:
                 #print 'Invalid pattern...', self.value, comp
@@ -594,6 +594,8 @@ class Scope(PyJs):
             if self.is_with_scope:
                 if self.own.has_property(var):
                     return self.own.put(var, val, throw=throw)
+                else:
+                    return self.prototype.put(var, val)
             # trying to put in local scope
             # we dont know yet in which scope we should place this var
             elif var in self.own:

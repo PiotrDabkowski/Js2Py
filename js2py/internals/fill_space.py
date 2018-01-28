@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from base import Scope
 from func_utils import *
 from conversions import *
@@ -13,7 +15,6 @@ from prototypes.jsarray import ArrayPrototype
 import prototypes.jsjson as jsjson
 import prototypes.jsutils as jsutils
 
-
 from constructors import jsnumber
 from constructors import jsstring
 from constructors import jsarray
@@ -22,6 +23,8 @@ from constructors import jsregexp
 from constructors import jsmath
 from constructors import jsobject
 from constructors import jsfunction
+from constructors import jsconsole
+
 
 def fill_proto(proto, proto_class, space):
     for i in dir(proto_class):
@@ -244,6 +247,8 @@ def fill_space(space, byte_generator):
     for k,v in jsmath.CONSTANTS.items():
         set_protected(math, k, v)
 
+    console = space.NewObject()
+    fill_proto(console, jsconsole.ConsoleMethods, space)
 
 
     # set global object
@@ -264,7 +269,8 @@ def fill_space(space, byte_generator):
                 'isFinite': isFinite,
                 'isNaN': isNaN,
                 'eval': easy_func(jsfunction._eval, space),
-                'log': easy_func(jsfunction.log, space),
+                'console': console,
+                'log': console.get(u'log'),
                 }
 
     builtins.update(error_constructors)
