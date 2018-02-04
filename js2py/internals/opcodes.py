@@ -415,10 +415,10 @@ class STORE_MEMBER_OP(OP_CODE):
                 raise MakeError('TypeError', "Cannot set property '%s' of null" % to_string(name))
             elif typ is UNDEFINED_TYPE:
                 raise MakeError('TypeError', "Cannot set property '%s' of undefined" % to_string(name))
-            ctx.stack.append(BINARY_OPERATIONS[self.op](value, get_member(left, name, ctx.space)))
+            ctx.stack.append(BINARY_OPERATIONS[self.op](get_member(left, name, ctx.space), value))
             return
         else:
-            ctx.stack.append(BINARY_OPERATIONS[self.op](value, get_member(left, name, ctx.space)))
+            ctx.stack.append(BINARY_OPERATIONS[self.op](get_member(left, name, ctx.space), value))
             left.put_member(name, ctx.stack[-1])
 
 
@@ -438,10 +438,10 @@ class STORE_MEMBER_DOT_OP(OP_CODE):
                 raise MakeError('TypeError', "Cannot set property '%s' of null" % self.prop)
             elif typ == UNDEFINED_TYPE:
                 raise MakeError('TypeError', "Cannot set property '%s' of undefined" % self.prop)
-            ctx.stack.append(BINARY_OPERATIONS[self.op](value, get_member_dot(left, self.prop, ctx.space)))
+            ctx.stack.append(BINARY_OPERATIONS[self.op](get_member_dot(left, self.prop, ctx.space), value))
             return
         else:
-            ctx.stack.append(BINARY_OPERATIONS[self.op](value, get_member_dot(left, self.prop, ctx.space)))
+            ctx.stack.append(BINARY_OPERATIONS[self.op](get_member_dot(left, self.prop, ctx.space), value))
             left.put(self.prop, ctx.stack[-1])
 
 
