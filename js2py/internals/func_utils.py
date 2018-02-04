@@ -35,7 +35,7 @@ def convert_to_js_type(e, space=None):
             raise MakeError('TypeError', 'Actually an internal error, could not convert to js type because space not specified')
         new = {}
         for k,v in e.items():
-            new[to_string(convert_to_js_type(k))] = convert_to_js_type(v)
+            new[to_string(convert_to_js_type(k, space))] = convert_to_js_type(v, space)
         return space.ConstructObject(new)
     else:
         raise MakeError('TypeError', 'Could not convert to js type!')
