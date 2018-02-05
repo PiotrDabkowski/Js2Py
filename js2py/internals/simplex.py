@@ -81,7 +81,7 @@ class JsException(Exception):
             self.throw = throw
 
     def get_thrown_value(self, space):
-        if self.throw:
+        if self.throw is not None:
             return self.throw
         else:
             return space.NewError(self.typ, self.message)

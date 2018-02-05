@@ -34,7 +34,7 @@ class RegExpPrototype:
 
 def RegExpExec(this, string, space):
     if GetClass(this)!='RegExp':
-        raise this.MakeError('TypeError', 'RegExp.prototype.exec is not generic!')
+        raise MakeError('TypeError', 'RegExp.prototype.exec is not generic!')
     string = to_string(string)
     length = len(string)
     i = to_int(this.get('lastIndex')) if this.glob else 0

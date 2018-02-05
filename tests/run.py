@@ -9,9 +9,9 @@ import codecs
 import json
 import traceback
 
-TEST_TIMEOUT =  120
+TEST_TIMEOUT =  2
 INCLUDE_PATH = 'includes/'
-TEST_PATH = 'test_cases/language/statements'
+TEST_PATH = 'test_cases/language/arguments-object/'
 
 
 # choose which JS runtime to test. Js2Py has 2 independent runtimes. Translation based (translator) and the vm interpreter based.
@@ -93,6 +93,7 @@ class FestCase:
             self.strict_only = False
 
         self.code = self.init + self.raw
+        print(self.code)
 
     def _parse_test_info(self):
         self.raw_info = re.search('/\*---(.+)---\*/', self.raw, re.DOTALL).groups()[0].strip()
@@ -103,6 +104,8 @@ class FestCase:
                 if category is None:
                     raise RuntimeError('Could not parse test case info! %s' % self.path)
                 category_content += '\n' + line.lstrip()
+            elif line == 'onlyStrict':
+                self.strict_only = True
             else:
                 if category is not None:
                     content = category_content.strip()
@@ -211,6 +214,7 @@ def fest_all(path):
     files = list_path(path)
     folders = list_path(path, folders=True)
     for f in files:
+        print(f)
         if not f.endswith('.js'):
             continue
         try:

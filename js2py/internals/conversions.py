@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 # Type Conversions. to_type. All must return PyJs subclass instance
 from simplex import *
 

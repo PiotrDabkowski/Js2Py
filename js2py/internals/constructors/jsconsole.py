@@ -8,3 +8,4 @@ class ConsoleMethods:
     def log(this, args):
         x = ' '.join(to_string(e) for e in args)
         print(x)
+        return undefined

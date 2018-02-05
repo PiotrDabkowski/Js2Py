@@ -15,7 +15,7 @@ def NumberConstructor(args, space):
     temp = space.NewObject()
     temp.prototype = space.NumberPrototype
     temp.Class = 'Number'
-    temp.value = to_number(get_arg(args, 0)) if len(args)>0 else 0.
+    temp.value = float(to_number(get_arg(args, 0)) if len(args)>0 else 0.)
     return temp
 
 

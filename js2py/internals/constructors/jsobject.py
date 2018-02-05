@@ -7,7 +7,7 @@ import six
 
 def Object(this, args):
     val = get_arg(args, 0)
-    if val.is_null() or val.is_undefined():
+    if is_null(val) or is_undefined(val):
         return args.space.NewObject()
     return to_object(val, args.space)
 
@@ -16,7 +16,7 @@ def ObjectCreate(args, space):
     if len(args):
         val = get_arg(args, 0)
         if is_object(val):
-            #Implementation dependent, but my will simply return :)
+            #  Implementation dependent, but my will simply return :)
             return val
         elif type(val) in (NUMBER_TYPE, STRING_TYPE, BOOLEAN_TYPE):
             return to_object(val, space)
@@ -37,7 +37,7 @@ class ObjectMethods:
         if not is_object(obj):
             raise MakeError('TypeError', 'Object.getOwnPropertyDescriptor called on non-object')
         desc = obj.own.get(to_string(prop))
-        return convert_to_js_type(desc)
+        return convert_to_js_type(desc, args.space)
 
 
     def getOwnPropertyNames(this, args):
@@ -82,7 +82,7 @@ class ObjectMethods:
             if not v.get('enumerable'):
                 continue
             desc = ToPropertyDescriptor(props.get(unicode(k)))
-            if not obj.define_own_property(unicode(k), desc):
+            if not obj.define_own_property(unicode(k), desc, False):
                 raise MakeError('TypeError', 'Failed to define own property: %s'% k)
         return obj
 

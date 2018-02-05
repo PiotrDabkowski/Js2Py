@@ -79,7 +79,10 @@ class Code:
             self.current_ctx = ctx
             return self._execute_fragment_under_context(ctx, start_label, end_label)
         except JsException as err:
-            del ctx.stack[:] # undo the things that were put on the stack (if any)
+            # undo the things that were put on the stack (if any)
+            # don't worry, I know the recovery is possible through try statement and for this reason try statement
+            # has its own context and stack so it will not delete the contents of the outer stack
+            del ctx.stack[:]
             return undefined, 3, err
         finally:
             self.current_ctx = old_curr_ctx
@@ -89,6 +92,8 @@ class Code:
         initial_len = len(ctx.stack)
         loc = start
         entry_level = len(self.contexts)
+        # for e in self.tape[start:end]:
+        #     print e
 
         while loc < len(self.tape):
             #print loc, self.tape[loc]
@@ -126,7 +131,7 @@ class Code:
                     # return: (None, None)
                     else:
                         if len(self.contexts) == entry_level:
-                            assert len(ctx.stack) == 1
+                            assert len(ctx.stack) == 1 + initial_len
                             return undefined, 1, ctx.stack.pop() # return signal
                         return_value = ctx.stack.pop()
                         ctx = self.contexts.pop()

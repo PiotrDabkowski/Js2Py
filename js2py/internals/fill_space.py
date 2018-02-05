@@ -92,7 +92,7 @@ def fill_space(space, byte_generator):
     number_proto = space.NewObject()
     number_proto.prototype = object_proto
     fill_proto(number_proto, NumberPrototype, space)
-    number_proto.value = 0
+    number_proto.value = 0.
     number_proto.Class = 'Number'
     space.NumberPrototype = number_proto
 

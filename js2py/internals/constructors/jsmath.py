@@ -85,21 +85,21 @@ class MathFunctions:
     def sin(this, args):
         x = get_arg(args, 0)
         a = to_number(x)
-        if a!=a: # it must be a nan
+        if not is_finite(a): # it must be a nan
             return NaN
         return math.sin(a)
 
     def cos(this, args):
         x = get_arg(args, 0)
         a = to_number(x)
-        if a!=a: # it must be a nan
+        if not is_finite(a): # it must be a nan
             return NaN
-        return  math.cos(a)
+        return math.cos(a)
 
     def tan(this, args):
         x = get_arg(args, 0)
         a = to_number(x)
-        if a!=a: # it must be a nan
+        if not is_finite(a): # it must be a nan
             return NaN
         return math.tan(a)
 

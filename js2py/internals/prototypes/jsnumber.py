@@ -36,7 +36,7 @@ class NumberPrototype:
         radix = get_arg(args, 0)
         if is_undefined(radix):
             return to_str_rep(this)
-        r = radix.to_int()
+        r = to_int(radix)
         if r==10:
             return to_str_rep(this)
         if r not in xrange(2, 37) or radix!=r:
@@ -57,7 +57,7 @@ class NumberPrototype:
     def valueOf(this, args):
         if GetClass(this)!='Number':
             raise MakeError('TypeError', 'Number.prototype.valueOf is not generic')
-        if type(this)!= unicode:
+        if type(this)!=float:
             this = this.value
         return this
 

@@ -56,7 +56,7 @@ def replacement_template(rep, source, span, npar):
 class StringPrototype:
     def toString(this, args):
         if GetClass(this)!='String':
-            raise this.MakeError('TypeError', 'String.prototype.toString is not generic')
+            raise MakeError('TypeError', 'String.prototype.toString is not generic')
         if type(this)==unicode:
             return this
         assert type(this.value) == unicode
@@ -64,7 +64,7 @@ class StringPrototype:
 
     def valueOf(this, args):
         if GetClass(this)!='String':
-            raise this.MakeError('TypeError', 'String.prototype.valueOf is not generic')
+            raise MakeError('TypeError', 'String.prototype.valueOf is not generic')
         if type(this)==unicode:
             return this
         assert type(this.value) == unicode
@@ -122,7 +122,7 @@ class StringPrototype:
         r = args.space.NewRegExp(regexp, '') if GetClass(regexp)!='RegExp' else regexp
         if not r.glob:
             return RegExpExec(r, s, space=args.space)
-        r.put('lastIndex', this.Js(0))
+        r.put('lastIndex', float(0))
         found = []
         previous_last_index = 0
         last_match = True

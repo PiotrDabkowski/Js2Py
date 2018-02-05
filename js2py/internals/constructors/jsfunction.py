@@ -40,6 +40,7 @@ def executable_code(code_str, space, global_context=True):
     space.byte_generator.emit('JUMP', skip)
     space.byte_generator.emit('LABEL', start)
     space.byte_generator.emit(parsed)
+    space.byte_generator.emit('NOP')
     space.byte_generator.emit('LABEL', skip)
     space.byte_generator.emit('NOP')
     space.byte_generator.restore_state()

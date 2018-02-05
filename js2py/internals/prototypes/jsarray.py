@@ -22,20 +22,20 @@ class ArrayPrototype:
 
     def toLocaleString(this, args):
         array = to_object(this, args.space)
-        arr_len = to_uint32(array.get('length'))
+        arr_len = js_arr_length(array)
         # separator is simply a comma ','
         if not arr_len:
             return ''
         res = []
         for i in xrange(arr_len):
-            element = array[str(i)]
+            element = array.get(unicode(i))
             if is_undefined(element) or is_null(element):
                 res.append('')
             else:
                 cand = to_object(element, args.space)
                 str_func = cand.get('toLocaleString')
                 if not is_callable(str_func):
-                    raise MakeError('TypeError', 'toLocaleString method of item at index %d is not callable'%i)
+                    raise MakeError('TypeError', 'toLocaleString method of item at index %d is not callable' % i)
                 res.append(to_string(str_func.call(cand, ())))
         return ','.join(res)
 
@@ -76,10 +76,10 @@ class ArrayPrototype:
 
     def pop(this, args): #todo check
         array = to_object(this, args.space)
-        arr_len = to_uint32(array.get('length'))
+        arr_len = js_arr_length(array)
         if not arr_len:
             array.put('length', float(arr_len))
-            return None
+            return undefined
         ind = unicode(arr_len-1)
         element = array.get(ind)
         array.delete(ind)
@@ -95,7 +95,7 @@ class ArrayPrototype:
         for i, e in enumerate(to_put, arr_len):
             array.put(unicode(i), e, True)
         array.put('length', float(arr_len+len(to_put)), True)
-        return i
+        return float(i)
 
 
     def reverse(this, args):
@@ -117,7 +117,7 @@ class ArrayPrototype:
         arr_len = js_arr_length(array)
         if not arr_len:
             array.put('length', 0.)
-            return None
+            return undefined
         first = array.get('0')
         for k in xrange(1, arr_len):
             from_s, to_s = unicode(k), unicode(k-1)
@@ -151,7 +151,7 @@ class ArrayPrototype:
     def sort(this, args):  # todo: this assumes array continous (not sparse) - fix for sparse arrays
         cmpfn = get_arg(args, 0)
         if not GetClass(this) in ('Array', 'Arguments'):
-            return to_object(this) # do nothing
+            return to_object(this, args.space)  # do nothing
         arr_len = js_arr_length(this)
         if not arr_len:
             return this
@@ -176,22 +176,22 @@ class ArrayPrototype:
         array = to_object(this, args.space)
         start = get_arg(args, 0)
         deleteCount = get_arg(args, 1)
-        arr_len = array.get('length').to_uint32()
-        relative_start = start.to_int()
+        arr_len = js_arr_length(this)
+        relative_start = to_int(start)
         actual_start = max((arr_len + relative_start),0) if relative_start<0 else min(relative_start, arr_len)
-        actual_delete_count =  min(max(deleteCount.to_int(),0 ), arr_len - actual_start)
+        actual_delete_count = min(max(to_int(deleteCount), 0), arr_len - actual_start)
         k = 0
-        A = this.Js([])
+        A = args.space.NewArray(0)
         # 9
         while k<actual_delete_count:
             if array.has_property(unicode(actual_start+k)):
                 A.put(unicode(k), array.get(unicode(actual_start+k)))
             k += 1
         # 10-11
-        items = to_arr(arguments)[2:]
+        items = list(args)[2:]
         items_len = len(items)
         # 12
-        if items_len<actual_delete_count:
+        if items_len < actual_delete_count:
             k = actual_start
             while k < (arr_len-actual_delete_count):
                 fr = unicode(k+actual_delete_count)
@@ -222,7 +222,7 @@ class ArrayPrototype:
             E = items.pop(0)
             array.put(unicode(k), E)
             k += 1
-        array.put('length', this.Js(arr_len - actual_delete_count + items_len))
+        array.put('length', float(arr_len - actual_delete_count + items_len))
         return A
 
     def unshift(this, args):
@@ -242,7 +242,7 @@ class ArrayPrototype:
         for j, e in enumerate(items):
             array.put(unicode(j), e)
         array.put('length', float(arr_len + argCount))
-        return arr_len + argCount
+        return float(arr_len + argCount)
 
     def indexOf(this, args):
         array = to_object(this, args.space)
@@ -296,15 +296,15 @@ class ArrayPrototype:
     def every(this, args):
         array = to_object(this, args.space)
         callbackfn = get_arg(args, 0)
-        arr_len = array.get('length').to_uint32()
-        if not callbackfn.is_callable():
-            raise this.MakeError('TypeError', 'callbackfn must be a function')
-        T = arguments[1]
+        arr_len = js_arr_length(array)
+        if not is_callable(callbackfn):
+            raise MakeError('TypeError', 'callbackfn must be a function')
+        T = get_arg(args, 1)
         k = 0
         while k<arr_len:
             if array.has_property(unicode(k)):
                 kValue = array.get(unicode(k))
-                if not callbackfn.call(T, (kValue, this.Js(k), array)).to_boolean().value:
+                if not to_boolean(callbackfn.call(T, (kValue, float(k), array))):
                     return False
             k += 1
         return True
@@ -313,15 +313,15 @@ class ArrayPrototype:
     def some(this, args):
         array = to_object(this, args.space)
         callbackfn = get_arg(args, 0)
-        arr_len = array.get('length').to_uint32()
-        if not callbackfn.is_callable():
-            raise this.MakeError('TypeError', 'callbackfn must be a function')
-        T = arguments[1]
+        arr_len = js_arr_length(array)
+        if not is_callable(callbackfn):
+            raise MakeError('TypeError', 'callbackfn must be a function')
+        T = get_arg(args, 1)
         k = 0
         while k<arr_len:
             if array.has_property(unicode(k)):
                 kValue = array.get(unicode(k))
-                if callbackfn.call(T, (kValue, this.Js(k), array)).to_boolean().value:
+                if to_boolean(callbackfn.call(T, (kValue, float(k), array))):
                     return True
             k += 1
         return False
@@ -357,7 +357,7 @@ class ArrayPrototype:
                 kValue = array.get(Pk)
                 mappedValue = callbackfn.call(_this, (kValue, float(k), array))
                 A.define_own_property(Pk, {'value': mappedValue, 'writable': True,
-                    'enumerable': True, 'configurable': True})
+                    'enumerable': True, 'configurable': True}, False)
             k += 1
         return A
 
@@ -381,14 +381,15 @@ class ArrayPrototype:
     def reduce(this, args):
         array = to_object(this, args.space)
         callbackfn = get_arg(args, 0)
-        arr_len = array.get('length').to_uint32()
-        if not callbackfn.is_callable():
-            raise this.MakeError('TypeError', 'callbackfn must be a function')
-        if not arr_len and len(arguments)<2:
-            raise this.MakeError('TypeError', 'Reduce of empty array with no initial value')
+        arr_len = js_arr_length(array)
+        if not is_callable(callbackfn):
+            raise MakeError('TypeError', 'callbackfn must be a function')
+        if not arr_len and len(args) < 2:
+            raise MakeError('TypeError', 'Reduce of empty array with no initial value')
         k = 0
-        if len(arguments)>1: # initial value present
-            accumulator = arguments[1]
+        accumulator = undefined
+        if len(args) > 1: # initial value present
+            accumulator = args[1]
         else:
             kPresent = False
             while not kPresent and k<arr_len:
@@ -397,11 +398,11 @@ class ArrayPrototype:
                     accumulator = array.get(unicode(k))
                 k += 1
             if not kPresent:
-                raise this.MakeError('TypeError', 'Reduce of empty array with no initial value')
-        while k<arr_len:
+                raise MakeError('TypeError', 'Reduce of empty array with no initial value')
+        while k < arr_len:
             if array.has_property(unicode(k)):
                 kValue = array.get(unicode(k))
-                accumulator = callbackfn.call(this.undefined, (accumulator, kValue, this.Js(k), array))
+                accumulator = callbackfn.call(undefined, (accumulator, kValue, float(k), array))
             k += 1
         return accumulator
 
@@ -409,14 +410,16 @@ class ArrayPrototype:
     def reduceRight(this, args):
         array = to_object(this, args.space)
         callbackfn = get_arg(args, 0)
-        arr_len = array.get('length').to_uint32()
-        if not callbackfn.is_callable():
-            raise this.MakeError('TypeError', 'callbackfn must be a function')
-        if not arr_len and len(arguments)<2:
-            raise this.MakeError('TypeError', 'Reduce of empty array with no initial value')
+        arr_len = js_arr_length(array)
+        if not is_callable(callbackfn):
+            raise MakeError('TypeError', 'callbackfn must be a function')
+        if not arr_len and len(args)<2:
+            raise MakeError('TypeError', 'Reduce of empty array with no initial value')
         k = arr_len - 1
-        if len(arguments)>1: # initial value present
-            accumulator = arguments[1]
+        accumulator = undefined
+
+        if len(args) > 1:  # initial value present
+            accumulator = args[1]
         else:
             kPresent = False
             while not kPresent and k>=0:
@@ -425,11 +428,11 @@ class ArrayPrototype:
                     accumulator = array.get(unicode(k))
                 k -= 1
             if not kPresent:
-                raise this.MakeError('TypeError', 'Reduce of empty array with no initial value')
+                raise MakeError('TypeError', 'Reduce of empty array with no initial value')
         while k>=0:
             if array.has_property(unicode(k)):
                 kValue = array.get(unicode(k))
-                accumulator = callbackfn.call(this.undefined, (accumulator, kValue, this.Js(k), array))
+                accumulator = callbackfn.call(undefined, (accumulator, kValue, float(k), array))
             k -= 1
         return accumulator
 

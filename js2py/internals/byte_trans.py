@@ -226,10 +226,45 @@ class ByteCodeGenerator:
 
         self.emit('JUMP', continue_label) # loop back
         self.emit('LABEL', break_label)
+
                                         
     def ForInStatement(self, left, right, body, **kwargs):
-        raise NotImplementedError('Sorry FOR-IN not available yet!')
+        # prepare the needed labels
+        body_start_label = self.exe.get_new_label()
+        continue_label = self.exe.get_new_label()
+        break_label = self.exe.get_new_label()
 
+        # prepare the name
+        if left['type'] == 'VariableDeclaration':
+            if len(left['declarations']) != 1:
+                raise MakeError('SyntaxError', ' Invalid left-hand side in for-in loop: Must have a single binding.')
+            self.emit(left)
+            name = left['declarations'][0]['id']['name']
+        elif left['type']=='Identifier':
+            name = left['name']
+        else:
+            raise MakeError('SyntaxError', 'Invalid left-hand side in for-loop')
+
+        # prepare the iterable
+        self.emit(right)
+
+        # emit ForIn Opcode
+        self.emit('FOR_IN', name, body_start_label, continue_label, break_label)
+
+        # a special continue position
+        self.emit('LABEL', continue_label)
+        self.emit('NOP')
+
+        self.emit('LABEL', body_start_label)
+        self.implicit_continues.append(continue_label)
+        self.implicit_breaks.append(break_label)
+        self.emit('LOAD_UNDEFINED')
+        self.emit(body)
+        self.implicit_continues.pop()
+        self.implicit_breaks.pop()
+        self.emit('NOP')
+        self.emit('LABEL', break_label)
+        self.emit('NOP')
                                         
     def FunctionDeclaration(self, id, params, defaults, body, **kwargs):
         if defaults:
@@ -573,7 +608,7 @@ class ByteCodeGenerator:
                         
     def VariableDeclarator(self, id, init, **kwargs):
         name = id['name']
-        if  name in SPECIAL_IDENTIFIERS:
+        if name in SPECIAL_IDENTIFIERS:
             raise MakeError('Invalid left-hand side in assignment')
         self.declared_vars.append(name)
         if init is not None:
