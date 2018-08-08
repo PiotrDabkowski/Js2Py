@@ -96,7 +96,7 @@ class FestCase:
         print(self.code)
 
     def _parse_test_info(self):
-        self.raw_info = re.search('/\*---(.+)---\*/', self.raw, re.DOTALL).groups()[0].strip()
+        self.raw_info = re.search(r'/\*---(.+)---\*/', self.raw, re.DOTALL).groups()[0].strip()
         category = None
         category_content = None
         for line in self.raw_info.splitlines() + ['END:']:
