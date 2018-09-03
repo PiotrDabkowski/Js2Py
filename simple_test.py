@@ -2,6 +2,8 @@ import js2py
 import time
 
 print("Testing ECMA 5...")
+
+
 assert js2py.eval_js('(new Date("2008-9-03T20:56:35.450686Z")).toString()')
 
 assert js2py.eval_js('/ser/.test("Mleko + ser to nabial")')
@@ -27,8 +29,37 @@ except js2py.PyJsException as err:
     assert str(err).startswith('SyntaxError: ')
 
 
-print("Passed ECMA 5 simple tests!\n"+30*'-')
+# Simple PyWrapper test
+class Foo:
+    def __init__(self, bar):
+        self.bar = bar
+        self.bar_history = []
 
+    def set_bar(self, x):
+        import copy
+        self.bar_history.append(copy.deepcopy(self))
+        self.bar = x
+
+    def get_bar(self):
+        return self.bar
+
+pyobj = Foo(5)
+context = js2py.EvalJs({'foo': pyobj})
+assert context.foo.bar == 5
+context.execute('foo.bar = 7')
+assert context.foo.bar == 7
+context.execute('foo.bar += 15.22')
+assert context.foo.bar == 22.22
+context.execute('foo.bar /= 2')
+assert context.foo.bar == 11.11
+assert pyobj.bar == 11.11
+context.execute('foo.set_bar(foo.get_bar())')
+assert context.foo.get_bar() == 11.11
+context.execute('foo.set_bar(33)')
+assert context.foo.get_bar() == 33
+assert context.eval('foo.bar_history.push(foo.bar_history[1].get_bar());foo.bar_history[foo.bar_history.length-1].get_bar()') == 11.11
+
+print("Passed ECMA 5 simple tests!\n"+30*'-')
 
 print('Now harder tests - test on huge JS libraries:')
 

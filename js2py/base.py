@@ -1191,10 +1191,15 @@ class PyObjectWrapper(PyJs):
         except:
             return undefined
 
-    def put(self, prop, val, throw=False):
+    def put(self, prop, val, op=None, throw=False):
         if not isinstance(prop, basestring):
             prop = prop.to_string().value
         try:
+            if isinstance(op, bool):
+                raise ValueError("Op must be a string")
+            elif op is not None:
+                if op: # increment operation
+                     val = getattr(self.get(prop), OP_METHODS[op])(val)
             setattr(self.obj, prop, to_python(val))
         except AttributeError:
             raise MakeError('TypeError', 'Read only object probably...')
