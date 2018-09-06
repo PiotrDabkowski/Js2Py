@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/PiotrDabkowski/Js2Py.svg?branch=master)](https://travis-ci.org/PiotrDabkowski/Js2Py)
+[![Code Quality: Javascript](https://img.shields.io/lgtm/grade/javascript/g/PiotrDabkowski/Js2Py.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/PiotrDabkowski/Js2Py/context:javascript)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/PiotrDabkowski/Js2Py.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/PiotrDabkowski/Js2Py/alerts)
 
 #### Pure Python JavaScript Translator/Interpreter
 
