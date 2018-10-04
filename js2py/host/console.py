@@ -6,6 +6,6 @@ def console():
 
 @Js
 def log():
-    print(arguments[0])
+    print(' '.join(map(str, arguments.to_list())))
 
 console.put('log', log)

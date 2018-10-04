@@ -24,9 +24,9 @@ if six.PY3:
 
 def str_repr(s):
     if six.PY2:
-        return repr(s.encode('utf-8'))
+        return s.encode('utf-8')
     else:
-        return repr(s)
+        return s
 
 def MakeError(name, message):
     """Returns PyJsException with PyJsError inside"""
@@ -907,12 +907,7 @@ class PyJs(object):
         return self.to_string().value
 
     def __repr__(self):
-        if self.Class=='Object':
-            res = []
-            for e in self:
-                res.append(str_repr(e.value)+': '+str_repr(self.get(e)))
-            return '{%s}'%', '.join(res)
-        elif self.Class=='String':
+        if self.Class=='String':
             return str_repr(self.value)
         elif self.Class in ['Array','Int8Array','Uint8Array','Uint8ClampedArray','Int16Array','Uint16Array','Int32Array','Uint32Array','Float32Array','Float64Array']:
             res = []
@@ -2390,6 +2385,9 @@ class PyJsArguments(PyJs):
 
     def to_list(self):
         return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+
+    def to_dict(self):
+        return dict([(str(e), self.get(str(e))) for e in xrange(self.get('length').to_uint32())])
 
 
 #We can define function proto after number proto because func uses number in its init
