@@ -16,24 +16,29 @@ LOAD_FAST = opcode.opmap['LOAD_FAST']
 LOAD_GLOBAL = opcode.opmap['LOAD_GLOBAL']
 STORE_FAST = opcode.opmap['STORE_FAST']
 
+
 def fix_js_args(func):
     '''Use this function when unsure whether func takes this and arguments as its last 2 args.
        It will append 2 args if it does not.'''
     fcode = six.get_function_code(func)
-    fargs = fcode.co_varnames[fcode.co_argcount-2:fcode.co_argcount]
-    if fargs==('this', 'arguments') or fargs==('arguments', 'var'):
+    fargs = fcode.co_varnames[fcode.co_argcount - 2:fcode.co_argcount]
+    if fargs == ('this', 'arguments') or fargs == ('arguments', 'var'):
         return func
-    code = append_arguments(six.get_function_code(func), ('this','arguments'))
+    code = append_arguments(six.get_function_code(func), ('this', 'arguments'))
 
-    return types.FunctionType(code, six.get_function_globals(func), func.__name__, closure=six.get_function_closure(func))
+    return types.FunctionType(
+        code,
+        six.get_function_globals(func),
+        func.__name__,
+        closure=six.get_function_closure(func))
 
-    
+
 def append_arguments(code_obj, new_locals):
-    co_varnames = code_obj.co_varnames   # Old locals
-    co_names = code_obj.co_names   # Old globals
-    co_names+=tuple(e for e in new_locals if e not in co_names)
-    co_argcount = code_obj.co_argcount     # Argument count
-    co_code = code_obj.co_code         # The actual bytecode as a string
+    co_varnames = code_obj.co_varnames  # Old locals
+    co_names = code_obj.co_names  # Old globals
+    co_names += tuple(e for e in new_locals if e not in co_names)
+    co_argcount = code_obj.co_argcount  # Argument count
+    co_code = code_obj.co_code  # The actual bytecode as a string
 
     # Make one pass over the bytecode to identify names that should be
     # left in code_obj.co_names.
@@ -45,20 +50,20 @@ def append_arguments(code_obj, new_locals):
 
     # Build co_names for the new code object. This should consist of
     # globals that were only accessed via LOAD_GLOBAL
-    names = tuple(name for name in co_names
-                  if name not in set(new_locals) - saved_names)
+    names = tuple(
+        name for name in co_names if name not in set(new_locals) - saved_names)
 
     # Build a dictionary that maps the indices of the entries in co_names
     # to their entry in the new co_names
-    name_translations = dict((co_names.index(name), i)
-                             for i, name in enumerate(names))
+    name_translations = dict(
+        (co_names.index(name), i) for i, name in enumerate(names))
 
     # Build co_varnames for the new code object. This should consist of
     # the entirety of co_varnames with new_locals spliced in after the
     # arguments
     new_locals_len = len(new_locals)
-    varnames = (co_varnames[:co_argcount] + new_locals +
-                co_varnames[co_argcount:])
+    varnames = (
+        co_varnames[:co_argcount] + new_locals + co_varnames[co_argcount:])
 
     # Build the dictionary that maps indices of entries in the old co_varnames
     # to their indices in the new co_varnames
@@ -68,8 +73,8 @@ def append_arguments(code_obj, new_locals):
 
     # Build the dictionary that maps indices of deleted entries of co_names
     # to their indices in the new co_varnames
-    names_to_varnames = dict((co_names.index(name), varnames.index(name))
-                             for name in new_locals)
+    names_to_varnames = dict(
+        (co_names.index(name), varnames.index(name)) for name in new_locals)
 
     # Now we modify the actual bytecode
     modified = []
@@ -95,36 +100,19 @@ def append_arguments(code_obj, new_locals):
     if six.PY2:
         code = ''.join(modified)
         args = (co_argcount + new_locals_len,
-                              code_obj.co_nlocals + new_locals_len,
-                              code_obj.co_stacksize,
-                              code_obj.co_flags,
-                              code,
-                              code_obj.co_consts,
-                              names,
-                              varnames,
-                              code_obj.co_filename,
-                              code_obj.co_name,
-                              code_obj.co_firstlineno,
-                              code_obj.co_lnotab,
-                              code_obj.co_freevars,
-                              code_obj.co_cellvars)
+                code_obj.co_nlocals + new_locals_len, code_obj.co_stacksize,
+                code_obj.co_flags, code, code_obj.co_consts, names, varnames,
+                code_obj.co_filename, code_obj.co_name,
+                code_obj.co_firstlineno, code_obj.co_lnotab,
+                code_obj.co_freevars, code_obj.co_cellvars)
     else:
         code = bytes(modified)
-        args = (co_argcount + new_locals_len,
-                0,
-                code_obj.co_nlocals + new_locals_len,
-                code_obj.co_stacksize,
-                code_obj.co_flags,
-                code,
-                code_obj.co_consts,
-                names,
-                varnames,
-                code_obj.co_filename,
-                code_obj.co_name,
-                code_obj.co_firstlineno,
-                code_obj.co_lnotab,
-                code_obj.co_freevars,
-                code_obj.co_cellvars)
+        args = (co_argcount + new_locals_len, 0,
+                code_obj.co_nlocals + new_locals_len, code_obj.co_stacksize,
+                code_obj.co_flags, code, code_obj.co_consts, names, varnames,
+                code_obj.co_filename, code_obj.co_name,
+                code_obj.co_firstlineno, code_obj.co_lnotab,
+                code_obj.co_freevars, code_obj.co_cellvars)
 
     # Done modifying codestring - make the code object
     return types.CodeType(*args)
@@ -145,17 +133,18 @@ def instructions(code_obj):
         extended_arg = 0
         while i < L:
             op = code[i]
-            i+= 1
+            i += 1
             if op < opcode.HAVE_ARGUMENT:
                 yield NewInstruction(op, None)
                 continue
-            oparg = code[i] + (code[i+1] << 8) + extended_arg
+            oparg = code[i] + (code[i + 1] << 8) + extended_arg
             extended_arg = 0
             i += 2
             if op == opcode.EXTENDED_ARG:
                 extended_arg = oparg << 16
                 continue
             yield NewInstruction(op, oparg)
+
 
 def write_instruction(op, arg):
     if sys.version_info < (3, 6):
@@ -164,12 +153,14 @@ def write_instruction(op, arg):
         elif arg <= 65536:
             return [chr(op), chr(arg & 255), chr((arg >> 8) & 255)]
         elif arg <= 4294967296:
-            return [chr(opcode.EXTENDED_ARG),
-                    chr((arg >> 16) & 255),
-                    chr((arg >> 24) & 255),
-                    chr(op),
-                    chr(arg & 255),
-                    chr((arg >> 8) & 255)]
+            return [
+                chr(opcode.EXTENDED_ARG),
+                chr((arg >> 16) & 255),
+                chr((arg >> 24) & 255),
+                chr(op),
+                chr(arg & 255),
+                chr((arg >> 8) & 255)
+            ]
         else:
             raise ValueError("Invalid oparg: {0} is too large".format(oparg))
     else:  # python 3.6+ uses wordcode instead of bytecode and they already supply all the EXTENDEND_ARG ops :)
@@ -213,27 +204,32 @@ def check(code_obj):
                 while 1:
                     if i in pos_to_inst:
                         print(pos_to_inst[i])
-                        print(pos_to_inst[i-2])
-                        print(list(map(chr, old_bytecode))[i-4:i+8])
-                        print(bytelist[i-4:i+8])
+                        print(pos_to_inst[i - 2])
+                        print(list(map(chr, old_bytecode))[i - 4:i + 8])
+                        print(bytelist[i - 4:i + 8])
                         break
-            raise RuntimeError('Your python version made changes to the bytecode')
+            raise RuntimeError(
+                'Your python version made changes to the bytecode')
 
 
 check(six.get_function_code(check))
 
-
-
-if __name__=='__main__':
+if __name__ == '__main__':
     x = 'Wrong'
     dick = 3000
+
     def func(a):
-        print(x,y,z, a)
+        print(x, y, z, a)
         print(dick)
-        d = (x,)
-        for e in  (e for e in x):
+        d = (x, )
+        for e in (e for e in x):
             print(e)
         return x, y, z
-    func2 =types.FunctionType(append_arguments(six.get_function_code(func), ('x', 'y', 'z')), six.get_function_globals(func), func.__name__, closure=six.get_function_closure(func))
-    args = (2,2,3,4),3,4
+
+    func2 = types.FunctionType(
+        append_arguments(six.get_function_code(func), ('x', 'y', 'z')),
+        six.get_function_globals(func),
+        func.__name__,
+        closure=six.get_function_closure(func))
+    args = (2, 2, 3, 4), 3, 4
     assert func2(1, *args) == args

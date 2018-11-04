@@ -2,8 +2,10 @@ from opcodes import *
 from space import *
 from base import *
 
+
 class Code:
     '''Can generate, store and run sequence of ops representing js code'''
+
     def __init__(self, is_strict=False):
         self.tape = []
         self.compiled = False
@@ -50,7 +52,7 @@ class Code:
         old_curr_ctx = self.current_ctx
 
         self.contexts = [FakeCtx()]
-        self.return_locs = [len(self.tape)] # target line after return
+        self.return_locs = [len(self.tape)]  # target line after return
 
         # prepare my ctx
         my_ctx = func._generate_my_context(this, args)
@@ -77,7 +79,8 @@ class Code:
         old_curr_ctx = self.current_ctx
         try:
             self.current_ctx = ctx
-            return self._execute_fragment_under_context(ctx, start_label, end_label)
+            return self._execute_fragment_under_context(
+                ctx, start_label, end_label)
         except JsException as err:
             # undo the things that were put on the stack (if any)
             # don't worry, I know the recovery is possible through try statement and for this reason try statement
@@ -99,8 +102,9 @@ class Code:
             #print loc, self.tape[loc]
             if len(self.contexts) == entry_level and loc >= end:
                 assert loc == end
-                assert len(ctx.stack) == (1 + initial_len), 'Stack change must be equal to +1!'
-                return ctx.stack.pop(), 0, None # means normal return
+                assert len(ctx.stack) == (
+                    1 + initial_len), 'Stack change must be equal to +1!'
+                return ctx.stack.pop(), 0, None  # means normal return
 
             # execute instruction
             status = self.tape[loc].eval(ctx)
@@ -112,16 +116,18 @@ class Code:
                     if len(self.contexts) == entry_level:
                         # check if jumped outside of the fragment and break if so
                         if not start <= loc < end:
-                            assert len(ctx.stack) == (1+initial_len), 'Stack change must be equal to +1!'
+                            assert len(ctx.stack) == (
+                                1 + initial_len
+                            ), 'Stack change must be equal to +1!'
                             return ctx.stack.pop(), 2, status  # jump outside
                     continue
 
-                elif len(status)==2:  # a call or a return!
+                elif len(status) == 2:  # a call or a return!
                     # call: (new_ctx, func_loc_label_num)
                     if status[0] is not None:
                         # append old state to the stack
                         self.contexts.append(ctx)
-                        self.return_locs.append(loc+1)
+                        self.return_locs.append(loc + 1)
                         # set new state
                         loc = self.label_locs[status[1]]
                         ctx = status[0]
@@ -132,7 +138,8 @@ class Code:
                     else:
                         if len(self.contexts) == entry_level:
                             assert len(ctx.stack) == 1 + initial_len
-                            return undefined, 1, ctx.stack.pop() # return signal
+                            return undefined, 1, ctx.stack.pop(
+                            )  # return signal
                         return_value = ctx.stack.pop()
                         ctx = self.contexts.pop()
                         self.current_ctx = ctx
@@ -158,12 +165,12 @@ class Code:
                     loc = self.label_locs[status]
                     continue
 
-                elif len(status)==2:  # a call or a return!
+                elif len(status) == 2:  # a call or a return!
                     # call: (new_ctx, func_loc_label_num)
                     if status[0] is not None:
                         # append old state to the stack
                         self.contexts.append(ctx)
-                        self.return_locs.append(loc+1)
+                        self.return_locs.append(loc + 1)
                         # set new state
                         loc = self.label_locs[status[1]]
                         ctx = status[0]
@@ -183,6 +190,7 @@ class Code:
             loc += 1
         assert len(ctx.stack) == 1, ctx.stack
         return ctx.stack.pop()
+
 
 class FakeCtx(object):
     def __init__(self):

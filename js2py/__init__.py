@@ -17,7 +17,6 @@
 # IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 #  OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
-
 """ This module allows you to translate and execute Javascript in pure python.
     Basically its implementation of ECMAScript 5.1 in pure python.
 
@@ -63,11 +62,14 @@
 """
 
 __author__ = 'Piotr Dabkowski'
-__all__  = ['EvalJs', 'translate_js', 'import_js', 'eval_js', 'parse_js', 'translate_file',
-            'run_file', 'disable_pyimport', 'eval_js6', 'translate_js6', 'PyJsException', 'get_file_contents', 'write_file_contents', 'require']
+__all__ = [
+    'EvalJs', 'translate_js', 'import_js', 'eval_js', 'parse_js',
+    'translate_file', 'run_file', 'disable_pyimport', 'eval_js6',
+    'translate_js6', 'PyJsException', 'get_file_contents',
+    'write_file_contents', 'require'
+]
 
 from .base import PyJsException
 from .evaljs import *
 from .translators import parse as parse_js
 from .node_import import require
-

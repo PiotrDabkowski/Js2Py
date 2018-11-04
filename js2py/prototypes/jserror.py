@@ -1,8 +1,8 @@
-
 class ErrorPrototype:
     def toString():
-        if this.TYPE!='Object':
-            raise this.MakeError('TypeError', 'Error.prototype.toString called on non-object')
+        if this.TYPE != 'Object':
+            raise this.MakeError(
+                'TypeError', 'Error.prototype.toString called on non-object')
         name = this.get('name')
         name = 'Error' if name.is_undefined() else name.to_string().value
         msg = this.get('message')

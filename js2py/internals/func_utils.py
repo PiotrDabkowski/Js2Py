@@ -8,6 +8,7 @@ if six.PY3:
     xrange = range
     unicode = str
 
+
 def get_arg(arguments, n):
     if len(arguments) <= n:
         return undefined
@@ -28,14 +29,21 @@ def convert_to_js_type(e, space=None):
         return unicode(t)
     elif t in (list, tuple):
         if space is None:
-            raise MakeError('TypeError', 'Actually an internal error, could not convert to js type because space not specified')
+            raise MakeError(
+                'TypeError',
+                'Actually an internal error, could not convert to js type because space not specified'
+            )
         return space.ConstructArray(ensure_js_types(e, space=space))
-    elif t==dict:
+    elif t == dict:
         if space is None:
-            raise MakeError('TypeError', 'Actually an internal error, could not convert to js type because space not specified')
+            raise MakeError(
+                'TypeError',
+                'Actually an internal error, could not convert to js type because space not specified'
+            )
         new = {}
-        for k,v in e.items():
-            new[to_string(convert_to_js_type(k, space))] = convert_to_js_type(v, space)
+        for k, v in e.items():
+            new[to_string(convert_to_js_type(k, space))] = convert_to_js_type(
+                v, space)
         return space.ConstructObject(new)
     else:
         raise MakeError('TypeError', 'Could not convert to js type!')
@@ -50,11 +58,11 @@ def is_js_type(e):
         return False
 
 
-
 # todo optimise these 2!
 def js_array_to_tuple(arr):
     length = to_uint32(arr.get(u'length'))
     return tuple(arr.get(unicode(e)) for e in xrange(length))
+
 
 def js_array_to_list(arr):
     length = to_uint32(arr.get(u'length'))

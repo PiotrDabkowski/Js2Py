@@ -97,13 +97,13 @@ function helloWorld(a, b, c) {
 }
 '''
 # we can even parse esprima's own source code, but its size is too big for the travis test.
-# sample_js_code = js2py.get_file_contents('examples/esprima.js')
+#sample_js_code = js2py.get_file_contents('examples/esprima.js')
 parsed = esprima.parse(sample_js_code)
 print('use escodegen to get back the js code from the parsed AST')
 reconstructed = escodegen.generate(parsed)
 parsed2 = esprima.parse(sample_js_code)
 reconstructed2 = escodegen.generate(parsed)
-assert reconstructed==reconstructed2 and len(reconstructed)>=len(sample_js_code) and reconstructed.startswith('function')
+assert reconstructed==reconstructed2 and len(reconstructed)>=len(sample_js_code)
 
 
 # chalk ( https://github.com/chalk/chalk )

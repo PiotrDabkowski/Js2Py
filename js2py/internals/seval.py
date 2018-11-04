@@ -10,6 +10,7 @@ sys.setrecursionlimit(100000)
 
 pyjsparser.parser.ENABLE_JS2PY_ERRORS = lambda msg: MakeError(u'SyntaxError', unicode(msg))
 
+
 def eval_js_vm(js):
     a = ByteCodeGenerator(Code())
     s = Space()
@@ -24,5 +25,3 @@ def eval_js_vm(js):
     a.exe.compile()
 
     return a.exe.run(a.exe.space.GlobalObj)
-
-
