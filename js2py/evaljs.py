@@ -196,7 +196,7 @@ class EvalJs(object):
         code = translate_js(js, '')
         # make sure you have a temp folder:
         filename = 'temp' + os.sep + '_' + hashlib.md5(
-            code).hexdigest() + '.py'
+            code.encode("utf-8")).hexdigest() + '.py'
         try:
             with open(filename, mode='w') as f:
                 f.write(code)
