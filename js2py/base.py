@@ -1250,7 +1250,7 @@ class JsObjectWrapper(object):
                                  'Uint16Array', 'Int32Array', 'Uint32Array',
                                  'Float32Array', 'Float64Array', 'Arguments'):
             return repr(self.to_list())
-        return repr(self.to_dict())
+        return str([(i[0], type(i[1]).__name__) for i in self.to_dict().items()])
 
     def __len__(self):
         return len(self._obj)
