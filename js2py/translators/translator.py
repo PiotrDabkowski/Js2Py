@@ -15,7 +15,7 @@ pyjsparser.parser.ENABLE_PYIMPORT = True
 CP_NUMERIC_RE = re.compile(r'(?<![a-zA-Z0-9_"\'])([0-9\.]+)')
 CP_NUMERIC_PLACEHOLDER = '__PyJsNUM_%i_PyJsNUM__'
 CP_NUMERIC_PLACEHOLDER_REVERSE_RE = re.compile(
-    CP_NUMERIC_PLACEHOLDER.replace('%i', '([0-9\.]+)'))
+    CP_NUMERIC_PLACEHOLDER.replace('%i', r'([0-9\.]+)'))
 
 # the re below is how we'll recognise string constants
 # it finds a ' or ", then reads until the next matching ' or "
@@ -29,7 +29,7 @@ CP_STRING_RE = re.compile(
     CP_STRING)  # this is how we'll recognise string constants
 CP_STRING_PLACEHOLDER = '__PyJsSTR_%i_PyJsSTR__'
 CP_STRING_PLACEHOLDER_REVERSE_RE = re.compile(
-    CP_STRING_PLACEHOLDER.replace('%i', '([0-9\.]+)'))
+    CP_STRING_PLACEHOLDER.replace('%i', r'([0-9\.]+)'))
 
 cache = {}
 
