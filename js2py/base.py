@@ -50,7 +50,12 @@ def to_python(val):
         return val.value
     elif isinstance(val, PyObjectWrapper):
         return val.__dict__['obj']
-    return JsObjectWrapper(val)
+    elif isinstance(val, PyJsArray) and val.CONVERT_TO_PY_PRIMITIVES:
+        return to_list(val)
+    elif isinstance(val, PyJsObject) and val.CONVERT_TO_PY_PRIMITIVES:
+        return to_dict(val)
+    else:
+        return JsObjectWrapper(val)
 
 
 def to_dict(js_obj,
@@ -255,6 +260,7 @@ class PyJs(object):
     own = {}
     GlobalObject = None
     IS_CHILD_SCOPE = False
+    CONVERT_TO_PY_PRIMITIVES = False
     value = None
     buff = None
 
