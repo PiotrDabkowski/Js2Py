@@ -196,11 +196,14 @@ class EvalJs(object):
         code = translate_js(js, '')
         # make sure you have a temp folder:
         filename = 'temp' + os.sep + '_' + hashlib.md5(
-            code).hexdigest() + '.py'
+            code.encode("utf-8")).hexdigest() + '.py'
         try:
             with open(filename, mode='w') as f:
                 f.write(code)
-            execfile(filename, self._context)
+            with open(filename, "r") as f:
+                pyCode = compile(f.read(), filename, 'exec')
+                exec(pyCode, self._context)
+                
         except Exception as err:
             raise err
         finally:

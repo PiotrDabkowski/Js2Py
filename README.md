@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/PiotrDabkowski/Js2Py.svg?branch=master)](https://travis-ci.org/PiotrDabkowski/Js2Py)
+[![Build Status](https://travis-ci.org/PiotrDabkowski/Js2Py.svg?branch=master)](https://travis-ci.org/PiotrDabkowski/Js2Py) [![Downloads](https://pepy.tech/badge/js2py/month)](https://pepy.tech/project/js2py)
 
 #### Pure Python JavaScript Translator/Interpreter
 
