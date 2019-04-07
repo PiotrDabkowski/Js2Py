@@ -5,6 +5,7 @@ import re
 from .translators.friendly_nodes import REGEXP_CONVERTER
 from .utils.injector import fix_js_args
 from types import FunctionType, ModuleType, GeneratorType, BuiltinFunctionType, MethodType, BuiltinMethodType
+from math import floor, log10
 import traceback
 try:
     import numpy
@@ -608,6 +609,12 @@ class PyJs(object):
             elif self.is_infinity():
                 sign = '-' if self.value < 0 else ''
                 return Js(sign + 'Infinity')
+            elif self.value != 0 and not (-7 < floor(log10(abs(self.value))) < 21):
+                n = repr(float(self.value)).split('e')
+                # Remove leading zeros from exponent
+                e = int(n[1])
+
+                return Js(unicode(n[0] + ('e' if e < 0 else 'e+') + str(e)))
             elif isinstance(self.value,
                             long) or self.value.is_integer():  # dont print .0
                 return Js(unicode(int(self.value)))
