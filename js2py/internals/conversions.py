@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 # Type Conversions. to_type. All must return PyJs subclass instance
-from simplex import *
+from .simplex import *
 
 
 def to_primitive(self, hint=None):
