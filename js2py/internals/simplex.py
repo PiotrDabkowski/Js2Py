@@ -1,6 +1,10 @@
 from __future__ import unicode_literals
 import six
-
+if six.PY3:
+    basestring = str
+    long = int
+    xrange = range
+    unicode = str
 
 #Undefined
 class PyJsUndefined(object):
@@ -114,7 +118,7 @@ class JsException(Exception):
                 return self.mes.to_string().value
         else:
             if self.throw is not None:
-                from conversions import to_string
+                from .conversions import to_string
                 return to_string(self.throw)
             else:
                 return self.typ + ': ' + self.message

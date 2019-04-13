@@ -11,7 +11,7 @@ import traceback
 
 TEST_TIMEOUT =  2
 INCLUDE_PATH = 'includes/'
-TEST_PATH = 'test_cases/language/arguments-object/'
+TEST_PATH = 'test_cases/built-ins'
 
 
 # choose which JS runtime to test. Js2Py has 2 independent runtimes. Translation based (translator) and the vm interpreter based.
@@ -93,7 +93,6 @@ class FestCase:
             self.strict_only = False
 
         self.code = self.init + self.raw
-        print(self.code)
 
     def _parse_test_info(self):
         self.raw_info = re.search(r'/\*---(.+)---\*/', self.raw, re.DOTALL).groups()[0].strip()
@@ -169,7 +168,7 @@ class FestCase:
         except:
             full_error = traceback.format_exc()
             passed = False
-            reason = 'UNKNOWN - URGENT, FIX NOW!\n' + traceback.format_exc()+'\n\n'
+            reason = 'UNKNOWN - URGENT, FIX NOW!\n' + traceback.format_exc()[-2000:]+'\n\n'
             label = 'CRASHED'
 
         if not errors:
@@ -189,7 +188,10 @@ class FestCase:
         return passed, label, reason, full_error
 
     def print_result(self):
-        print(self.clear_name, self.es5id, self.label, self.reason, '\nFile "%s", line 1'%self.full_path if self.label=='CRASHED' else '')
+        #if self.label == "CRASHED": return
+        print(self.clear_name, self.es5id, self.label, self.reason, '\nFile "%s", line 1'%self.full_path if self.label!='PASSED' else '')
+
+        if self.label == "CRASHED": print(self.code) or exit()
 
 
 
@@ -207,14 +209,12 @@ def list_path(path, folders=False):
         try:
             return sorted(res, key=LooseVersion)
         except:
-            print('Fuck python 3!')
             return sorted(res)  # python 3
 
 def fest_all(path):
     files = list_path(path)
     folders = list_path(path, folders=True)
     for f in files:
-        print(f)
         if not f.endswith('.js'):
             continue
         try:
