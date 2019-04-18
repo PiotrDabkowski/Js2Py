@@ -14,8 +14,8 @@ def get_js_bytecode(js):
     a.emit(d)
     return  a.exe.tape
     
-def eval_js_vm(js, debug_mode=False):
-    a = ByteCodeGenerator(Code(debug_mode=debug_mode))
+def eval_js_vm(js, debug=False):
+    a = ByteCodeGenerator(Code(debug_mode=debug))
     s = Space()
     a.exe.space = s
     s.exe = a.exe
@@ -24,7 +24,7 @@ def eval_js_vm(js, debug_mode=False):
 
     a.emit(d)
     fill_space.fill_space(s, a)
-    if debug_mode:
+    if debug:
         from pprint import pprint
         pprint(a.exe.tape)
         print()
