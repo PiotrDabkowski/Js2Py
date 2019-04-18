@@ -604,21 +604,7 @@ class PyJs(object):
         elif typ == 'Boolean':
             return Js('true') if self.value else Js('false')
         elif typ == 'Number':  #or self.Class=='Number':
-            if self.is_nan():
-                return Js('NaN')
-            elif self.is_infinity():
-                sign = '-' if self.value < 0 else ''
-                return Js(sign + 'Infinity')
-            elif self.value != 0 and not (-7 < floor(log10(abs(self.value))) < 21):
-                n = repr(float(self.value)).split('e')
-                # Remove leading zeros from exponent
-                e = int(n[1])
-
-                return Js(unicode(n[0] + ('e' if e < 0 else 'e+') + str(e)))
-            elif isinstance(self.value,
-                            long) or self.value.is_integer():  # dont print .0
-                return Js(unicode(int(self.value)))
-            return Js(unicode(self.value))  # accurate enough
+            return Js(unicode(js_dtoa(self.value)))
         elif typ == 'String':
             return self
         else:  #object
@@ -1053,7 +1039,7 @@ def PyJsComma(a, b):
     return b
 
 
-from .internals.simplex import JsException as PyJsException
+from .internals.simplex import JsException as PyJsException, js_dtoa
 import pyjsparser
 pyjsparser.parser.ENABLE_JS2PY_ERRORS = lambda msg: MakeError('SyntaxError', msg)
 

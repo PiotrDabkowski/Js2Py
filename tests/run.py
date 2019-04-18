@@ -11,7 +11,7 @@ import traceback
 
 TEST_TIMEOUT =  2
 INCLUDE_PATH = 'includes/'
-TEST_PATH = 'test_cases/built-ins'
+TEST_PATH = 'test_cases/language'
 
 
 # choose which JS runtime to test. Js2Py has 2 independent runtimes. Translation based (translator) and the vm interpreter based.

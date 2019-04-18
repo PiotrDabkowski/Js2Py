@@ -79,7 +79,7 @@ def is_callable(self):
 
 
 def is_infinity(self):
-    return self == float('inf') or self == -float('inf')
+    return self == Infinity or self == -Infinity
 
 
 def is_nan(self):
@@ -135,3 +135,22 @@ def value_from_js_exception(js_exception, space):
         return js_exception.throw
     else:
         return space.NewError(js_exception.typ, js_exception.message)
+
+
+def js_dtoa(number):
+    if is_nan(number):
+        return u'NaN'
+    elif is_infinity(number):
+        if number > 0:
+            return u'Infinity'
+        return u'-Infinity'
+    elif number == 0.:
+        return u'0'
+    elif abs(number) < 1e-6 or abs(number) >= 1e21:
+        frac, exponent = unicode(float(number)).split('e')
+        # Remove leading zeros from the exponent.
+        exponent = int(exponent)
+        return frac + ('e' if exponent < 0 else 'e+') + unicode(exponent)
+    elif isinstance(number, long) or number.is_integer():  # dont print .0
+        return unicode(int(number))
+    return unicode(number)  # python representation should be equivalent.
