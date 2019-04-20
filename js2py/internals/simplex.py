@@ -147,10 +147,10 @@ def js_dtoa(number):
     elif number == 0.:
         return u'0'
     elif abs(number) < 1e-6 or abs(number) >= 1e21:
-        frac, exponent = unicode(float(number)).split('e')
+        frac, exponent = unicode(repr(float(number))).split('e')
         # Remove leading zeros from the exponent.
         exponent = int(exponent)
         return frac + ('e' if exponent < 0 else 'e+') + unicode(exponent)
     elif isinstance(number, long) or number.is_integer():  # dont print .0
         return unicode(int(number))
-    return unicode(number)  # python representation should be equivalent.
+    return unicode(repr(number))  # python representation should be equivalent.
