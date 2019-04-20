@@ -151,6 +151,10 @@ def js_dtoa(number):
         # Remove leading zeros from the exponent.
         exponent = int(exponent)
         return frac + ('e' if exponent < 0 else 'e+') + unicode(exponent)
+    elif abs(number) < 1e-4:  # python starts to return exp notation while we still want the prec
+        frac, exponent = unicode(repr(float(number))).split('e-')
+        base = u'0.' + u'0' * (int(exponent) - 1) + frac.lstrip('-').replace('.', '')
+        return base if number > 0. else u'-' + base
     elif isinstance(number, long) or number.is_integer():  # dont print .0
         return unicode(int(number))
     return unicode(repr(number))  # python representation should be equivalent.
