@@ -250,7 +250,7 @@ def is_generic_descriptor(desc):
 
 ##############################################################################
 
-
+@six.python_2_unicode_compatible
 class PyJs(object):
     PRIMITIVES = frozenset(
         ['String', 'Number', 'Boolean', 'Undefined', 'Null'])
@@ -952,7 +952,7 @@ class PyJs(object):
         '''Generally not a constructor, raise an error'''
         raise MakeError('TypeError', '%s is not a constructor' % self.Class)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.to_string().value
 
     def __repr__(self):
