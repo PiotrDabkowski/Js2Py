@@ -47,7 +47,7 @@ t = []
 
 Type = None
 try:
-    print timeit(
+    print(timeit(
         """
 
 t.append(4)
@@ -57,6 +57,6 @@ t.pop()
 
 """,
         "from __main__ import X,Y,namedtuple,array,t,add,Type, izip",
-        number=1000000)
+        number=1000000))
 except:
     raise
