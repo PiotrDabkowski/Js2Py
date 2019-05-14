@@ -13,7 +13,7 @@ assert js2py.eval_js('function (r) {return r}')(5) == 5
 
 x, c = js2py.run_file('examples/esprima.js')
 assert c.esprima.parse('var abc = 40').to_dict() == {'type': 'Program', 'body': [{'type': 'VariableDeclaration', 'kind': 'var', 'declarations': [{'id': {'type': 'Identifier', 'name': 'abc'}, 'type': 'VariableDeclarator', 'init': {'type': 'Literal', 'raw': '40', 'value': 40}}]}], 'sourceType': 'script'}
-
+assert js2py.eval_js('var x = {get y() { return this.val;}, val: 11};x.y') == 11
 try:
     assert js2py.eval_js('syntax error!') and 0
 except js2py.PyJsException as err:
