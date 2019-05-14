@@ -27,7 +27,7 @@ More examples at: https://github.com/PiotrDabkowski/Js2Py
 # twine upload dist/*
 setup(
     name='Js2Py',
-    version='0.63',
+    version='0.64',
 
     packages=['js2py', 'js2py.utils', 'js2py.prototypes', 'js2py.translators',
               'js2py.constructors', 'js2py.host', 'js2py.es6', 'js2py.internals',
