@@ -64,15 +64,10 @@ Every feature of ECMA 5.1 is implemented (except of 'with' statement):
 ```
 Unfortunately even though Js2Py can be generally used to translate huge Js files (over 50k lines long), in rare cases you may encounter some unexpected problems (like javascript calling a function with 300 arguments - python allows only 255). These problems are very hard to fix with current translation approach. I will try to implement an interpreter in near future which will hopefully fix all the edge cases.
 
-### JavaScript 'VirtualMachine' in Python
+#### Installation 
 
-If the translator for some reason does not work for you, you can try the new JS VM:
-
-```python
-from js2py.internals import seval
-seval.eval_js_vm(code)
-```
-
+    pip install js2py
+    
 <hr>
 
 #### More advanced usage example
@@ -110,26 +105,95 @@ function bind(thisArg) { [python code] }
 6
  ```   
 
+You can also enable require support in JavaScript like this:
+
+```python
+>>> context = js2py.EvalJs(enable_require=True)
+>>> context.eval("require('esprima').parse('var a = 1')")
+```
+<hr>
+
+### JavaScript 'VirtualMachine' in Python
+
+As a fun experimental project I have also implemented a VM-based JavaScript 
+(yes - there are 2 separate JS implementations in this repo). It is feature complete and faster than the translation based version.
+Below you can see a demo with a nice debug view (bytecode + execution sequence):
+
+```python
+>>> from js2py.internals import seval
+>>> seval.eval_js_vm("try {throw 3+3} catch (e) {console.log(e)}", debug=True)
+[LOAD_UNDEFINED(),
+ JUMP(4,),
+ LABEL(1,),
+ LOAD_UNDEFINED(),
+ POP(),
+ LOAD_NUMBER(3.0,),
+ LOAD_NUMBER(3.0,),
+ BINARY_OP('+',),
+ THROW(),
+ NOP(),
+ LABEL(2,),
+ LOAD_UNDEFINED(),
+ POP(),
+ LOAD('console',),
+ LOAD('e',),
+ LOAD_N_TUPLE(1,),
+ CALL_METHOD_DOT('log',),
+ NOP(),
+ LABEL(3,),
+ LOAD_UNDEFINED(),
+ NOP(),
+ LABEL(4,),
+ TRY_CATCH_FINALLY(1, 2, 'e', 3, False, 4)]
+
+0 LOAD_UNDEFINED()
+1 JUMP(4,)
+18 TRY_CATCH_FINALLY(1, 2, 'e', 3, False, 4)
+  ctx entry (from:2, to:9)
+  2 LOAD_UNDEFINED()
+  3 POP()
+  4 LOAD_NUMBER(3.0,)
+  5 LOAD_NUMBER(3.0,)
+  6 BINARY_OP('+',)
+  7 THROW()
+  ctx exit (js errors)
+  ctx entry (from:9, to:16)
+  9 LOAD_UNDEFINED()
+  10 POP()
+  11 LOAD('console',)
+  12 LOAD('e',)
+  13 LOAD_N_TUPLE(1,)
+  14 CALL_METHOD_DOT('log',)
+6
+  15 NOP()
+  ctx exit (normal)
+
+```
+
+This is just a curiosity and I do not recommend using VM in practice (requires more polishing).
+ 
 <hr>
 
 #### Limitations
 
-It has only 3 known limitations:
+There are 3 main limitations:
 <ul>
 <li>"strict mode" is ignored</li>
 <li>with statement is not supported</li>
 <li>Indirect call to eval is treated as direct call to eval (hence always evals in local scope)</li>
 </ul>
 
-Please let me know if you find any bugs - they will be fixed within 48 hours.
+They are generally not a big issue in practice.
+In practice more problematic are minor edge cases that unfortunately
+sometimes do happen. Please report a bug if you find one. 
+
+Js2Py was able to successfully 
+translate and run huge JS libraries like Babel (100k+ loc), esprima, crypto-js and more.
+You can try it yourself by importing any supported npm package via `js2py.require('your_package')`.
 
 <hr>
 
-#### Installation 
 
-    pip install js2py
-    
-<hr>
 
 #### Other Examples
 
@@ -180,26 +244,42 @@ Also, of course you can use Js2Py to parse (tree is the same as in esprima.js) a
 #### Parsing:
 ```python
 >>> js2py.parse_js('var $ = 5')   
-{'body': [{'kind': 'var', 'declarations': [{'init': {'raw': None, 'type': u'Literal', 'value': 5.0}, 'type': u'VariableDeclarator', 'id': {'type': u'Identifier', 'name': u'$'}}], 'type': u'VariableDeclaration'}], 'type': u'Program'}
+{
+    "body": [
+        {
+            "declarations": [
+                {
+                    "id": {
+                        "name": "$",
+                        "type": "Identifier"
+                    },
+                    "init": {
+                        "raw": "5",
+                        "type": "Literal",
+                        "value": 5
+                    },
+                    "type": "VariableDeclarator"
+                }
+            ],
+            "kind": "var",
+            "type": "VariableDeclaration"
+        }
+    ],
+    "type": "Program"
+}
 ```
 #### Translating:
 
 ```python
->>> print js2py.translate_js('var $ = 5')
-import js2py.pyjs, sys
-# Redefine builtin objects... Do you have a better idea?
-for m in sys.modules.keys():
-    if m.startswith('js2py'):
-        del sys.modules[m]
-del js2py.pyjs
-del js2py
+>>> print(js2py.translate_js('var $ = 5'))
 from js2py.pyjs import *
 # setting scope
 var = Scope( JS_BUILTINS )
 set_global_object(var)
+
 # Code follows:
-var.registers([u'$'])
-var.put(u'$', Js(5.0))
+var.registers(['$'])
+var.put('$', Js(5.0))
  ```
 <hr>
 

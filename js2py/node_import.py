@@ -1,6 +1,6 @@
 __all__ = ['require']
 import subprocess, os, codecs, glob
-from .evaljs import translate_js
+from .evaljs import translate_js, DEFAULT_HEADER
 import six
 DID_INIT = False
 DIRNAME = os.path.dirname(os.path.abspath(__file__))
@@ -15,7 +15,7 @@ def _init():
         'node -v', shell=True, cwd=DIRNAME
     ) == 0, 'You must have node installed! run: brew install node'
     assert subprocess.call(
-        'cd %s;npm install babel-core babel-cli babel-preset-es2015 babel-polyfill babelify browserify'
+        'cd %s;npm install babel-core babel-cli babel-preset-es2015 babel-polyfill babelify browserify browserify-shim'
         % repr(DIRNAME),
         shell=True,
         cwd=DIRNAME) == 0, 'Could not link required node_modules'
@@ -46,12 +46,18 @@ GET_FROM_GLOBALS_FUNC = '''
 
 '''
 
+def _get_module_py_name(module_name):
+    return module_name.replace('-', '_')
 
-def require(module_name, include_polyfill=False, update=False):
+def _get_module_var_name(module_name):
+    return _get_module_py_name(module_name).rpartition('/')[-1]
+
+
+def _get_and_translate_npm_module(module_name, include_polyfill=False, update=False):
     assert isinstance(module_name, str), 'module_name must be a string!'
-    py_name = module_name.replace('-', '_')
+    py_name = _get_module_py_name(module_name)
     module_filename = '%s.py' % py_name
-    var_name = py_name.rpartition('/')[-1]
+    var_name = _get_module_var_name(module_name)
     if not os.path.exists(os.path.join(PY_NODE_MODULES_PATH,
                                        module_filename)) or update:
         _init()
@@ -77,7 +83,7 @@ def require(module_name, include_polyfill=False, update=False):
 
         # convert the module
         assert subprocess.call(
-            '''node -e "(require('browserify')('./%s').bundle(function (err,data) {fs.writeFile('%s', require('babel-core').transform(data, {'presets': require('babel-preset-es2015')}).code, ()=>{});}))"'''
+            '''node -e "(require('browserify')('./%s').bundle(function (err,data) {if (err) {console.log(err);throw new Error(err);};fs.writeFile('%s', require('babel-core').transform(data, {'presets': require('babel-preset-es2015')}).code, ()=>{});}))"'''
             % (in_file_name, out_file_name),
             shell=True,
             cwd=DIRNAME,
@@ -88,7 +94,8 @@ def require(module_name, include_polyfill=False, update=False):
                          "utf-8") as f:
             js_code = f.read()
         os.remove(os.path.join(DIRNAME, out_file_name))
-
+        if len(js_code) < 50:
+            raise RuntimeError("Candidate JS bundle too short - likely browserify issue.")
         js_code += GET_FROM_GLOBALS_FUNC
         js_code += ';var %s = getFromGlobals(%s);%s' % (
             var_name, repr(module_name), var_name)
@@ -107,7 +114,32 @@ def require(module_name, include_polyfill=False, update=False):
                 os.path.join(PY_NODE_MODULES_PATH, module_filename), "r",
                 "utf-8") as f:
             py_code = f.read()
+    return py_code
 
-    context = {}
+
+def require(module_name, include_polyfill=False, update=False, context=None):
+    """
+    Installs the provided npm module, exports a js bundle via browserify, converts to ECMA 5.1 via babel and
+    finally translates the generated JS bundle to Python via Js2Py.
+    Returns a pure python object that behaves like the installed module. Nice!
+
+    :param module_name: Name of the npm module to require. For example 'esprima'.
+    :param include_polyfill: Whether the babel-polyfill should be included as part of the translation. May be needed
+    for some modules that use unsupported features.
+    :param update: Whether to force update the translation. Otherwise uses a cached version if exists.
+    :param context: Optional context in which the translated module should be executed in. If provided, the
+        header (js2py imports) will be skipped as it is assumed that the context already has all the necessary imports.
+    :return: The JsObjectWrapper containing the translated module object. Can be used like a standard python object.
+    """
+    py_code = _get_and_translate_npm_module(module_name, include_polyfill=include_polyfill, update=update)
+    # this is a bit hacky but we need to strip the default header from the generated code...
+    if context is not None:
+        if not py_code.startswith(DEFAULT_HEADER):
+            # new header version? retranslate...
+            assert not update, "Unexpected header."
+            py_code = _get_and_translate_npm_module(module_name, include_polyfill=include_polyfill, update=True)
+            assert py_code.startswith(DEFAULT_HEADER), "Unexpected header."
+        py_code = py_code[len(DEFAULT_HEADER):]
+    context = {} if context is None else context
     exec (py_code, context)
-    return context['var'][var_name].to_py()
+    return context['var'][_get_module_var_name(module_name)].to_py()
