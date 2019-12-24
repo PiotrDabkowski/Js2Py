@@ -23,7 +23,7 @@ More examples at: https://github.com/PiotrDabkowski/Js2Py
 
 
 
-# rm -rf dist build && python setup.py sdist bdist_wheel
+# rm -rf dist build && python3 setup.py sdist bdist_wheel
 # twine upload dist/*
 setup(
     name='Js2Py',

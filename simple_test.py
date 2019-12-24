@@ -107,14 +107,14 @@ assert reconstructed==reconstructed2 and len(reconstructed)>=len(sample_js_code)
 
 
 # chalk ( https://github.com/chalk/chalk )
-print('For the final test use chalk. this is interesting because it '
-      'uses ES6 objects like Map, Therefore we have to include the polyfills!')
-chalk = js2py.require('chalk', include_polyfill=True)
-chalk = chalk.constructor.new({'level': 2})
-true_text = '\x1b[34mHello \x1b[4m\x1b[44mworld\x1b[49m\x1b[24m!\x1b[39m'
-text = chalk.blue('Hello', chalk.underline.bgBlue('world') + '!')
-print(text)
-assert text==true_text
+# print('For the final test use chalk. this is interesting because it '
+#       'uses ES6 objects like Map, Therefore we have to include the polyfills!')
+# chalk = js2py.require('chalk', include_polyfill=True)
+# chalk = chalk.constructor.new({'level': 2})
+# true_text = '\x1b[34mHello \x1b[4m\x1b[44mworld\x1b[49m\x1b[24m!\x1b[39m'
+# text = chalk.blue('Hello', chalk.underline.bgBlue('world') + '!')
+# print(text)
+# assert text==true_text
 
 print("Testing ECMA 6...")
 
