@@ -155,3 +155,6 @@ a = new Shape(1,2,3)
 ''').x == 2
 print("Passed ECMA 6!")
 
+
+from js2py.internals import seval
+assert seval.eval_js_vm("function k() {try {throw 3+8} catch (e) {console.log(e);return e}};k()", debug=True) == 11.0
