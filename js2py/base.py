@@ -126,7 +126,7 @@ def HJs(val):
             except Exception as e:
                 message = 'your Python function failed!  '
                 try:
-                    message += e.message
+                    message += str(e)
                 except:
                     pass
                 raise MakeError('Error', message)
@@ -1304,7 +1304,7 @@ class PyObjectWrapper(PyJs):
         except Exception as e:
             message = 'your Python function failed!  '
             try:
-                message += e.message
+                message += str(e)
             except:
                 pass
             raise MakeError('Error', message)
