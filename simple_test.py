@@ -65,7 +65,7 @@ print('Now harder tests - test on huge JS libraries:')
 
 # crypto-js ( https://www.npmjs.com/package/crypto-js )
 print('Testing crypto-js')
-CryptoJS = js2py.require('crypto-js')
+CryptoJS = js2py.require('crypto-js@3.1.8')
 data = [{'id': 1}, {'id': 2}]
 JSON = js2py.eval_js('JSON')
 ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), 'secret key 123')
@@ -73,7 +73,7 @@ bytes  = CryptoJS.AES.decrypt(ciphertext.toString(), 'secret key 123')
 decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8)).to_list()
 assert decryptedData == data
 
-AES = js2py.require('crypto-js/aes')
+AES = js2py.require('crypto-js/aes@3.1.8')
 ciphertext = AES.encrypt(JSON.stringify(data), 'secret key 123')
 bytes  = AES.decrypt(ciphertext.toString(), 'secret key 123')
 decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8)).to_list()
