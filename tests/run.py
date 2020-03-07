@@ -5,6 +5,7 @@ from js2py.internals import seval
 from js2py.internals.simplex import JsException
 import os, sys, re, traceback, threading, ctypes, time, six
 from distutils.version import LooseVersion
+from node_eval import NodeJsError, node_eval_js
 import codecs
 import json
 import traceback
@@ -12,10 +13,11 @@ import traceback
 TEST_TIMEOUT =  2
 INCLUDE_PATH = 'includes/'
 TEST_PATH = 'test_cases/language'
-
+FAILING = []
 
 # choose which JS runtime to test. Js2Py has 2 independent runtimes. Translation based (translator) and the vm interpreter based.
 RUNTIME_TO_TEST = 'vm'
+
 
 if RUNTIME_TO_TEST == 'translator':
     JS_EVALUATOR = js2py.eval_js
@@ -25,10 +27,9 @@ elif RUNTIME_TO_TEST == 'vm':
     JS_EVALUATOR = seval.eval_js_vm
     PY_JS_EXCEPTION = PyJsException
     MESSAGE_FROM_PY_JS_EXCEPTION = lambda x: str(x)
-elif RUNTIME_TO_TEST == 'execjs':
-    import execjs
-    JS_EVALUATOR = lambda x: execjs.eval('eval(%s)'% json.dumps('{;%s}' % x))
-    PY_JS_EXCEPTION = execjs._exceptions.RuntimeError
+elif RUNTIME_TO_TEST == 'node':
+    JS_EVALUATOR = node_eval_js
+    PY_JS_EXCEPTION = NodeJsError
     MESSAGE_FROM_PY_JS_EXCEPTION = lambda x: str(x)
 else:
     raise RuntimeError("Js2Py has currently only 2 runtimes available - 'translator' and the 'vm' - RUNTIME_TO_TEST must be one of these.")
@@ -62,6 +63,8 @@ def terminate_thread(thread):
 
 INIT = load(os.path.join(INCLUDE_PATH, 'init.js'))
 
+with open("node_failed.txt") as f:
+    NODE_FAILED = set(f.readlines())
 
 class FestCase:
     description = None
@@ -87,10 +90,12 @@ class FestCase:
         if self.includes:
             for include in self.includes:
                 self.init += load(os.path.join(INCLUDE_PATH, include))
-        if 'onlyStrict' in self.flags:
+        if 'onlyStrict' in self.flags or '"use strict"' in self.raw or "'use strict'" in self.raw:
             self.strict_only = True
         else:
             self.strict_only = False
+
+        self.node_failed = self.es5id in NODE_FAILED
 
         self.code = self.init + self.raw
 
@@ -184,6 +189,8 @@ class FestCase:
             label = "PASSED"
             reason = ''
             full_error = ''
+        if not passed:
+            FAILING.append(self.es5id)
         self.passed, self.label, self.reason, self.full_error = passed, label, reason, full_error
         return passed, label, reason, full_error
 
@@ -209,7 +216,7 @@ def list_path(path, folders=False):
         try:
             return sorted(res, key=LooseVersion)
         except:
-            return sorted(res)  # python 3
+            return sorted(res)  # python 3... why cant they fix this
 
 def fest_all(path):
     files = list_path(path)
@@ -220,6 +227,8 @@ def fest_all(path):
         try:
             test = FestCase(f)
             if test.strict_only:
+                continue
+            if test.node_failed:
                 continue
 
             thread = threading.Thread(target=test.run)
@@ -237,12 +246,14 @@ def fest_all(path):
         except:
             print(traceback.format_exc())
             print(f)
-            raw_input()
     for folder in folders:
         fest_all(folder)
 
 
 
 fest_all(TEST_PATH)
+with open('failed.txt', 'w') as f:
+    f.write('\n'.join(filter(lambda x: x, FAILING)))
+
 
 
