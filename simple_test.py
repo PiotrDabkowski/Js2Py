@@ -1,5 +1,8 @@
 import js2py
 import time
+import sys
+
+sys.setrecursionlimit(10000)
 
 print("Testing ECMA 5...")
 

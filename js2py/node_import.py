@@ -130,7 +130,7 @@ def _get_and_translate_npm_module(module_name, include_polyfill=False, update=Fa
     return py_code
 
 
-def require(module_name, include_polyfill=False, update=False, context=None):
+def require(module_name, include_polyfill=True, update=False, context=None):
     """
     Installs the provided npm module, exports a js bundle via browserify, converts to ECMA 5.1 via babel and
     finally translates the generated JS bundle to Python via Js2Py.
@@ -139,7 +139,7 @@ def require(module_name, include_polyfill=False, update=False, context=None):
     :param module_name: Name of the npm module to require. For example 'esprima'. Supports specific versions via @
         specification. Eg: 'crypto-js@3.3'.
     :param include_polyfill: Whether the babel-polyfill should be included as part of the translation. May be needed
-    for some modules that use unsupported features.
+    for some modules that use unsupported features of JS6 such as Map or typed arrays.
     :param update: Whether to force update the translation. Otherwise uses a cached version if exists.
     :param context: Optional context in which the translated module should be executed in. If provided, the
         header (js2py imports) will be skipped as it is assumed that the context already has all the necessary imports.
