@@ -110,6 +110,9 @@ $RECYCLE.BIN/
 .idea/scopes/
 
 bench.py
+out.py
+sample.js
+package-lock.json
 js2py/node_modules
 js2py/py_node_modules/*
 !js2py/py_node_modules/__init__.py

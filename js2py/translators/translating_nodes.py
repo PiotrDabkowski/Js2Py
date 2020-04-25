@@ -108,6 +108,13 @@ def to_key(literal_or_identifier):
         else:
             return unicode(k)
 
+def is_iteration_statement(cand):
+    if not isinstance(cand, dict):
+        # Multiple statements.
+        return False
+    return cand.get("type", "?") in {"ForStatement", "ForInStatement", "WhileStatement", "DoWhileStatement"}
+
+
 
 def trans(ele, standard=False):
     """Translates esprima syntax tree to python by delegating to appropriate translating node"""
@@ -440,8 +447,8 @@ def LabeledStatement(type, label, body):
     # todo consider using smarter approach!
     inside = trans(body)
     defs = ''
-    if inside.startswith('while ') or inside.startswith(
-            'for ') or inside.startswith('#for'):
+    if is_iteration_statement(body) and (inside.startswith('while ') or inside.startswith(
+            'for ') or inside.startswith('#for')):
         # we have to add contine label as well...
         # 3 or 1 since #for loop type has more lines before real for.
         sep = 1 if not inside.startswith('#for') else 3
