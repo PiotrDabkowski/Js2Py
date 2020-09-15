@@ -346,6 +346,15 @@ class DateProto:
         this.value = u
         return u
 
+    def setDate(date):
+        check_date(this)
+        t = UTCToLocal(this.value)
+        dt = date.to_number()
+        newDate = MakeDate(MakeDay(Number(YearFromTime(t)), Number(MonthFromTime(t)), dt), TimeWithinDay(t))
+        u = TimeClip(LocalToUTC(newDate))
+        this.value = u
+        return u
+
     # todo Complete all setters!
 
     def toUTCString():
