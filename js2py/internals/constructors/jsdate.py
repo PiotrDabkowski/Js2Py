@@ -332,7 +332,7 @@ class DateProto:
         check_date(this)
         t = UTCToLocal(this.value)
         tim = MakeTime(
-            HourFromTime(t), MinFromTime(t), SecFromTime(t), ms.to_int())
+            Number(HourFromTime(t)), Number(MinFromTime(t)), Number(SecFromTime(t)), ms)
         u = TimeClip(LocalToUTC(MakeDate(Day(t), tim)))
         this.value = u
         return u
@@ -341,7 +341,7 @@ class DateProto:
         check_date(this)
         t = this.value
         tim = MakeTime(
-            HourFromTime(t), MinFromTime(t), SecFromTime(t), ms.to_int())
+            Number(HourFromTime(t)), Number(MinFromTime(t)), Number(SecFromTime(t)), ms)
         u = TimeClip(MakeDate(Day(t), tim))
         this.value = u
         return u
