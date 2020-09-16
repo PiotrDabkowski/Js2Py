@@ -411,7 +411,7 @@ class DateProto:
         this.value = u
         return u
 
-    def setUTCMinutes(hour, min=None, sec=None, ms=None):
+    def setUTCHours(hour, min=None, sec=None, ms=None):
         check_date(this)
         t = this.value
         h = hour.to_number()
@@ -435,6 +435,16 @@ class DateProto:
         u = TimeClip(LocalToUTC(newDate))
         this.value = u
         return u
+
+    def setUTCDate(date):
+        check_date(this)
+        t = this.value
+        dt = date.to_number()
+        newDate = MakeDate(
+            MakeDay(Number(YearFromTime(t)), Number(MonthFromTime(t)), dt), TimeWithinDay(t))
+        v = TimeClip(newDate)
+        this.value = v
+        return v
 
     # todo Complete all setters!
 
