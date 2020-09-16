@@ -411,6 +411,21 @@ class DateProto:
         this.value = u
         return u
 
+    def setUTCMinutes(hour, min=None, sec=None, ms=None):
+        check_date(this)
+        t = this.value
+        h = hour.to_number()
+        if not min: m = Number(MinFromTime(t))
+        else: m = min.to_number()
+        if not sec: s = Number(SecFromTime(t))
+        else: s = sec.to_number()
+        if not ms: milli = Number(msFromTime(t))
+        else: milli = ms.to_number()
+        date = MakeDate(Day(t), MakeTime(h, m, s, milli))
+        v = TimeClip(date)
+        this.value = v
+        return v
+
     def setDate(date):
         check_date(this)
         t = UTCToLocal(this.value)
