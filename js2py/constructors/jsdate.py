@@ -332,7 +332,7 @@ class DateProto:
         check_date(this)
         t = UTCToLocal(this.value)
         tim = MakeTime(
-            HourFromTime(t), MinFromTime(t), SecFromTime(t), ms.to_int())
+            Js(HourFromTime(t)), Js(MinFromTime(t)), Js(SecFromTime(t)), ms)
         u = TimeClip(LocalToUTC(MakeDate(Day(t), tim)))
         this.value = u
         return u
@@ -341,12 +341,194 @@ class DateProto:
         check_date(this)
         t = this.value
         tim = MakeTime(
-            HourFromTime(t), MinFromTime(t), SecFromTime(t), ms.to_int())
+            Js(HourFromTime(t)), Js(MinFromTime(t)), Js(SecFromTime(t)), ms)
         u = TimeClip(MakeDate(Day(t), tim))
         this.value = u
         return u
 
-    # todo Complete all setters!
+    def setSeconds(sec, ms=None):
+        check_date(this)
+        t = UTCToLocal(this.value)
+        s = sec.to_number()
+        if not ms: milli = Js(msFromTime(t))
+        else: milli = ms.to_number()
+        date = MakeDate(
+            Day(t), MakeTime(Js(HourFromTime(t)), Js(MinFromTime(t)), s, milli))
+        u = TimeClip(LocalToUTC(date))
+        this.value = u
+        return u
+
+    def setMilliseconds(ms):
+        check_date(this)
+        t = UTCToLocal(this.value)
+        tim = MakeTime(
+            Js(HourFromTime(t)), Js(MinFromTime(t)), Js(SecFromTime(t)), ms)
+        u = TimeClip(LocalToUTC(MakeDate(Day(t), tim)))
+        this.value = u
+        return u
+
+    def setUTCMilliseconds(ms):
+        check_date(this)
+        t = this.value
+        tim = MakeTime(
+            Js(HourFromTime(t)), Js(MinFromTime(t)), Js(SecFromTime(t)), ms)
+        u = TimeClip(MakeDate(Day(t), tim))
+        this.value = u
+        return u
+
+    def setSeconds(sec, ms=None):
+        check_date(this)
+        t = UTCToLocal(this.value)
+        s = sec.to_number()
+        if not ms is None: milli = Js(msFromTime(t))
+        else: milli = ms.to_number()
+        date = MakeDate(
+            Day(t), MakeTime(Js(HourFromTime(t)), Js(MinFromTime(t)), s, milli))
+        u = TimeClip(LocalToUTC(date))
+        this.value = u
+        return u
+
+    def setUTCSeconds(sec, ms=None):
+        check_date(this)
+        t = this.value
+        s = sec.to_number()
+        if not ms is None: milli = Js(msFromTime(t))
+        else: milli = ms.to_number()
+        date = MakeDate(
+            Day(t), MakeTime(Js(HourFromTime(t)), Js(MinFromTime(t)), s, milli))
+        v = TimeClip(date)
+        this.value = v
+        return v
+
+    def setMinutes(min, sec=None, ms=None):
+        check_date(this)
+        t = UTCToLocal(this.value)
+        m = min.to_number()
+        if not sec is None: s = Js(SecFromTime(t))
+        else: s = sec.to_number()
+        if not ms is None: milli = Js(msFromTime(t))
+        else: milli = ms.to_number()
+        date = MakeDate(Day(t), MakeTime(Js(HourFromTime(t)), m, s, milli))
+        u = TimeClip(LocalToUTC(date))
+        this.value = u
+        return u
+
+    def setUTCMinutes(min, sec=None, ms=None):
+        check_date(this)
+        t = this.value
+        m = min.to_number()
+        if not sec is None: s = Js(SecFromTime(t))
+        else: s = sec.to_number()
+        if not ms is None: milli = Js(msFromTime(t))
+        else: milli = ms.to_number()
+        date = MakeDate(Day(t), MakeTime(Js(HourFromTime(t)), m, s, milli))
+        v = TimeClip(date)
+        this.value = v
+        return v
+
+    def setHours(hour, min=None, sec=None, ms=None):
+        check_date(this)
+        t = UTCToLocal(this.value)
+        h = hour.to_number()
+        if not min is None: m = Js(MinFromTime(t))
+        else: m = min.to_number()
+        if not sec is None: s = Js(SecFromTime(t))
+        else: s = sec.to_number()
+        if not ms is None: milli = Js(msFromTime(t))
+        else: milli = ms.to_number()
+        date = MakeDate(Day(t), MakeTime(h, m, s, milli))
+        u = TimeClip(LocalToUTC(date))
+        this.value = u
+        return u
+
+    def setUTCHours(hour, min=None, sec=None, ms=None):
+        check_date(this)
+        t = this.value
+        h = hour.to_number()
+        if not min is None: m = Js(MinFromTime(t))
+        else: m = min.to_number()
+        if not sec is None: s = Js(SecFromTime(t))
+        else: s = sec.to_number()
+        if not ms is None: milli = Js(msFromTime(t))
+        else: milli = ms.to_number()
+        date = MakeDate(Day(t), MakeTime(h, m, s, milli))
+        v = TimeClip(date)
+        this.value = v
+        return v
+
+    def setDate(date):
+        check_date(this)
+        t = UTCToLocal(this.value)
+        dt = date.to_number()
+        newDate = MakeDate(
+            MakeDay(Js(YearFromTime(t)), Js(MonthFromTime(t)), dt), TimeWithinDay(t))
+        u = TimeClip(LocalToUTC(newDate))
+        this.value = u
+        return u
+
+    def setUTCDate(date):
+        check_date(this)
+        t = this.value
+        dt = date.to_number()
+        newDate = MakeDate(
+            MakeDay(Js(YearFromTime(t)), Js(MonthFromTime(t)), dt), TimeWithinDay(t))
+        v = TimeClip(newDate)
+        this.value = v
+        return v
+
+    def setMonth(month, date=None):
+        check_date(this)
+        t = UTCToLocal(this.value)
+        m = month.to_number()
+        if not date is None: dt = Js(DateFromTime(t))
+        else: dt = date.to_number()
+        newDate = MakeDate(
+            MakeDay(Js(YearFromTime(t)), m, dt), TimeWithinDay(t))
+        u = TimeClip(LocalToUTC(newDate))
+        this.value = u
+        return u
+
+    def setUTCMonth(month, date=None):
+        check_date(this)
+        t = this.value
+        m = month.to_number()
+        if not date is None: dt = Js(DateFromTime(t))
+        else: dt = date.to_number()
+        newDate = MakeDate(
+            MakeDay(Js(YearFromTime(t)), m, dt), TimeWithinDay(t))
+        v = TimeClip(newDate)
+        this.value = v
+        return v
+
+    def setFullYear(year, month=None, date=None):
+        check_date(this)
+        if not this.value is NaN: t = UTCToLocal(this.value)
+        else: t = 0
+        y = year.to_number()
+        if not month is None: m = Js(MonthFromTime(t))
+        else: m = month.to_number()
+        if not date is None: dt = Js(DateFromTime(t))
+        else: dt = date.to_number()
+        newDate = MakeDate(
+            MakeDay(y, m, dt), TimeWithinDay(t))
+        u = TimeClip(LocalToUTC(newDate))
+        this.value = u
+        return u
+
+    def setUTCFullYear(year, month=None, date=None):
+        check_date(this)
+        if not this.value is NaN: t = UTCToLocal(this.value)
+        else: t = 0
+        y = year.to_number()
+        if not month is None: m = Js(MonthFromTime(t))
+        else: m = month.to_number()
+        if not date is None: dt = Js(DateFromTime(t))
+        else: dt = date.to_number()
+        newDate = MakeDate(
+            MakeDay(y, m, dt), TimeWithinDay(t))
+        v = TimeClip(newDate)
+        this.value = v
+        return v
 
     def toUTCString():
         check_date(this)
