@@ -350,36 +350,6 @@ class DateProto:
         check_date(this)
         t = UTCToLocal(this.value)
         s = sec.to_number()
-        if not ms: milli = Js(msFromTime(t))
-        else: milli = ms.to_number()
-        date = MakeDate(
-            Day(t), MakeTime(Js(HourFromTime(t)), Js(MinFromTime(t)), s, milli))
-        u = TimeClip(LocalToUTC(date))
-        this.value = u
-        return u
-
-    def setMilliseconds(ms):
-        check_date(this)
-        t = UTCToLocal(this.value)
-        tim = MakeTime(
-            Js(HourFromTime(t)), Js(MinFromTime(t)), Js(SecFromTime(t)), ms)
-        u = TimeClip(LocalToUTC(MakeDate(Day(t), tim)))
-        this.value = u
-        return u
-
-    def setUTCMilliseconds(ms):
-        check_date(this)
-        t = this.value
-        tim = MakeTime(
-            Js(HourFromTime(t)), Js(MinFromTime(t)), Js(SecFromTime(t)), ms)
-        u = TimeClip(MakeDate(Day(t), tim))
-        this.value = u
-        return u
-
-    def setSeconds(sec, ms=None):
-        check_date(this)
-        t = UTCToLocal(this.value)
-        s = sec.to_number()
         if not ms is None: milli = Js(msFromTime(t))
         else: milli = ms.to_number()
         date = MakeDate(
