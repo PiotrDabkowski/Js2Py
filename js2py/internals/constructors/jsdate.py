@@ -75,11 +75,12 @@ class PyJsDate(PyJs):
 
     # todo fix this problematic datetime part
     def to_local_dt(self):
-        return datetime.datetime.utcfromtimestamp(
-            UTCToLocal(self.value) // 1000)
+        return datetime.datetime(1970, 1, 1) + datetime.timedelta(
+            seconds=UTCToLocal(self.value) // 1000)
 
     def to_utc_dt(self):
-        return datetime.datetime.utcfromtimestamp(self.value // 1000)
+        return datetime.datetime(1970, 1, 1) + datetime.timedelta(
+            seconds=self.value // 1000)
 
     def local_strftime(self, pattern):
         if self.value is NaN:
