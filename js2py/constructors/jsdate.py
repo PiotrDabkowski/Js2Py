@@ -73,49 +73,34 @@ class PyJsDate(PyJs):
         self.own = {}
         self.prototype = prototype
 
-    # todo fix this problematic datetime part
-    def to_local_dt(self):
-        return datetime.datetime(1970, 1, 1) + datetime.timedelta(
-            seconds=UTCToLocal(self.value) // 1000)
-
-    def to_utc_dt(self):
-        return datetime.datetime(1970, 1, 1) + datetime.timedelta(
-            seconds=self.value // 1000)
+    # Python datetime does not support dates before 1900.
+    # This hack adds 400 years to a date until it reaches
+    # the limit of 1900, and replaces the year in the result
+    def strftime_fix(self, pattern, toLocal):
+        minimum_time = -2208967200000
+        fourhundredyears = 12622780800000
+        time = self.value
+        if toLocal: time = UTCToLocal(time)
+        c = 0
+        while time < minimum_time:
+            time = time + fourhundredyears
+            c = c + 1
+        dt = datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=time // 1000)
+        #'%c', '%x' produce unreliable results for year < 1900
+        time = dt.strftime(pattern)
+        if c > 0:
+            time = time.replace(str(dt.year), str(dt.year - (400 * c)))
+        return time
 
     def local_strftime(self, pattern):
         if self.value is NaN:
             return 'Invalid Date'
-        try:
-            dt = self.to_local_dt()
-        except:
-            raise MakeError(
-                'TypeError',
-                'unsupported date range. Will fix in future versions')
-        try:
-            return dt.strftime(pattern)
-        except:
-            raise MakeError(
-                'TypeError',
-                'Could not generate date string from this date (limitations of python.datetime)'
-            )
+        return self.strftime_fix(pattern, True)
 
     def utc_strftime(self, pattern):
         if self.value is NaN:
             return 'Invalid Date'
-        try:
-            dt = self.to_utc_dt()
-        except:
-            raise MakeError(
-                'TypeError',
-                'unsupported date range. Will fix in future versions')
-        try:
-            return dt.strftime(pattern)
-        except:
-            raise MakeError(
-                'TypeError',
-                'Could not generate date string from this date (limitations of python.datetime)'
-            )
-
+        return self.strftime_fix(pattern, False)
 
 def parse_date(py_string):  # todo support all date string formats
     try:
