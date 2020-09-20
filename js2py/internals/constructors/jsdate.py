@@ -38,9 +38,7 @@ def UTC(year, month, date, hours, minutes, seconds, ms):  # todo complete this
 
 @Js
 def parse(string):
-    return PyJsDate(
-        TimeClip(parse_date(string.to_string().value)),
-        prototype=DatePrototype)
+    return TimeClip(parse_date(string.to_string().value))
 
 
 Date.define_own_property('now', {
