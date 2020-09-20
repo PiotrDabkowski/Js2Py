@@ -32,8 +32,7 @@ def UTC(year, month, date, hours, minutes, seconds, ms):  # todo complete this
     mili = args[6].to_number() if l > 6 else Js(0)
     if not y.is_nan() and 0 <= y.value <= 99:
         y = y + Js(1900)
-    t = TimeClip(MakeDate(MakeDay(y, m, dt), MakeTime(h, mi, sec, mili)))
-    return PyJsDate(t, prototype=DatePrototype)
+    return TimeClip(MakeDate(MakeDay(y, m, dt), MakeTime(h, mi, sec, mili)))
 
 
 @Js
