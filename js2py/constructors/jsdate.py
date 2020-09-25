@@ -117,20 +117,24 @@ class PyJsDate(PyJs):
 
 def parse_date(py_string):  # todo support all date string formats
     try:
-        try:
-            dt = datetime.datetime.strptime(py_string, "%Y-%m-%dT%H:%M:%S.%fZ")
-        except:
+        if len(py_string) >= 33:
+            dt = datetime.datetime.strptime(py_string[:28], "%a %b %d %Y %H:%M:%S %Z")
+            offset = datetime.timedelta(hours=int(py_string[29:31]),minutes=int(py_string[31:33]))
+            if py_string[28] == "+": dt -= offset
+            else: dt += offset
+        elif len(py_string) == 29:
+            dt = datetime.datetime.strptime(py_string, "%a, %d %b %Y %H:%M:%S %Z")
+        elif len(py_string) == 20:
             dt = datetime.datetime.strptime(py_string, "%Y-%m-%dT%H:%M:%SZ")
-        return MakeDate(
-            MakeDay(Js(dt.year), Js(dt.month - 1), Js(dt.day)),
-            MakeTime(
-                Js(dt.hour), Js(dt.minute), Js(dt.second),
-                Js(dt.microsecond // 1000)))
+        else:
+            dt = datetime.datetime.strptime(py_string, "%Y-%m-%dT%H:%M:%S.%fZ")
     except:
-        raise MakeError(
-            'TypeError',
-            'Could not parse date %s - unsupported date format. Currently only supported format is RFC3339 utc. Sorry!'
-            % py_string)
+        return NaN
+    return MakeDate(
+        MakeDay(Js(dt.year), Js(dt.month - 1), Js(dt.day)),
+        MakeTime(
+            Js(dt.hour), Js(dt.minute), Js(dt.second),
+            Js(dt.microsecond // 1000)))
 
 
 def date_constructor(*args):
@@ -500,7 +504,7 @@ class DateProto:
 
     def toUTCString():
         check_date(this)
-        return this.utc_strftime('%d %B %Y %H:%M:%S')
+        return this.utc_strftime('%a, %d %b %Y %H:%M:%S GMT')
 
     def toISOString():
         check_date(this)
