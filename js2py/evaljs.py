@@ -238,6 +238,10 @@ class EvalJs(object):
         self.execute_debug(code)
         return self['PyJsEvalResult']
 
+    @property
+    def context(self):
+        return self._context
+    
     def __getattr__(self, var):
         return getattr(self._var, var)
 
