@@ -315,6 +315,25 @@ class TypedArrayPrototype:
             k -= 1
         return accumulator
 
+    def subarray(begin, end):
+        return slice(begin, end)
+    
+    def set(array, offset = 0):
+        offset = 0 if (offset.is_undefined() or offset.is_null()) else offset.to_int()
+        target = this.to_object()
+        target_len = target.get("length").to_uint32()
+        vals = to_arr(array)
+        vals_len = len(vals)
+        
+        if offset + vals_len > target_len:
+            raise this.MakeError(
+                'RangeError', 'Trying to store values beyond target array length.')
+
+        n = 0
+        while n < vals_len:
+            this.put(str(n + offset), vals[n])
+            n += 1
+
 
 def sort_compare(a, b, comp):
     if a is None:
