@@ -118,21 +118,29 @@ class PyJsDate(PyJs):
 
 
 def parse_date(py_string):  # todo support all date string formats
-    try:
+    supported_formats = (
+        "%Y-%m-%dT%H:%M:%S.%fZ",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%d",
+        "%m/%d/%Y",
+        "%b %d %Y",
+    )
+    for date_format in supported_formats:
         try:
-            dt = datetime.datetime.strptime(py_string, "%Y-%m-%dT%H:%M:%S.%fZ")
-        except:
-            dt = datetime.datetime.strptime(py_string, "%Y-%m-%dT%H:%M:%SZ")
-        return MakeDate(
-            MakeDay(Js(dt.year), Js(dt.month - 1), Js(dt.day)),
-            MakeTime(
-                Js(dt.hour), Js(dt.minute), Js(dt.second),
-                Js(dt.microsecond // 1000)))
-    except:
-        raise MakeError(
-            'TypeError',
-            'Could not parse date %s - unsupported date format. Currently only supported format is RFC3339 utc. Sorry!'
-            % py_string)
+            dt = datetime.datetime.strptime(py_string, date_format)
+        except ValueError:
+            continue
+        else:
+            return MakeDate(
+                MakeDay(Js(dt.year), Js(dt.month - 1), Js(dt.day)),
+                MakeTime(
+                    Js(dt.hour), Js(dt.minute), Js(dt.second),
+                    Js(dt.microsecond // 1000)))
+
+    raise MakeError(
+        'TypeError',
+        'Could not parse date %s - unsupported date format. Currently only supported formats are RFC3339 utc, ISO Date, Short Date, and Long Date. Sorry!'
+        % py_string)
 
 
 def date_constructor(*args):
