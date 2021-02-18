@@ -118,13 +118,24 @@ class PyJsDate(PyJs):
 
 
 def parse_date(py_string):  # todo support all date string formats
-    supported_formats = (
-        "%Y-%m-%dT%H:%M:%S.%fZ",
-        "%Y-%m-%dT%H:%M:%SZ",
+    date_formats = (
         "%Y-%m-%d",
         "%m/%d/%Y",
         "%b %d %Y",
     )
+    # Supports these hour formats and with or hour.
+    hour_formats = (
+        "T%H:%M:%S.%f",
+        "T%H:%M:%S",
+    ) + ('',)
+    # Supports with or without Z indicator.
+    z_formats = ("Z",) + ('',)
+    supported_formats = [
+        d + t + z
+        for d in date_formats
+        for t in hour_formats
+        for z in z_formats
+    ]
     for date_format in supported_formats:
         try:
             dt = datetime.datetime.strptime(py_string, date_format)
