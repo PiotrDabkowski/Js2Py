@@ -4,10 +4,13 @@ import subprocess, os, codecs, glob
 from .evaljs import translate_js, DEFAULT_HEADER
 from .translators.friendly_nodes import is_valid_py_name
 import six
+import tempfile
+import hashlib
+import random
 
 DID_INIT = False
-DIRNAME = os.path.dirname(os.path.abspath(__file__))
-PY_NODE_MODULES_PATH = os.path.join(DIRNAME, 'py_node_modules')
+DIRNAME = tempfile.mkdtemp()
+PY_NODE_MODULES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'py_node_modules')
 
 
 def _init():
@@ -72,8 +75,10 @@ def _get_and_translate_npm_module(module_name, include_polyfill=False, update=Fa
     if not os.path.exists(os.path.join(PY_NODE_MODULES_PATH,
                                        module_filename)) or update:
         _init()
-        in_file_name = 'tmp0in439341018923js2py.js'
-        out_file_name = 'tmp0out439341018923js2py.js'
+        module_hash = hashlib.sha1(module_name.encode("utf-8")).hexdigest()[:15]
+        version = random.randrange(10000000000000)
+        in_file_name = 'in_%s_%d.js' % (module_hash, version)
+        out_file_name = 'out_%s_%d.js' % (module_hash, version)
         code = ADD_TO_GLOBALS_FUNC
         if include_polyfill:
             code += "\n;require('babel-polyfill');\n"
@@ -106,7 +111,7 @@ def _get_and_translate_npm_module(module_name, include_polyfill=False, update=Fa
         with codecs.open(os.path.join(DIRNAME, out_file_name), "r",
                          "utf-8") as f:
             js_code = f.read()
-        os.remove(os.path.join(DIRNAME, out_file_name))
+        print("Bundled JS library dumped at: %s" % os.path.join(DIRNAME, out_file_name))
         if len(js_code) < 50:
             raise RuntimeError("Candidate JS bundle too short - likely browserify issue.")
         js_code += GET_FROM_GLOBALS_FUNC
