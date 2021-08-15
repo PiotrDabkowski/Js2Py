@@ -369,7 +369,8 @@ def BreakStatement(type, label):
     if label:
         return 'raise %s("Breaked")\n' % (get_break_label(label['name']))
     else:
-        return 'break\n'
+        testvar = "FORBREAKVAR = True;"
+        return testvar + '\nbreak\n'
 
 
 def ContinueStatement(type, label):
@@ -409,7 +410,10 @@ def ForStatement(type, init, test, update, body):
             init, test, indent(trans(body)), update)
     else:
         result = '#for JS loop\n%swhile %s:\n' % (init, test)
-        body = 'try:\n%sfinally:\n    %s\n' % (indent(trans(body)), update)
+        breakCheck = "if FORBREAKVAR is False:\n" + \
+            indent(update + "\n") + \
+            indent("FORBREAKVAR = False")
+        body = 'FORBREAKVAR = False\ntry:\n%sfinally:\n    %s\n' % (indent(trans(body)), breakCheck)
         result += indent(body)
     return result
 
