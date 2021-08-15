@@ -61,6 +61,17 @@ assert context.foo.get_bar() == 11.11
 context.execute('foo.set_bar(33)')
 assert context.foo.get_bar() == 33
 assert context.eval('foo.bar_history.push(foo.bar_history[1].get_bar());foo.bar_history[foo.bar_history.length-1].get_bar()') == 11.11
+context.execute("""var x = 1;
+    for ( ; ; x += 1 )
+    {
+        if ( x == 5 )
+        {
+            // Break on the 5th iteration.
+            // x should remain at 5.
+            break;
+        }
+    }""");
+assert context.x == 5
 
 print("Passed ECMA 5 simple tests!\n"+30*'-')
 
