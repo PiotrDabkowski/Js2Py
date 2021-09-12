@@ -45,7 +45,7 @@ def terminate_thread(thread):
 
     :param thread: a threading.Thread instance
     """
-    if not thread.isAlive():
+    if not thread.is_alive():
         return
 
     exc = ctypes.py_object(SystemExit)
