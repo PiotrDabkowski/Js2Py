@@ -1,3 +1,4 @@
+from __future__ import print_function
 from ..base import *
 
 @Js
@@ -6,7 +7,8 @@ def console():
 
 @Js
 def log():
-    print(arguments[0])
+    args = arguments
+    print(*(args[i] for i in args))
 
 console.put('log', log)
 console.put('debug', log)
