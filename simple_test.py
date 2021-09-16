@@ -6,6 +6,32 @@ sys.setrecursionlimit(10000)
 
 print("Testing ECMA 5...")
 
+continue_labels_test = """
+for (i=0;i<10;i++) {
+}
+a:for (i=0;i<10;i++) {
+  b:for (j=0;j<10;j++) {
+    continue a;
+  }
+}
+if (i !== 10 || j !== 0) {
+  throw Error("i: " + i + " j: " + j)
+}
+"""
+print(js2py.translate_js(continue_labels_test))
+js2py.eval_js(continue_labels_test)
+
+break_labels_test = """
+a:for (i=0;i<10;i++) {
+  b:for (j=0;j<10;j++) {
+    break a;
+  }
+}
+if (i !== 0 || j !== 0) {
+  throw Error("i: " + i + " j: " + j)
+}
+"""
+js2py.eval_js(break_labels_test)
 
 assert js2py.eval_js('(new Date("2008-9-03T20:56:35.450686Z")).toString()')
 
