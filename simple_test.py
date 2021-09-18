@@ -18,7 +18,6 @@ if (i !== 10 || j !== 0) {
   throw Error("i: " + i + " j: " + j)
 }
 """
-print(js2py.translate_js(continue_labels_test))
 js2py.eval_js(continue_labels_test)
 
 break_labels_test = """

@@ -6,7 +6,7 @@ def console():
 
 @Js
 def log():
-    print(*arguments.to_list())
+    print(" ".join(repr(element) for element in arguments.to_list()))
 
 console.put('log', log)
 console.put('debug', log)
