@@ -49,6 +49,8 @@ def get_break_label(label):
 
 
 def is_valid_py_name(name):
+    if name == 'Js':
+        return False
     try:
         compile(name + ' =  11', 'a', 'exec')
     except:
