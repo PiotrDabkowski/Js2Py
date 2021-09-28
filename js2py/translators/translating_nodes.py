@@ -239,12 +239,17 @@ def ObjectExpression(type, properties):
     name = None
     elems = []
     after = ''
+    
+    # Anonymous Object must be put into inline_stack before its properties
+    for p in properties:
+        if p['kind'] != 'init':
+            name = inline_stack.require('Object')
+            break
+            
     for p in properties:
         if p['kind'] == 'init':
             elems.append('%s:%s' % Property(**p))
-        else:
-            if name is None:
-                name = inline_stack.require('Object')
+        else:                
             if p['kind'] == 'set':
                 k, setter = Property(
                     **p
