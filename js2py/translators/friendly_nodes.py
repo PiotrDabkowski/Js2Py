@@ -1,6 +1,7 @@
 import binascii
 
 from pyjsparser import PyJsParser
+from js2py import pyjs
 import six
 if six.PY3:
     basestring = str
@@ -10,6 +11,7 @@ if six.PY3:
 
 REGEXP_CONVERTER = PyJsParser()
 
+RESERVED_INTERNAL = set(pyjs.__all__ + ["Js", "Scope"])
 
 def to_hex(s):
     return binascii.hexlify(s.encode('utf8')).decode(
@@ -49,7 +51,7 @@ def get_break_label(label):
 
 
 def is_valid_py_name(name):
-    if name == 'Js':
+    if name in RESERVED_INTERNAL:
         return False
     try:
         compile(name + ' =  11', 'a', 'exec')
