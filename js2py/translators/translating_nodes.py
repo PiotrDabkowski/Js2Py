@@ -707,6 +707,54 @@ def FunctionExpression(type, id, params, defaults, body, generator,
     inline_stack.define(PyName, whole_code)
     return PyName
 
+# FIXME this is implemented as an anonymous function, rather than an arrow function
+def ArrowFunctionExpression(type, id, params, defaults, body, generator,
+                       expression):
+    if generator:
+        raise NotImplementedError('Generators not supported')
+    if defaults:
+        raise NotImplementedError('Defaults not supported')
+    JsName = 'anonymous'
+    PyName = inline_stack.require(JsName)  # this is unique
+
+    # this is quite complicated
+    global Context
+    previous_context = Context
+    # change context to the context of this function
+    Context = ContextStack()
+    # translate body within current context
+    code = trans(body)
+    # get arg names
+    vars = [v['name'] for v in params]
+    # args are automaticaly registered variables
+    Context.to_register.update(vars)
+    # add all hoisted elements inside function
+    if 'type' in body and body['type'] == 'BlockStatement':
+        code = Context.get_code() + code
+    else:
+        code = Context.get_code() + 'return ' + code + '\n'
+    # check whether args are valid python names:
+    used_vars = []
+    for v in vars:
+        if is_valid_py_name(v):
+            used_vars.append(v)
+        else:  # invalid arg in python, for example $, replace with alternatice arg
+            used_vars.append('PyJsArg_%s_' % to_hex(v))
+    header = '@Js\n'
+    header += 'def %s(%sthis, arguments, var=var):\n' % (
+        PyName, ', '.join(used_vars) + (', ' if vars else ''))
+    # transfer names from Py scope to Js scope
+    arg_map = dict(zip(vars, used_vars))
+    arg_map.update({'this': 'this', 'arguments': 'arguments'})
+    arg_conv = 'var = Scope({%s}, var)\n' % ', '.join(
+        repr(k) + ':' + v for k, v in six.iteritems(arg_map))
+    whole_code = header + indent(arg_conv + code)
+    # restore context
+    Context = previous_context
+    # define in upper context
+    inline_stack.define(PyName, whole_code)
+    return PyName
+
 
 LogicalExpression = BinaryExpression
 PostfixExpression = UpdateExpression
