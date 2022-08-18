@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/PiotrDabkowski/Js2Py.svg?branch=master)](https://travis-ci.org/PiotrDabkowski/Js2Py) [![Downloads](https://pepy.tech/badge/js2py/month)](https://pepy.tech/project/js2py)
 
-#### Pure Python JavaScript Translator/Interpreter
+# Js2Py - Pure Python JavaScript Translator/Interpreter
 
 Everything is done in 100% pure Python so it's extremely easy to install and use. Supports Python 2 & 3. Full support for ECMAScript 5.1, ECMA 6 support is still experimental.
 <hr>
@@ -64,13 +64,13 @@ Every feature of ECMA 5.1 is implemented (except of 'with' statement):
 ```
 Unfortunately even though Js2Py can be generally used to translate huge Js files (over 50k lines long), in rare cases you may encounter some unexpected problems (like javascript calling a function with 300 arguments - python allows only 255). These problems are very hard to fix with current translation approach. I will try to implement an interpreter in near future which will hopefully fix all the edge cases.
 
-#### Installation 
+## Installation 
 
     pip install js2py
     
 <hr>
 
-#### More advanced usage example
+## More advanced usage example
 
 It is possible to access all the variables from JS scope using EvalJs. Moreover, you can use Python objects from your JavaScript code if you add them to the scope. 
 In this example we will be using Python built-in sum function to sum elements in JS array. It will stand under python_sum.
@@ -113,7 +113,7 @@ You can also enable require support in JavaScript like this:
 ```
 <hr>
 
-### JavaScript 'VirtualMachine' in Python
+# JavaScript 'VirtualMachine' in Python
 
 As a fun experimental project I have also implemented a VM-based JavaScript 
 (yes - there are 2 separate JS implementations in this repo). It is feature complete and faster than the translation based version.
@@ -174,7 +174,7 @@ This is just a curiosity and I do not recommend using VM in practice (requires m
  
 <hr>
 
-#### Limitations
+## Limitations
 
 There are 3 main limitations:
 <ul>
@@ -195,7 +195,7 @@ You can try it yourself by importing any supported npm package via `js2py.requir
 
 
 
-#### Other Examples
+# Other Examples
 
 
 In Js2Py all JavaScript objects are a subclass of PyJs object. For example JS Number is represented by PyJsNumber class.
@@ -241,7 +241,7 @@ Moreover it has to_list and to_dict methods if you want to convert it to builtin
 
 Also, of course you can use Js2Py to parse (tree is the same as in esprima.js) and translate JavaScript
 
-#### Parsing:
+# Parsing:
 ```python
 >>> js2py.parse_js('var $ = 5')   
 {
@@ -268,7 +268,7 @@ Also, of course you can use Js2Py to parse (tree is the same as in esprima.js) a
     "type": "Program"
 }
 ```
-#### Translating:
+# Translating:
 
 ```python
 >>> print(js2py.translate_js('var $ = 5'))
@@ -283,7 +283,7 @@ var.put('$', Js(5.0))
  ```
 <hr>
 
-#### pyimport statement
+# pyimport statement
 Finally, Js2Py also supports importing any Python code from JavaScript using 'pyimport' statement:
 
 ```python
