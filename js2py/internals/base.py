@@ -3,16 +3,18 @@ import re
 
 import datetime
 
-from desc import *
-from simplex import *
-from conversions import *
-import six
+from .desc import *
+from .simplex import *
+from .conversions import *
+
 from pyjsparser import PyJsParser
-from itertools import izip
 
+import six
+if six.PY2:
+    from itertools import izip
+else:
+    izip = zip
 
-from conversions import *
-from simplex import *
 
 
 
@@ -39,17 +41,13 @@ class PyJs(object):
         return self.put(to_string(unconverted_prop), val)
 
     def get(self, prop):
-        print prop, self.TYPE, self.Class
-        if self.Class == None:
-            print self
-            print self.own
-        assert type(prop)==unicode
+        assert type(prop) == unicode
         cand = self.get_property(prop)
         if cand is None:
             return undefined
         if is_data_descriptor(cand):
             return cand['value']
-        if cand['get'].is_undefined():
+        if is_undefined(cand['get']):
             return undefined
         return cand['get'].call(self)
 
@@ -72,7 +70,7 @@ class PyJs(object):
         # takes py, returns none
         if not self.can_put(prop):
             if throw:
-                raise TypeError()
+                raise MakeError('TypeError', 'Could not define own property')
             return
         own_desc = self.get_own_property(prop)
         if is_data_descriptor(own_desc):
@@ -80,20 +78,24 @@ class PyJs(object):
             return
         desc = self.get_property(prop)
         if is_accessor_descriptor(desc):
-            desc['set'].call(self, (val,))  # calling setter on own or inherited element
+            desc['set'].call(
+                self, (val, ))  # calling setter on own or inherited element
         else:  # new property
-            self.own[prop] = {'value': val,
-                              'writable': True,
-                              'configurable': True,
-                              'enumerable': True}
+            self.own[prop] = {
+                'value': val,
+                'writable': True,
+                'configurable': True,
+                'enumerable': True
+            }
 
     def can_put(self, prop):  # to check
-        assert type(prop) == unicode
+        assert type(prop) == unicode, type(prop)
         # takes py returns py
         desc = self.get_own_property(prop)
         if desc:  # if we have this property
             if is_accessor_descriptor(desc):
-                return desc['set'].is_callable()  # Check if setter method is defined
+                return is_callable(
+                    desc['set'])  # Check if setter method is defined
             else:  # data desc
                 return desc['writable']
         if self.prototype is None:
@@ -102,7 +104,7 @@ class PyJs(object):
         if inherited is None:
             return self.extensible
         if is_accessor_descriptor(inherited):
-            return not inherited['set'].is_undefined()
+            return not is_undefined(inherited['set'])
         elif self.extensible:
             return inherited['writable']  # weird...
         return False
@@ -122,7 +124,7 @@ class PyJs(object):
             del self.own[prop]
             return True
         if throw:
-            raise TypeError()
+            raise MakeError('TypeError', 'Could not define own property')
         return False
 
     def default_value(self, hint=None):
@@ -135,9 +137,12 @@ class PyJs(object):
                 cand = method.call(self, ())
                 if is_primitive(cand):
                     return cand
-        raise MakeError('TypeError', 'Cannot convert object to primitive value')
+        raise MakeError('TypeError',
+                        'Cannot convert object to primitive value')
 
-    def define_own_property(self, prop, desc, throw):  # Internal use only. External through Object
+    def define_own_property(
+            self, prop, desc,
+            throw):  # Internal use only. External through Object
         assert type(prop) == unicode
         # takes Py, returns Py
         # prop must be a Py string. Desc is either a descriptor or accessor.
@@ -148,21 +153,26 @@ class PyJs(object):
         if not current:  # We are creating a new OWN property
             if not extensible:
                 if throw:
-                    raise TypeError()
+                    raise MakeError('TypeError',
+                                    'Could not define own property')
                 return False
             # extensible must be True
             if is_data_descriptor(desc) or is_generic_descriptor(desc):
-                DEFAULT_DATA_DESC = {'value': undefined,  # undefined
-                                     'writable': False,
-                                     'enumerable': False,
-                                     'configurable': False}
+                DEFAULT_DATA_DESC = {
+                    'value': undefined,  # undefined
+                    'writable': False,
+                    'enumerable': False,
+                    'configurable': False
+                }
                 DEFAULT_DATA_DESC.update(desc)
                 self.own[prop] = DEFAULT_DATA_DESC
             else:
-                DEFAULT_ACCESSOR_DESC = {'get': undefined,  # undefined
-                                         'set': undefined,  # undefined
-                                         'enumerable': False,
-                                         'configurable': False}
+                DEFAULT_ACCESSOR_DESC = {
+                    'get': undefined,  # undefined
+                    'set': undefined,  # undefined
+                    'enumerable': False,
+                    'configurable': False
+                }
                 DEFAULT_ACCESSOR_DESC.update(desc)
                 self.own[prop] = DEFAULT_ACCESSOR_DESC
             return True
@@ -173,11 +183,14 @@ class PyJs(object):
         if not configurable:  # Prevent changing params
             if desc.get('configurable'):
                 if throw:
-                    raise TypeError()
+                    raise MakeError('TypeError',
+                                    'Could not define own property')
                 return False
-            if 'enumerable' in desc and desc['enumerable'] != current['enumerable']:
+            if 'enumerable' in desc and desc['enumerable'] != current[
+                    'enumerable']:
                 if throw:
-                    raise TypeError()
+                    raise MakeError('TypeError',
+                                    'Could not define own property')
                 return False
         if is_generic_descriptor(desc):
             pass
@@ -185,7 +198,8 @@ class PyJs(object):
             # we want to change the current type of property
             if not configurable:
                 if throw:
-                    raise TypeError()
+                    raise MakeError('TypeError',
+                                    'Could not define own property')
                 return False
             if is_data_descriptor(current):  # from data to setter
                 del current['value']
@@ -201,38 +215,47 @@ class PyJs(object):
             if not configurable:
                 if not current['writable'] and desc.get('writable'):
                     if throw:
-                        raise TypeError()
+                        raise MakeError('TypeError',
+                                        'Could not define own property')
                     return False
-            if not current['writable'] and 'value' in desc and current['value'] != desc['value']:
+            if not current['writable'] and 'value' in desc and current[
+                    'value'] != desc['value']:
                 if throw:
-                    raise TypeError()
+                    raise MakeError('TypeError',
+                                    'Could not define own property')
                 return False
         elif is_accessor_descriptor(current) and is_accessor_descriptor(desc):
             if not configurable:
                 if 'set' in desc and desc['set'] != current['set']:
                     if throw:
-                        raise TypeError()
+                        raise MakeError('TypeError',
+                                        'Could not define own property')
                     return False
                 if 'get' in desc and desc['get'] != current['get']:
                     if throw:
-                        raise TypeError()
+                        raise MakeError('TypeError',
+                                        'Could not define own property')
                     return False
         current.update(desc)
         return True
 
-    def create(self, *args):
+    def create(self, args, space):
         '''Generally not a constructor, raise an error'''
         raise MakeError('TypeError', '%s is not a constructor' % self.Class)
 
 
-def get_member(self, prop, space): # general member getter, prop has to be unconverted prop. it is it can be any value
+def get_member(
+        self, prop, space
+):  # general member getter, prop has to be unconverted prop. it is it can be any value
     typ = type(self)
     if typ not in PRIMITIVES:  # most likely getter for object
-        return self.get_member(prop)  # <- object can implement this to support faster prop getting. ex array.
+        return self.get_member(
+            prop
+        )  # <- object can implement this to support faster prop getting. ex array.
     elif typ == unicode:  # then probably a String
-        if type(prop)==float:
+        if type(prop) == float and is_finite(prop):
             index = int(prop)
-            if index==prop and 0 <= index < len(self):
+            if index == prop and 0 <= index < len(self):
                 return self[index]
         s_prop = to_string(prop)
         if s_prop == 'length':
@@ -250,9 +273,11 @@ def get_member(self, prop, space): # general member getter, prop has to be uncon
     elif typ == bool:
         return space.BooleanPrototype.get(to_string(prop))
     elif typ is UNDEFINED_TYPE:
-        raise MakeError('TypeError', "Cannot read property '%s' of undefined" % prop)
+        raise MakeError('TypeError',
+                        "Cannot read property '%s' of undefined" % prop)
     elif typ is NULL_TYPE:
-        raise MakeError('TypeError', "Cannot read property '%s' of null" % prop)
+        raise MakeError('TypeError',
+                        "Cannot read property '%s' of null" % prop)
     else:
         raise RuntimeError('Unknown type! - ' + repr(typ))
 
@@ -279,16 +304,19 @@ def get_member_dot(self, prop, space):
     elif typ == bool:
         return space.BooleanPrototype.get(prop)
     elif typ in (UNDEFINED_TYPE, NULL_TYPE):
-        raise MakeError('TypeError', "Cannot read property '%s' of undefined" % prop)
+        raise MakeError('TypeError',
+                        "Cannot read property '%s' of undefined" % prop)
     else:
         raise RuntimeError('Unknown type! - ' + repr(typ))
 
 
 # Object
 
+
 class PyJsObject(PyJs):
     TYPE = 'Object'
     Class = 'Object'
+
     def __init__(self, prototype=None):
         self.prototype = prototype
         self.own = {}
@@ -296,22 +324,45 @@ class PyJsObject(PyJs):
     def _init(self, props, vals):
         i = 0
         for prop, kind in props:
-            if prop in self.own: # just check... probably will not happen very often.
+            if prop in self.own:  # just check... probably will not happen very often.
                 if is_data_descriptor(self.own[prop]):
-                    if kind!='i':
-                        raise MakeError('SyntaxError', 'Invalid object initializer! Duplicate property name "%s"' % prop)
+                    if kind != 'i':
+                        raise MakeError(
+                            'SyntaxError',
+                            'Invalid object initializer! Duplicate property name "%s"'
+                            % prop)
                 else:
-                    if kind=='i' or (kind=='g' and 'get' in self.own[prop]) or (kind=='s' and 'set' in self.own[prop]):
-                        raise MakeError('SyntaxError', 'Invalid object initializer! Duplicate setter/getter of prop: "%s"' % prop)
+                    if kind == 'i' or (kind == 'g' and 'get' in self.own[prop]
+                                       ) or (kind == 's'
+                                             and 'set' in self.own[prop]):
+                        raise MakeError(
+                            'SyntaxError',
+                            'Invalid object initializer! Duplicate setter/getter of prop: "%s"'
+                            % prop)
 
-            if kind == 'i': # init
-                self.own[prop] = {'value': vals[i], 'writable': True, 'enumerable': True, 'configurable': True}
-            elif kind == 'g': # get
-                self.define_own_property(prop, {'get': vals[i], 'enumerable': True, 'configurable': True}, False)
-            elif kind == 's': # get
-                self.define_own_property(prop, {'get': vals[i], 'enumerable': True, 'configurable': True}, False)
+            if kind == 'i':  # init
+                self.own[prop] = {
+                    'value': vals[i],
+                    'writable': True,
+                    'enumerable': True,
+                    'configurable': True
+                }
+            elif kind == 'g':  # get
+                self.define_own_property(prop, {
+                    'get': vals[i],
+                    'enumerable': True,
+                    'configurable': True
+                }, False)
+            elif kind == 's':  # get
+                self.define_own_property(prop, {
+                    'get': vals[i],
+                    'enumerable': True,
+                    'configurable': True
+                }, False)
             else:
-                raise RuntimeError('Invalid property kind - %s. Expected one of i, g, s.' % repr(kind))
+                raise RuntimeError(
+                    'Invalid property kind - %s. Expected one of i, g, s.' %
+                    repr(kind))
             i += 1
 
     def _set_props(self, prop_descs):
@@ -319,9 +370,8 @@ class PyJsObject(PyJs):
             self.define_own_property(prop, desc)
 
 
-
-
 # Array
+
 
 # todo Optimise Array - extremely slow due to index conversions from str to int and back etc.
 # solution - make get and put methods callable with any type of prop and handle conversions from inside
@@ -329,23 +379,34 @@ class PyJsObject(PyJs):
 # also consider removal of these stupid writable, enumerable etc for ints.
 class PyJsArray(PyJs):
     Class = 'Array'
+
     def __init__(self, length, prototype=None):
         self.prototype = prototype
-        self.own = {'length' : {'value': float(length), 'writable': True,
-                                'enumerable': False, 'configurable': False}}
+        self.own = {
+            'length': {
+                'value': float(length),
+                'writable': True,
+                'enumerable': False,
+                'configurable': False
+            }
+        }
 
     def _init(self, elements):
         for i, ele in enumerate(elements):
             if ele is None: continue
-            self.own[unicode(i)] = {'value': ele, 'writable': True,
-                                    'enumerable': True, 'configurable': True}
+            self.own[unicode(i)] = {
+                'value': ele,
+                'writable': True,
+                'enumerable': True,
+                'configurable': True
+            }
 
     def put(self, prop, val, throw=False):
         assert type(val) != int
         # takes py, returns none
         if not self.can_put(prop):
             if throw:
-                raise TypeError()
+                raise MakeError('TypeError', 'Could not define own property')
             return
         own_desc = self.get_own_property(prop)
         if is_data_descriptor(own_desc):
@@ -353,57 +414,66 @@ class PyJsArray(PyJs):
             return
         desc = self.get_property(prop)
         if is_accessor_descriptor(desc):
-            desc['set'].call(self, (val,))  # calling setter on own or inherited element
+            desc['set'].call(
+                self, (val, ))  # calling setter on own or inherited element
         else:  # new property
-            self.define_own_property(prop, {'value': val,
-                                          'writable': True,
-                                          'configurable': True,
-                                          'enumerable': True}, False)
-
+            self.define_own_property(
+                prop, {
+                    'value': val,
+                    'writable': True,
+                    'configurable': True,
+                    'enumerable': True
+                }, False)
 
     def define_own_property(self, prop, desc, throw):
         assert type(desc.get('value')) != int
         old_len_desc = self.get_own_property('length')
         old_len = old_len_desc['value']  #  value is js type so convert to py.
-        if prop=='length':
+        if prop == 'length':
             if 'value' not in desc:
                 return PyJs.define_own_property(self, prop, desc, False)
-            new_len =  to_uint32(desc['value'])
-            if new_len!=to_number(desc['value']):
+            new_len = to_uint32(desc['value'])
+            if new_len != to_number(desc['value']):
                 raise MakeError('RangeError', 'Invalid range!')
-            new_desc = dict((k,v) for k,v in six.iteritems(desc))
+            new_desc = dict((k, v) for k, v in six.iteritems(desc))
             new_desc['value'] = float(new_len)
-            if new_len>=old_len:
+            if new_len >= old_len:
                 return PyJs.define_own_property(self, prop, new_desc, False)
             if not old_len_desc['writable']:
                 return False
-            if 'writable' not in new_desc or new_desc['writable']==True:
+            if 'writable' not in new_desc or new_desc['writable'] == True:
                 new_writable = True
             else:
                 new_writable = False
                 new_desc['writable'] = True
             if not PyJs.define_own_property(self, prop, new_desc, False):
                 return False
-            if new_len<old_len:
+            if new_len < old_len:
                 # not very efficient for sparse arrays, so using different method for sparse:
-                if old_len>30*len(self.own):
+                if old_len > 30 * len(self.own):
                     for ele in self.own.keys():
-                        if ele.isdigit() and int(ele)>=new_len:
-                            if not self.delete(ele): # if failed to delete set len to current len and reject.
-                                new_desc['value'] = old_len+1.
+                        if ele.isdigit() and int(ele) >= new_len:
+                            if not self.delete(
+                                    ele
+                            ):  # if failed to delete set len to current len and reject.
+                                new_desc['value'] = old_len + 1.
                                 if not new_writable:
                                     new_desc['writable'] = False
-                                PyJs.define_own_property(self, prop, new_desc, False)
+                                PyJs.define_own_property(
+                                    self, prop, new_desc, False)
                                 return False
                     old_len = new_len
-                else: # standard method
-                    while new_len<old_len:
+                else:  # standard method
+                    while new_len < old_len:
                         old_len -= 1
-                        if not self.delete(unicode(int(old_len))): # if failed to delete set len to current len and reject.
-                            new_desc['value'] = old_len+1.
+                        if not self.delete(
+                                unicode(int(old_len))
+                        ):  # if failed to delete set len to current len and reject.
+                            new_desc['value'] = old_len + 1.
                             if not new_writable:
                                 new_desc['writable'] = False
-                            PyJs.define_own_property(self, prop, new_desc, False)
+                            PyJs.define_own_property(self, prop, new_desc,
+                                                     False)
                             return False
             if not new_writable:
                 self.own['length']['writable'] = False
@@ -411,22 +481,25 @@ class PyJsArray(PyJs):
 
         elif prop.isdigit():
             index = to_uint32(prop)
-            if index>=old_len and not old_len_desc['writable']:
+            if index >= old_len and not old_len_desc['writable']:
                 return False
             if not PyJs.define_own_property(self, prop, desc, False):
                 return False
-            if index>=old_len:
+            if index >= old_len:
                 old_len_desc['value'] = index + 1.
             return True
         else:
             return PyJs.define_own_property(self, prop, desc, False)
 
     def to_list(self):
-        return [self.get(str(e)) for e in xrange(self.get('length').to_uint32())]
+        return [
+            self.get(str(e)) for e in xrange(self.get('length').to_uint32())
+        ]
 
 
 # database with compiled patterns. Js pattern -> Py pattern.
 REGEXP_DB = {}
+
 
 class PyJsRegExp(PyJs):
     Class = 'RegExp'
@@ -444,34 +517,62 @@ class PyJsRegExp(PyJs):
             comp = None
             try:
                 # converting JS regexp pattern to Py pattern.
-                possible_fixes = [
-                    (u'[]', u'[\0]'),
-                    (u'[^]', u'[^\0]'),
-                    (u'nofix1791', u'nofix1791')
-                ]
+                possible_fixes = [(u'[]', u'[\0]'), (u'[^]', u'[^\0]'),
+                                  (u'nofix1791', u'nofix1791')]
                 reg = self.value
                 for fix, rep in possible_fixes:
                     comp = PyJsParser()._interpret_regexp(reg, flags)
                     #print 'reg -> comp', reg, '->', comp
                     try:
-                        self.pat = re.compile(comp, self.ignore_case | self.multiline)
+                        self.pat = re.compile(
+                            comp, self.ignore_case | self.multiline)
                         #print reg, '->', comp
                         break
                     except:
                         reg = reg.replace(fix, rep)
-                       # print 'Fix', fix, '->', rep, '=', reg
+                    # print 'Fix', fix, '->', rep, '=', reg
                 else:
-                    raise
+                    raise Exception()
                 REGEXP_DB[body, flags] = self.pat
             except:
                 #print 'Invalid pattern...', self.value, comp
-                raise MakeError('SyntaxError', 'Invalid RegExp pattern: %s -> %s'% (repr(self.value), repr(comp)))
+                raise MakeError(
+                    'SyntaxError',
+                    'Invalid RegExp pattern: %s -> %s' % (repr(self.value),
+                                                          repr(comp)))
         # now set own properties:
-        self.own = {'source' : {'value': self.value, 'enumerable': False, 'writable': False, 'configurable': False},
-                    'global' : {'value': self.glob, 'enumerable': False, 'writable': False, 'configurable': False},
-                    'ignoreCase' : {'value': bool(self.ignore_case), 'enumerable': False, 'writable': False, 'configurable': False},
-                    'multiline' : {'value': bool(self.multiline), 'enumerable': False, 'writable': False, 'configurable': False},
-                    'lastIndex' : {'value': 0, 'enumerable': False, 'writable': True, 'configurable': False}}
+        self.own = {
+            'source': {
+                'value': self.value,
+                'enumerable': False,
+                'writable': False,
+                'configurable': False
+            },
+            'global': {
+                'value': self.glob,
+                'enumerable': False,
+                'writable': False,
+                'configurable': False
+            },
+            'ignoreCase': {
+                'value': bool(self.ignore_case),
+                'enumerable': False,
+                'writable': False,
+                'configurable': False
+            },
+            'multiline': {
+                'value': bool(self.multiline),
+                'enumerable': False,
+                'writable': False,
+                'configurable': False
+            },
+            'lastIndex': {
+                'value': 0.,
+                'enumerable': False,
+                'writable': True,
+                'configurable': False
+            }
+        }
 
     def match(self, string, pos):
         '''string is of course a py string'''
@@ -481,6 +582,7 @@ class PyJsRegExp(PyJs):
 class PyJsError(PyJs):
     Class = 'Error'
     extensible = True
+
     def __init__(self, message=None, prototype=None):
         self.prototype = prototype
         self.own = {}
@@ -489,10 +591,9 @@ class PyJsError(PyJs):
             self.own['message']['enumerable'] = False
 
 
-
 class PyJsDate(PyJs):
     Class = 'Date'
-    UTCToLocal = None # todo UTC to local should be imported!
+    UTCToLocal = None  # todo UTC to local should be imported!
 
     def __init__(self, value, prototype=None):
         self.value = value
@@ -501,10 +602,12 @@ class PyJsDate(PyJs):
 
     # todo fix this problematic datetime part
     def to_local_dt(self):
-        return datetime.datetime.utcfromtimestamp(self.UTCToLocal(self.value)//1000)
+        return datetime.datetime(1970, 1, 1) + datetime.timedelta(
+            seconds=self.UTCToLocal(self.value) // 1000)
 
     def to_utc_dt(self):
-        return datetime.datetime.utcfromtimestamp(self.value//1000)
+        return datetime.datetime(1970, 1, 1) + datetime.timedelta(
+            seconds=self.value // 1000)
 
     def local_strftime(self, pattern):
         if self.value is NaN:
@@ -512,11 +615,16 @@ class PyJsDate(PyJs):
         try:
             dt = self.to_local_dt()
         except:
-            raise MakeError('TypeError', 'unsupported date range. Will fix in future versions')
+            raise MakeError(
+                'TypeError',
+                'unsupported date range. Will fix in future versions')
         try:
             return dt.strftime(pattern)
         except:
-            raise MakeError('TypeError', 'Could not generate date string from this date (limitations of python.datetime)')
+            raise MakeError(
+                'TypeError',
+                'Could not generate date string from this date (limitations of python.datetime)'
+            )
 
     def utc_strftime(self, pattern):
         if self.value is NaN:
@@ -524,11 +632,17 @@ class PyJsDate(PyJs):
         try:
             dt = self.to_utc_dt()
         except:
-            raise MakeError('TypeError', 'unsupported date range. Will fix in future versions')
+            raise MakeError(
+                'TypeError',
+                'unsupported date range. Will fix in future versions')
         try:
             return dt.strftime(pattern)
         except:
-            raise MakeError('TypeError', 'Could not generate date string from this date (limitations of python.datetime)')
+            raise MakeError(
+                'TypeError',
+                'Could not generate date string from this date (limitations of python.datetime)'
+            )
+
 
 # Scope class it will hold all the variables accessible to user
 class Scope(PyJs):
@@ -548,13 +662,24 @@ class Scope(PyJs):
         """Doc"""
         self.space = space
         self.prototype = parent
+        if type(scope) is not dict:
+            assert parent is not None, 'You initialised the WITH_SCOPE without a parent scope.'
+            self.own = scope
+            self.is_with_scope = True
+        else:
+            self.is_with_scope = False
         if parent is None:
             # global, top level scope
             self.own = {}
             for k, v in six.iteritems(scope):
                 # set all the global items
-                self.define_own_property(k, {'value': v, 'configurable': False,
-                                             'writable': False, 'enumerable': False}, False)
+                self.define_own_property(
+                    k, {
+                        'value': v,
+                        'configurable': False,
+                        'writable': False,
+                        'enumerable': False
+                    }, False)
         else:
             # not global, less powerful but faster closure.
             self.own = scope  # simple dictionary which maps name directly to js object.
@@ -569,8 +694,13 @@ class Scope(PyJs):
             if var in self.own:
                 self.own[var]['configurable'] = False
             else:
-                self.define_own_property(var, {'value': undefined, 'configurable': False,
-                                               'writable': True, 'enumerable': True}, False)
+                self.define_own_property(
+                    var, {
+                        'value': undefined,
+                        'configurable': False,
+                        'writable': True,
+                        'enumerable': True
+                    }, False)
         elif var not in self.own:
             # define in local scope since it has not been defined yet
             self.own[var] = undefined  # default value
@@ -589,35 +719,48 @@ class Scope(PyJs):
                 if desc['writable']:  # todo consider getters/setters
                     desc['value'] = val
         else:
+            if self.is_with_scope:
+                if self.own.has_property(var):
+                    return self.own.put(var, val, throw=throw)
+                else:
+                    return self.prototype.put(var, val)
             # trying to put in local scope
             # we dont know yet in which scope we should place this var
-            if var in self.own:
+            elif var in self.own:
                 self.own[var] = val
                 return val
             else:
                 # try to put in the lower scope since we cant put in this one (var wasn't registered)
                 return self.prototype.put(var, val)
 
-    def get(self, var, throw=True):
+    def get(self, var, throw=False):
         if self.prototype is not None:
-            # fast local scope
-            cand = self.own.get(var)
+            if self.is_with_scope:
+                cand = None if not self.own.has_property(
+                    var) else self.own.get(var)
+            else:
+                # fast local scope
+                cand = self.own.get(var)
             if cand is None:
                 return self.prototype.get(var, throw)
             return cand
         # slow, global scope
         if var not in self.own:
             # try in ObjectPrototype...
-            # if var in self.space.ObjectPrototype.own:
-            #     return self.space.ObjectPrototype.get(var)
+            if var in self.space.ObjectPrototype.own:
+                return self.space.ObjectPrototype.get(var)
             if throw:
                 raise MakeError('ReferenceError', '%s is not defined' % var)
             return undefined
-        return self.own[var]['value']  # todo consider getters/setters
+        cand = self.own[var].get('value')
+        return cand if cand is not None else self.own[var]['get'].call(self)
 
     def delete(self, var, throw=False):
         if self.prototype is not None:
-            if var in self.own:
+            if self.is_with_scope:
+                if self.own.has_property(var):
+                    return self.own.delete(var)
+            elif var in self.own:
                 return False
             return self.prototype.delete(var)
         # we are in global scope here. Must exist and be configurable to delete
@@ -634,11 +777,16 @@ class Scope(PyJs):
 def get_new_arguments_obj(args, space):
     obj = space.NewObject()
     obj.Class = 'Arguments'
-    obj.define_own_property('length', {'value': float(len(args)), 'writable': True, 'enumerable': False, 'configurable': True}, False)
+    obj.define_own_property(
+        'length', {
+            'value': float(len(args)),
+            'writable': True,
+            'enumerable': False,
+            'configurable': True
+        }, False)
     for i, e in enumerate(args):
         obj.put(unicode(i), e)
     return obj
-
 
 
 #Function
@@ -647,12 +795,22 @@ class PyJsFunction(PyJs):
     source = '{ [native code] }'
     IS_CONSTRUCTOR = True
 
-    def __init__(self, code, ctx, params, name, space, is_declaration, definitions, prototype=None):
+    def __init__(self,
+                 code,
+                 ctx,
+                 params,
+                 name,
+                 space,
+                 is_declaration,
+                 definitions,
+                 prototype=None):
         self.prototype = prototype
         self.own = {}
 
         self.code = code
-        if type(self.code) == int: # just a label pointing to the beginning of the code.
+        if type(
+                self.code
+        ) == int:  # just a label pointing to the beginning of the code.
             self.is_native = False
         else:
             self.is_native = True  # python function
@@ -672,35 +830,61 @@ class PyJsFunction(PyJs):
         self.is_declaration = is_declaration
 
         #set own property length to the number of arguments
-        self.own['length'] = {'value': len(params), 'writable': False, 'enumerable': False, 'configurable': False}
+        self.own['length'] = {
+            'value': float(len(params)),
+            'writable': False,
+            'enumerable': False,
+            'configurable': False
+        }
 
         if name:
-            self.own['name'] = {'value': name, 'writable': False, 'enumerable': False, 'configurable': True}
+            self.own['name'] = {
+                'value': name,
+                'writable': False,
+                'enumerable': False,
+                'configurable': True
+            }
 
         if not self.is_native:  # set prototype for user defined functions
             # constructor points to this function
             proto = space.NewObject()
-            proto.own['constructor'] = {'value': self, 'writable': True, 'enumerable': False, 'configurable': True}
-            self.own['prototype'] = {'value': proto, 'writable': True, 'enumerable': False, 'configurable': False}
+            proto.own['constructor'] = {
+                'value': self,
+                'writable': True,
+                'enumerable': False,
+                'configurable': True
+            }
+            self.own['prototype'] = {
+                'value': proto,
+                'writable': True,
+                'enumerable': False,
+                'configurable': False
+            }
         # todo set up throwers on callee and arguments if in strict mode
-
 
     def call(self, this, args=()):
         ''' Dont use this method from inside bytecode to call other bytecode. '''
         if self.is_native:
-            _args = SpaceTuple(args) # we have to do that unfortunately to pass all the necessary info to the funcs
+            _args = SpaceTuple(
+                args
+            )  # we have to do that unfortunately to pass all the necessary info to the funcs
             _args.space = self.space
-            return self.code(this, _args) # must return valid js object - undefined, null, float, unicode, bool, or PyJs
+            return self.code(
+                this, _args
+            )  # must return valid js object - undefined, null, float, unicode, bool, or PyJs
         else:
-            return self.space.exe._call(self, this, args) # will run inside bytecode
+            return self.space.exe._call(self, this,
+                                        args)  # will run inside bytecode
 
     def has_instance(self, other):
         # I am not sure here so instanceof may not work lol.
         if not is_object(other):
             return False
         proto = self.get('prototype')
-        if not proto.is_object():
-            raise MakeError('TypeError', 'Function has non-object prototype in instanceof check')
+        if not is_object(proto):
+            raise MakeError(
+                'TypeError',
+                'Function has non-object prototype in instanceof check')
         while True:
             other = other.prototype
             if not other:  # todo make sure that the condition is not None or null
@@ -719,15 +903,17 @@ class PyJsFunction(PyJs):
         return new
 
     def _generate_my_context(self, this, args):
-        my_ctx = Scope(dict(izip(self.params, args)), self.space, parent=self.ctx)
+        my_ctx = Scope(
+            dict(izip(self.params, args)), self.space, parent=self.ctx)
         my_ctx.registers(self.definitions)
         my_ctx.THIS_BINDING = this
         if not self.arguments_in_params:
             my_ctx.own['arguments'] = get_new_arguments_obj(args, self.space)
         if not self.is_declaration and self.name and self.name not in my_ctx.own:
-            my_ctx.own[self.name] = self  # this should be immutable binding but come on!
+            my_ctx.own[
+                self.
+                name] = self  # this should be immutable binding but come on!
         return my_ctx
-
 
 
 class SpaceTuple:
@@ -742,4 +928,3 @@ class SpaceTuple:
 
     def __iter__(self):
         return iter(self.tup)
-

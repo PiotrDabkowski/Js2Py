@@ -5,11 +5,11 @@ from ..func_utils import *
 
 class ObjectPrototype:
     def toString(this, args):
-        if type(this)==UNDEFINED_TYPE:
+        if type(this) == UNDEFINED_TYPE:
             return u'[object Undefined]'
-        elif type(this)==NULL_TYPE:
+        elif type(this) == NULL_TYPE:
             return u'[object Null]'
-        return u'[object %s]'% GetClass(to_object(this, args.space))
+        return u'[object %s]' % GetClass(to_object(this, args.space))
 
     def valueOf(this, args):
         return to_object(this, args.space)
@@ -46,9 +46,3 @@ class ObjectPrototype:
         o = to_object(this, args.space)
         cand = o.own.get(to_string(prop))
         return cand is not None and cand.get('enumerable')
-
-
-
-
-
-

@@ -1,5 +1,6 @@
-from base import *
-from simplex import *
+from .base import *
+from .simplex import *
+
 
 class Space(object):
     def __init__(self):
@@ -47,16 +48,23 @@ class Space(object):
             'URIError': self.URIErrorPrototype,
         }
 
-
-
     def get_global_environment(self):
         return self.GlobalCtx.variable_environment()
 
     def NewObject(self):
         return PyJsObject(self.ObjectPrototype)
 
-    def NewFunction(self, code, ctx, params, name, is_declaration, definitions):
-        return PyJsFunction(code, ctx, params, name, self, is_declaration, definitions, prototype=self.FunctionPrototype)
+    def NewFunction(self, code, ctx, params, name, is_declaration,
+                    definitions):
+        return PyJsFunction(
+            code,
+            ctx,
+            params,
+            name,
+            self,
+            is_declaration,
+            definitions,
+            prototype=self.FunctionPrototype)
 
     def NewDate(self, value):
         return PyJsDate(value, self.DatePrototype)

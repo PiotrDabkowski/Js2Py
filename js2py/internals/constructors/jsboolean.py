@@ -2,7 +2,6 @@ from ..conversions import *
 from ..func_utils import *
 
 
-
 def Boolean(this, args):
     return to_boolean(get_arg(args, 0))
 

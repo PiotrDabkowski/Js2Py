@@ -1,5 +1,7 @@
+from __future__ import unicode_literals
 # Type Conversions. to_type. All must return PyJs subclass instance
-from simplex import *
+from .simplex import *
+
 
 def to_primitive(self, hint=None):
     if is_primitive(self):
@@ -22,6 +24,7 @@ def to_boolean(self):
         return bool(self)
     else:  # object -  always True
         return True
+
 
 def to_number(self):
     typ = Type(self)
@@ -70,14 +73,7 @@ def to_string(self):
     elif typ == 'Boolean':
         return 'true' if self else 'false'
     elif typ == 'Number':  # or self.Class=='Number':
-        if is_nan(self):
-            return 'NaN'
-        elif is_infinity(self):
-            sign = '-' if self < 0 else ''
-            return sign + 'Infinity'
-        elif int(self)==self:  # integer value!
-            return unicode(int(self))
-        return unicode(self)  # todo make it print exactly like node.js
+        return js_dtoa(self)
     else:  # object
         return to_string(to_primitive(self, 'String'))
 
@@ -87,13 +83,14 @@ def to_object(self, space):
     if typ == 'Object':
         return self
     elif typ == 'Boolean':  # Unsure ... todo check here
-        return space.Boolean.create((self,), space)
+        return space.Boolean.create((self, ), space)
     elif typ == 'Number':  # ?
-        return space.Number.create((self,), space)
+        return space.Number.create((self, ), space)
     elif typ == 'String':  # ?
-        return space.String.create((self,), space)
+        return space.String.create((self, ), space)
     elif typ == 'Null' or typ == 'Undefined':
-        raise MakeError('TypeError', 'undefined or null can\'t be converted to object')
+        raise MakeError('TypeError',
+                        'undefined or null can\'t be converted to object')
     else:
         raise RuntimeError()
 
@@ -102,8 +99,8 @@ def to_int32(self):
     num = to_number(self)
     if is_nan(num) or is_infinity(num):
         return 0
-    int32 = int(num) % 2 ** 32
-    return int(int32 - 2 ** 32 if int32 >= 2 ** 31 else int32)
+    int32 = int(num) % 2**32
+    return int(int32 - 2**32 if int32 >= 2**31 else int32)
 
 
 def to_int(self):
@@ -111,7 +108,7 @@ def to_int(self):
     if is_nan(num):
         return 0
     elif is_infinity(num):
-        return 10 ** 20 if num > 0 else -10 ** 20
+        return 10**20 if num > 0 else -10**20
     return int(num)
 
 
@@ -119,25 +116,26 @@ def to_uint32(self):
     num = to_number(self)
     if is_nan(num) or is_infinity(num):
         return 0
-    return int(num) % 2 ** 32
+    return int(num) % 2**32
 
 
 def to_uint16(self):
     num = to_number(self)
     if is_nan(num) or is_infinity(num):
         return 0
-    return int(num) % 2 ** 16
+    return int(num) % 2**16
 
 
 def to_int16(self):
     num = to_number(self)
     if is_nan(num) or is_infinity(num):
         return 0
-    int16 = int(num) % 2 ** 16
-    return int(int16 - 2 ** 16 if int16 >= 2 ** 15 else int16)
+    int16 = int(num) % 2**16
+    return int(int16 - 2**16 if int16 >= 2**15 else int16)
 
 
 def cok(self):
     """Check object coercible"""
     if type(self) in (UNDEFINED_TYPE, NULL_TYPE):
-        raise MakeError('TypeError', 'undefined or null can\'t be converted to object')
+        raise MakeError('TypeError',
+                        'undefined or null can\'t be converted to object')

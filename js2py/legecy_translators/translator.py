@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from flow import translate_flow
 from constants import remove_constants, recover_constants
 from objects import remove_objects, remove_arrays, translate_object, translate_array, set_func_translator
@@ -5,7 +7,6 @@ from functions import remove_functions, reset_inline_count
 from jsparser import inject_before_lval, indent, dbg
 
 TOP_GLOBAL = '''from js2py.pyjs import *\nvar = Scope( JS_BUILTINS )\nset_global_object(var)\n'''
-
 
 
 def translate_js(js, top=TOP_GLOBAL):
@@ -38,33 +39,38 @@ def translate_js(js, top=TOP_GLOBAL):
     #print len(hoisted) , 'HH'*40
     for nested_name, nested_info in hoisted.iteritems():
         nested_block, nested_args = nested_info
-        new_code = translate_func('PyJsLvalTempHoisted', nested_block, nested_args)
-        new_code += 'PyJsLvalTempHoisted.func_name = %s\n' %repr(nested_name)
-        defs += new_code +'\nvar.put(%s, PyJsLvalTempHoisted)\n' % repr(nested_name)
+        new_code = translate_func('PyJsLvalTempHoisted', nested_block,
+                                  nested_args)
+        new_code += 'PyJsLvalTempHoisted.func_name = %s\n' % repr(nested_name)
+        defs += new_code + '\nvar.put(%s, PyJsLvalTempHoisted)\n' % repr(
+            nested_name)
     #defs += '# Everting ready!\n'
     # inline functions recovery
     for nested_name, nested_info in inline.iteritems():
         nested_block, nested_args = nested_info
         new_code = translate_func(nested_name, nested_block, nested_args)
-        py_seed = inject_before_lval(py_seed, nested_name.split('@')[0], new_code)
+        py_seed = inject_before_lval(py_seed,
+                                     nested_name.split('@')[0], new_code)
     # add hoisted definitiond - they have literals that have to be recovered
     py_seed = defs + py_seed
 
     #Recover arrays
     for arr_lval, arr_code in arrays.iteritems():
-        translation, obj_count, arr_count = translate_array(arr_code, arr_lval, obj_count, arr_count)
+        translation, obj_count, arr_count = translate_array(
+            arr_code, arr_lval, obj_count, arr_count)
         py_seed = inject_before_lval(py_seed, arr_lval, translation)
 
     #Recover objects
     for obj_lval, obj_code in objects.iteritems():
-        translation, obj_count, arr_count = translate_object(obj_code, obj_lval, obj_count, arr_count)
+        translation, obj_count, arr_count = translate_object(
+            obj_code, obj_lval, obj_count, arr_count)
         py_seed = inject_before_lval(py_seed, obj_lval, translation)
-
 
     #Recover constants
     py_code = recover_constants(py_seed, constants)
 
     return top + py_code
+
 
 def translate_func(name, block, args):
     """Translates functions and all nested functions to Python code.
@@ -76,12 +82,12 @@ def translate_func(name, block, args):
     real_name = ''
     if inline:
         name, real_name = name.split('@')
-    arglist = ', '.join(args) +', ' if args else ''
+    arglist = ', '.join(args) + ', ' if args else ''
     code = '@Js\ndef %s(%sthis, arguments, var=var):\n' % (name, arglist)
     # register local variables
-    scope = "'this':this, 'arguments':arguments" #it will be a simple dictionary
+    scope = "'this':this, 'arguments':arguments"  #it will be a simple dictionary
     for arg in args:
-        scope += ', %s:%s' %(repr(arg), arg)
+        scope += ', %s:%s' % (repr(arg), arg)
     if real_name:
         scope += ', %s:%s' % (repr(real_name), name)
     code += indent('var = Scope({%s}, var)\n' % scope)
@@ -90,26 +96,30 @@ def translate_func(name, block, args):
     #register variables declared with var and names of hoisted functions.
     to_register += nested_hoisted.keys()
     if to_register:
-        code += indent('var.registers(%s)\n'% str(to_register))
+        code += indent('var.registers(%s)\n' % str(to_register))
     for nested_name, info in nested_hoisted.iteritems():
         nested_block, nested_args = info
-        new_code = translate_func('PyJsLvalTempHoisted', nested_block, nested_args)
+        new_code = translate_func('PyJsLvalTempHoisted', nested_block,
+                                  nested_args)
         # Now put definition of hoisted function on the top
         code += indent(new_code)
-        code += indent('PyJsLvalTempHoisted.func_name = %s\n' %repr(nested_name))
-        code += indent('var.put(%s, PyJsLvalTempHoisted)\n' % repr(nested_name))
+        code += indent(
+            'PyJsLvalTempHoisted.func_name = %s\n' % repr(nested_name))
+        code += indent(
+            'var.put(%s, PyJsLvalTempHoisted)\n' % repr(nested_name))
     for nested_name, info in nested_inline.iteritems():
         nested_block, nested_args = info
         new_code = translate_func(nested_name, nested_block, nested_args)
         # Inject definitions of inline functions just before usage
         # nested inline names have this format : LVAL_NAME@REAL_NAME
-        py_code = inject_before_lval(py_code, nested_name.split('@')[0], new_code)
+        py_code = inject_before_lval(py_code,
+                                     nested_name.split('@')[0], new_code)
     if py_code.strip():
         code += indent(py_code)
     return code
 
-set_func_translator(translate_func)
 
+set_func_translator(translate_func)
 
 #print inject_before_lval('   chuj\n   moj\n   lval\nelse\n', 'lval', 'siema\njestem piter\n')
 import time
@@ -123,7 +133,7 @@ console.log(5 in [1,2,3,4,5]);
 
 """
 
-SANDBOX ='''
+SANDBOX = '''
 import traceback
 try:
 %s
@@ -132,12 +142,12 @@ except:
 print
 raw_input('Press Enter to quit')
 '''
-if __name__=='__main__':
+if __name__ == '__main__':
     # test with jq if works then it really works :)
     #with open('jq.js', 'r') as f:
-        #jq = f.read()
+    #jq = f.read()
 
     #res = translate_js(jq)
     res = translate_js(t)
-    dbg(SANDBOX% indent(res))
-    print 'Done'
+    dbg(SANDBOX % indent(res))
+    print('Done')

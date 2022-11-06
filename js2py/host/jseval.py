@@ -5,6 +5,7 @@ try:
 except:
     pass
 
+
 @Js
 def Eval(code):
     local_scope = inspect.stack()[3][0].f_locals['var']
@@ -20,22 +21,24 @@ def Eval(code):
     # a simple way to return value from eval. Will not work in complex cases.
     has_return = False
     for n in xrange(len(lines)):
-        line = lines[len(lines)-n-1]
+        line = lines[len(lines) - n - 1]
         if line.strip():
             if line.startswith(' '):
                 break
-            elif line.strip()=='pass':
+            elif line.strip() == 'pass':
                 continue
-            elif any(line.startswith(e) for e in ['return ', 'continue ', 'break', 'raise ']):
+            elif any(
+                    line.startswith(e)
+                    for e in ['return ', 'continue ', 'break', 'raise ']):
                 break
             else:
                 has_return = True
-                cand = 'EVAL_RESULT = (%s)\n'%line
+                cand = 'EVAL_RESULT = (%s)\n' % line
                 try:
                     compile(cand, '', 'exec')
                 except SyntaxError:
                     break
-                lines[len(lines)-n-1] = cand
+                lines[len(lines) - n - 1] = cand
                 py_code = '\n'.join(lines)
                 break
     #print py_code
@@ -44,7 +47,5 @@ def Eval(code):
         return globals()['EVAL_RESULT']
 
 
-
 def executor(code):
-    exec(code, globals())
-
+    exec (code, globals())

@@ -1,12 +1,43 @@
 from __future__ import print_function
 import js2py
 from js2py.base import PyJsException, PyExceptionToJs
+from js2py.internals import seval
+from js2py.internals.simplex import JsException
 import os, sys, re, traceback, threading, ctypes, time, six
 from distutils.version import LooseVersion
+from node_eval import NodeJsError, node_eval_js
+import codecs
+import json
+import traceback
+
+TEST_TIMEOUT =  2
+INCLUDE_PATH = 'includes/'
+TEST_PATH = 'test_cases/language'
+FAILING = []
+
+# choose which JS runtime to test. Js2Py has 2 independent runtimes. Translation based (translator) and the vm interpreter based.
+RUNTIME_TO_TEST = 'vm'
+
+
+if RUNTIME_TO_TEST == 'translator':
+    JS_EVALUATOR = js2py.eval_js
+    PY_JS_EXCEPTION = PyJsException
+    MESSAGE_FROM_PY_JS_EXCEPTION = lambda x: PyExceptionToJs(x).get('message').to_python()
+elif RUNTIME_TO_TEST == 'vm':
+    JS_EVALUATOR = seval.eval_js_vm
+    PY_JS_EXCEPTION = PyJsException
+    MESSAGE_FROM_PY_JS_EXCEPTION = lambda x: str(x)
+elif RUNTIME_TO_TEST == 'node':
+    JS_EVALUATOR = node_eval_js
+    PY_JS_EXCEPTION = NodeJsError
+    MESSAGE_FROM_PY_JS_EXCEPTION = lambda x: str(x)
+else:
+    raise RuntimeError("Js2Py has currently only 2 runtimes available - 'translator' and the 'vm' - RUNTIME_TO_TEST must be one of these.")
+
 
 
 def load(path):
-    with open(path, 'r') as f:
+    with codecs.open(path, "r", "utf-8") as f:
         return f.read()
 
 def terminate_thread(thread):
@@ -14,7 +45,7 @@ def terminate_thread(thread):
 
     :param thread: a threading.Thread instance
     """
-    if not thread.isAlive():
+    if not thread.is_alive():
         return
 
     exc = ctypes.py_object(SystemExit)
@@ -29,13 +60,13 @@ def terminate_thread(thread):
         raise SystemError("PyThreadState_SetAsyncExc failed")
 
 
-TEST_TIMEOUT =  10
-INCLUDE_PATH = 'includes/'
-TEST_PATH = 'test_cases/'
+
 INIT = load(os.path.join(INCLUDE_PATH, 'init.js'))
 
+with open("node_failed.txt") as f:
+    NODE_FAILED = set(f.readlines())
 
-class TestCase:
+class FestCase:
     description = None
     includes = None
     author = None
@@ -59,15 +90,17 @@ class TestCase:
         if self.includes:
             for include in self.includes:
                 self.init += load(os.path.join(INCLUDE_PATH, include))
-        if 'onlyStrict' in self.flags:
+        if 'onlyStrict' in self.flags or '"use strict"' in self.raw or "'use strict'" in self.raw:
             self.strict_only = True
         else:
             self.strict_only = False
 
+        self.node_failed = self.es5id in NODE_FAILED
+
         self.code = self.init + self.raw
 
     def _parse_test_info(self):
-        self.raw_info = re.search('/\*---(.+)---\*/', self.raw, re.DOTALL).groups()[0].strip()
+        self.raw_info = re.search(r'/\*---(.+)---\*/', self.raw, re.DOTALL).groups()[0].strip()
         category = None
         category_content = None
         for line in self.raw_info.splitlines() + ['END:']:
@@ -75,6 +108,8 @@ class TestCase:
                 if category is None:
                     raise RuntimeError('Could not parse test case info! %s' % self.path)
                 category_content += '\n' + line.lstrip()
+            elif line == 'onlyStrict':
+                self.strict_only = True
             else:
                 if category is not None:
                     content = category_content.strip()
@@ -102,7 +137,7 @@ class TestCase:
         crashed = True
         label = None
         try:
-            js2py.eval_js(self.code)
+            JS_EVALUATOR(self.code)
             errors = False
             crashed = False
 
@@ -115,14 +150,14 @@ class TestCase:
             full_error = traceback.format_exc()
             label = 'NOT_IMPLEMENTED'
 
-        except PyJsException as e:
+        except PY_JS_EXCEPTION as e:
             crashed = False
             full_error = traceback.format_exc()
             if self.negative:
                 passed = True
             else:
                 passed = False
-                reason = PyExceptionToJs(e).get('message').to_python()
+                reason = MESSAGE_FROM_PY_JS_EXCEPTION(e)
                 label = 'FAILED'
 
 
@@ -138,7 +173,7 @@ class TestCase:
         except:
             full_error = traceback.format_exc()
             passed = False
-            reason = 'UNKNOWN - URGENT, FIX NOW!'
+            reason = 'UNKNOWN - URGENT, FIX NOW!\n' + traceback.format_exc()[-2000:]+'\n\n'
             label = 'CRASHED'
 
         if not errors:
@@ -154,11 +189,16 @@ class TestCase:
             label = "PASSED"
             reason = ''
             full_error = ''
+        if not passed:
+            FAILING.append(self.es5id)
         self.passed, self.label, self.reason, self.full_error = passed, label, reason, full_error
         return passed, label, reason, full_error
 
     def print_result(self):
-        print(self.clear_name, self.es5id, self.label, self.reason, '\nFile "%s", line 1'%self.full_path if self.label=='CRASHED' else '')
+        #if self.label == "CRASHED": return
+        print(self.clear_name, self.es5id, self.label, self.reason, '\nFile "%s", line 1'%self.full_path if self.label!='PASSED' else '')
+
+        if self.label == "CRASHED": print(self.code) or exit()
 
 
 
@@ -176,18 +216,19 @@ def list_path(path, folders=False):
         try:
             return sorted(res, key=LooseVersion)
         except:
-            print('Fuck python 3!')
-            return sorted(res)  # python 3
+            return sorted(res)  # python 3... why cant they fix this
 
-def test_all(path):
+def fest_all(path):
     files = list_path(path)
     folders = list_path(path, folders=True)
     for f in files:
         if not f.endswith('.js'):
             continue
         try:
-            test = TestCase(f)
+            test = FestCase(f)
             if test.strict_only:
+                continue
+            if test.node_failed:
                 continue
 
             thread = threading.Thread(target=test.run)
@@ -205,12 +246,14 @@ def test_all(path):
         except:
             print(traceback.format_exc())
             print(f)
-            input()
     for folder in folders:
-        test_all(folder)
+        fest_all(folder)
 
 
 
-test_all(TEST_PATH)
+fest_all(TEST_PATH)
+with open('failed.txt', 'w') as f:
+    f.write('\n'.join(filter(lambda x: x, FAILING)))
+
 
 

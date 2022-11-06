@@ -1,22 +1,25 @@
 from __future__ import unicode_literals
-from simplex import *
-from conversions import *
-
+from .simplex import *
+from .conversions import *
 
 # ------------------------------------------------------------------------------
 # Unary operations
+
 
 # -x
 def minus_uop(self):
     return -to_number(self)
 
+
 # +x
 def plus_uop(self):  # +u
     return to_number(self)
 
+
 # !x
 def logical_negation_uop(self):  # !u  cant do 'not u' :(
     return not to_boolean(self)
+
 
 # typeof x
 def typeof_uop(self):
@@ -27,9 +30,11 @@ def typeof_uop(self):
         typ = u'object'  # absolutely idiotic...
     return typ
 
+
 # ~u
 def bit_invert_uop(self):
     return float(to_int32(float(~to_int32(self))))
+
 
 # void
 def void_op(self):
@@ -42,7 +47,8 @@ UNARY_OPERATIONS = {
     '!': logical_negation_uop,
     '~': bit_invert_uop,
     'void': void_op,
-    'typeof': typeof_uop, # this one only for member expressions! for identifiers its slightly different...
+    'typeof':
+    typeof_uop,  # this one only for member expressions! for identifiers its slightly different...
 }
 
 # ------------------------------------------------------------------------------
@@ -52,13 +58,13 @@ UNARY_OPERATIONS = {
 #  <<, >>,  &, ^, |, ~
 
 
-
 # <<
 def bit_lshift_op(self, other):
     lnum = to_int32(self)
     rnum = to_uint32(other)
     shiftCount = rnum & 0x1F
     return float(to_int32(float(lnum << shiftCount)))
+
 
 # >>
 def bit_rshift_op(self, other):
@@ -67,6 +73,7 @@ def bit_rshift_op(self, other):
     shiftCount = rnum & 0x1F
     return float(to_int32(float(lnum >> shiftCount)))
 
+
 # >>>
 def bit_bshift_op(self, other):
     lnum = to_uint32(self)
@@ -74,11 +81,13 @@ def bit_bshift_op(self, other):
     shiftCount = rnum & 0x1F
     return float(to_uint32(float(lnum >> shiftCount)))
 
+
 # &
 def bit_and_op(self, other):
     lnum = to_int32(self)
     rnum = to_int32(other)
     return float(to_int32(float(lnum & rnum)))
+
 
 # ^
 def bit_xor_op(self, other):
@@ -86,14 +95,17 @@ def bit_xor_op(self, other):
     rnum = to_int32(other)
     return float(to_int32(float(lnum ^ rnum)))
 
+
 # |
 def bit_or_op(self, other):
     lnum = to_int32(self)
     rnum = to_int32(other)
     return float(to_int32(float(lnum | rnum)))
 
+
 # Additive operators
 # + and - are implemented here
+
 
 # +
 def add_op(self, other):
@@ -108,16 +120,20 @@ def add_op(self, other):
         return to_string(a) + to_string(b)
     return to_number(a) + to_number(b)
 
+
 # -
 def sub_op(self, other):
     return to_number(self) - to_number(other)
 
+
 # Multiplicative operators
 # *, / and % are implemented here
+
 
 # *
 def mul_op(self, other):
     return to_number(self) * to_number(other)
+
 
 # /
 def div_op(self, other):
@@ -128,6 +144,7 @@ def div_op(self, other):
     if not a or a != a:
         return NaN
     return Infinity if a > 0 else -Infinity
+
 
 # %
 def mod_op(self, other):
@@ -147,10 +164,10 @@ def mod_op(self, other):
     return float(pyres)
 
 
-
 # Comparisons
 # <, <=, !=, ==, >=, > are implemented here.
-def abstract_relational_comparison(self, other, self_first=True):  # todo speed up!
+def abstract_relational_comparison(self, other,
+                                   self_first=True):  # todo speed up!
     ''' self<other if self_first else other<self.
        Returns the result of the question: is self smaller than other?
        in case self_first is false it returns the answer of:
@@ -164,12 +181,13 @@ def abstract_relational_comparison(self, other, self_first=True):  # todo speed 
     if not (Type(px) == 'String' and Type(py) == 'String'):
         px, py = to_number(px), to_number(py)
         if is_nan(px) or is_nan(py):
-            return None # watch out here!
+            return None  # watch out here!
         return px < py  # same cmp algorithm
     else:
         # I am pretty sure that python has the same
         # string cmp algorithm but I have to confirm it
         return px < py
+
 
 # <
 def less_op(self, other):
@@ -178,6 +196,7 @@ def less_op(self, other):
         return False
     return res
 
+
 # <=
 def less_eq_op(self, other):
     res = abstract_relational_comparison(self, other, False)
@@ -185,12 +204,14 @@ def less_eq_op(self, other):
         return False
     return not res
 
+
 # >=
 def greater_eq_op(self, other):
     res = abstract_relational_comparison(self, other, True)
     if res is None:
         return False
     return not res
+
 
 # >
 def greater_op(self, other):
@@ -202,6 +223,7 @@ def greater_op(self, other):
 
 # equality
 
+
 def abstract_equality_op(self, other):
     ''' returns the result of JS == compare.
        result is PyJs type: bool'''
@@ -212,7 +234,8 @@ def abstract_equality_op(self, other):
         if tx == 'Number' or tx == 'String' or tx == 'Boolean':
             return self == other
         return self is other  # Object
-    elif (tx == 'Undefined' and ty == 'Null') or (ty == 'Undefined' and tx == 'Null'):
+    elif (tx == 'Undefined' and ty == 'Null') or (ty == 'Undefined'
+                                                  and tx == 'Null'):
         return True
     elif tx == 'Number' and ty == 'String':
         return abstract_equality_op(self, to_number(other))
@@ -228,6 +251,7 @@ def abstract_equality_op(self, other):
         return abstract_equality_op(to_primitive(self), other)
     else:
         return False
+
 
 def abstract_inequality_op(self, other):
     return not abstract_equality_op(self, other)
@@ -248,6 +272,7 @@ def strict_equality_op(self, other):
 def strict_inequality_op(self, other):
     return not strict_equality_op(self, other)
 
+
 def instanceof_op(self, other):
     '''checks if self is instance of other'''
     if not hasattr(other, 'has_instance'):
@@ -255,28 +280,27 @@ def instanceof_op(self, other):
     return other.has_instance(self)
 
 
-def contains_op(self, other):
-    '''checks if self contains other'''
-    if not self.is_object():
-        raise MakeError('TypeError', "You can\'t use 'in' operator to search in non-objects")
-    return self.has_property(to_string(other).value)
+def in_op(self, other):
+    '''checks if self is in other'''
+    if not is_object(other):
+        raise MakeError(
+            'TypeError',
+            "You can\'t use 'in' operator to search in non-objects")
+    return other.has_property(to_string(self))
 
 
 BINARY_OPERATIONS = {
     '+': add_op,
     '-': sub_op,
-
     '*': mul_op,
     '/': div_op,
     '%': mod_op,
-
     '<<': bit_lshift_op,
     '>>': bit_rshift_op,
     '>>>': bit_bshift_op,
     '|': bit_or_op,
     '&': bit_and_op,
     '^': bit_xor_op,
-
     '==': abstract_equality_op,
     '!=': abstract_inequality_op,
     '===': strict_equality_op,
@@ -285,7 +309,6 @@ BINARY_OPERATIONS = {
     '<=': less_eq_op,
     '>': greater_op,
     '>=': greater_eq_op,
-
+    'in': in_op,
     'instanceof': instanceof_op,
 }
-

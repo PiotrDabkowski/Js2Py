@@ -5,9 +5,7 @@ from . import translating_nodes
 import hashlib
 import re
 
-
 # Enable Js2Py exceptions and pyimport in parser
-pyjsparser.parser.ENABLE_JS2PY_ERRORS = True
 pyjsparser.parser.ENABLE_PYIMPORT = True
 
 # the re below is how we'll recognise numeric constants.
@@ -17,8 +15,7 @@ pyjsparser.parser.ENABLE_PYIMPORT = True
 CP_NUMERIC_RE = re.compile(r'(?<![a-zA-Z0-9_"\'])([0-9\.]+)')
 CP_NUMERIC_PLACEHOLDER = '__PyJsNUM_%i_PyJsNUM__'
 CP_NUMERIC_PLACEHOLDER_REVERSE_RE = re.compile(
-    CP_NUMERIC_PLACEHOLDER.replace('%i', '([0-9\.]+)')
-    )
+    CP_NUMERIC_PLACEHOLDER.replace('%i', r'([0-9\.]+)'))
 
 # the re below is how we'll recognise string constants
 # it finds a ' or ", then reads until the next matching ' or "
@@ -28,11 +25,11 @@ CP_NUMERIC_PLACEHOLDER_REVERSE_RE = re.compile(
 #CP_STRING_1 = re.compile(r'(["\'])(.*?)\1') # this is how we'll recognise string constants
 
 CP_STRING = '"([^\\\\"]+|\\\\([bfnrtv\'"\\\\]|[0-3]?[0-7]{1,2}|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}))*"|\'([^\\\\\']+|\\\\([bfnrtv\'"\\\\]|[0-3]?[0-7]{1,2}|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}))*\''
-CP_STRING_RE = re.compile(CP_STRING) # this is how we'll recognise string constants
+CP_STRING_RE = re.compile(
+    CP_STRING)  # this is how we'll recognise string constants
 CP_STRING_PLACEHOLDER = '__PyJsSTR_%i_PyJsSTR__'
 CP_STRING_PLACEHOLDER_REVERSE_RE = re.compile(
-    CP_STRING_PLACEHOLDER.replace('%i', '([0-9\.]+)')
-    )
+    CP_STRING_PLACEHOLDER.replace('%i', r'([0-9\.]+)'))
 
 cache = {}
 
@@ -58,17 +55,23 @@ def dbg(x):
     """does nothing, legacy dummy function"""
     return ''
 
-def translate_js(js, HEADER=DEFAULT_HEADER, use_compilation_plan=False):
+# Another way of doing that would be with my auto esprima translation but its much slower:
+# parsed = esprima.parse(js).to_dict()
+def pyjsparser_parse_fn(code):
+    parser = pyjsparser.PyJsParser()
+    return parser.parse(code)
+
+def translate_js(js, HEADER=DEFAULT_HEADER, use_compilation_plan=False, parse_fn=pyjsparser_parse_fn):
     """js has to be a javascript source code.
        returns equivalent python code."""
     if use_compilation_plan and not '//' in js and not '/*' in js:
         return translate_js_with_compilation_plan(js, HEADER=HEADER)
-    parser = pyjsparser.PyJsParser()
-    parsed = parser.parse(js) # js to esprima syntax tree
-    # Another way of doing that would be with my auto esprima translation but its much slower and causes import problems:
-    # parsed = esprima.parse(js).to_dict()
+
+    parsed = parse_fn(js)
     translating_nodes.clean_stacks()
-    return HEADER + translating_nodes.trans(parsed)  # syntax tree to python code
+    return HEADER + translating_nodes.trans(
+        parsed)  # syntax tree to python code
+
 
 class match_unumerator(object):
     """This class ise used """
@@ -81,30 +84,35 @@ class match_unumerator(object):
     def __call__(self, match):
         self.matchcount += 1
         self.matches.append(match.group(0))
-        return self.placeholder_mask%self.matchcount
+        return self.placeholder_mask % self.matchcount
 
     def __repr__(self):
-        return '\n'.join(self.placeholder_mask%counter + '=' + match for counter, match in enumerate(self.matches))
+        return '\n'.join(self.placeholder_mask % counter + '=' + match
+                         for counter, match in enumerate(self.matches))
 
     def wrap_up(self, output):
         for counter, value in enumerate(self.matches):
-            output = output.replace("u'" + self.placeholder_mask%(counter) + "'", value, 1)
+            output = output.replace(
+                "u'" + self.placeholder_mask % (counter) + "'", value, 1)
         return output
+
 
 def get_compilation_plan(js):
     match_increaser_str = match_unumerator(CP_STRING_PLACEHOLDER)
-    compilation_plan = re.sub(
-        CP_STRING, match_increaser_str, js
-    )
+    compilation_plan = re.sub(CP_STRING, match_increaser_str, js)
 
     match_increaser_num = match_unumerator(CP_NUMERIC_PLACEHOLDER)
-    compilation_plan = re.sub(CP_NUMERIC_RE, match_increaser_num, compilation_plan)
+    compilation_plan = re.sub(CP_NUMERIC_RE, match_increaser_num,
+                              compilation_plan)
     # now put quotes, note that just patching string replaces is somewhat faster than
     # using another re:
-    compilation_plan = compilation_plan.replace('__PyJsNUM_', '"__PyJsNUM_').replace('_PyJsNUM__', '_PyJsNUM__"')
-    compilation_plan = compilation_plan.replace('__PyJsSTR_', '"__PyJsSTR_').replace('_PyJsSTR__', '_PyJsSTR__"')
+    compilation_plan = compilation_plan.replace(
+        '__PyJsNUM_', '"__PyJsNUM_').replace('_PyJsNUM__', '_PyJsNUM__"')
+    compilation_plan = compilation_plan.replace(
+        '__PyJsSTR_', '"__PyJsSTR_').replace('_PyJsSTR__', '_PyJsSTR__"')
 
     return match_increaser_str, match_increaser_num, compilation_plan
+
 
 def translate_js_with_compilation_plan(js, HEADER=DEFAULT_HEADER):
     """js has to be a javascript source code.
@@ -128,18 +136,20 @@ def translate_js_with_compilation_plan(js, HEADER=DEFAULT_HEADER):
        Q1 == 1 && name /* some comment */ == 'o\'Reilly'
        """
 
-    match_increaser_str, match_increaser_num, compilation_plan = get_compilation_plan(js)
+    match_increaser_str, match_increaser_num, compilation_plan = get_compilation_plan(
+        js)
 
     cp_hash = hashlib.md5(compilation_plan.encode('utf-8')).digest()
     try:
         python_code = cache[cp_hash]['proto_python_code']
     except:
         parser = pyjsparser.PyJsParser()
-        parsed = parser.parse(compilation_plan) # js to esprima syntax tree
+        parsed = parser.parse(compilation_plan)  # js to esprima syntax tree
         # Another way of doing that would be with my auto esprima translation but its much slower and causes import problems:
         # parsed = esprima.parse(js).to_dict()
         translating_nodes.clean_stacks()
-        python_code = translating_nodes.trans(parsed)  # syntax tree to python code
+        python_code = translating_nodes.trans(
+            parsed)  # syntax tree to python code
         cache[cp_hash] = {
             'compilation_plan': compilation_plan,
             'proto_python_code': python_code,
@@ -149,6 +159,7 @@ def translate_js_with_compilation_plan(js, HEADER=DEFAULT_HEADER):
     python_code = match_increaser_num.wrap_up(python_code)
 
     return HEADER + python_code
+
 
 def trasnlate(js, HEADER=DEFAULT_HEADER):
     """js has to be a javascript source code.
@@ -160,18 +171,20 @@ def trasnlate(js, HEADER=DEFAULT_HEADER):
 
 syntax_tree_translate = translating_nodes.trans
 
-if __name__=='__main__':
+if __name__ == '__main__':
     PROFILE = False
     import js2py
     import codecs
+
     def main():
         with codecs.open("esprima.js", "r", "utf-8") as f:
             d = f.read()
             r = js2py.translate_js(d)
 
-            with open('res.py','wb') as f2:
+            with open('res.py', 'wb') as f2:
                 f2.write(r)
-            exec(r, {})
+            exec (r, {})
+
     if PROFILE:
         import cProfile
         cProfile.run('main()', sort='tottime')
