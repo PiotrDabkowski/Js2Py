@@ -83,7 +83,7 @@ def append_arguments(code_obj, new_locals):
     modified = []
     drop_future_cache = False
     for inst in instructions(code_obj):
-        if inst.opname == "CACHE":
+        if is_new_bytecode and inst.opname == "CACHE":
             assert inst.arg == 0
             if not drop_future_cache:
                 modified.extend(write_instruction(inst.opcode, inst.arg))
@@ -252,9 +252,6 @@ def check(code_obj):
                 'Your python version made changes to the bytecode')
 
 
-def pi(ins):
-    return(f"{ins.opname} {ins.arg} {ins.argval}")
-
 
 
 def signature(func):
@@ -282,7 +279,7 @@ def compare_func(fake_func, gt_func):
         else:
             real = real_ins[pos]
             fake = e
-            print(f"POS {pos} OFFSET: {offset}   FAKE VS REAL")
+            print("POS %d OFFSET: %d   FAKE VS REAL" % (pos, offset))
             print(fake)
             print(real)
             assert fake.opcode == real.opcode
