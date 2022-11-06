@@ -81,14 +81,15 @@ def translate_file(input_path, output_path):
     write_file_contents(output_path, out)
 
 
-def run_file(path_or_file, context=None):
+def run_file(path_or_file, context=None, js6=None):
     ''' Context must be EvalJS object. Runs given path as a JS program. Returns (eval_value, context).
     '''
     if context is None:
         context = EvalJs()
     if not isinstance(context, EvalJs):
         raise TypeError('context must be the instance of EvalJs')
-    eval_value = context.eval(get_file_contents(path_or_file))
+    js = get_file_contents(path_or_file)
+    eval_value = context.eval(js6_to_js5(js) if js6 else js)
     return eval_value, context
 
 
