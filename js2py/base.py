@@ -203,7 +203,7 @@ def Js(val, Clamped=False):
         elif val.dtype == numpy.int32:
             return PyJsInt32Array(val, Int32ArrayPrototype)
         elif val.dtype == numpy.uint32:
-            return PyJsUint16Array(val, Uint32ArrayPrototype)
+            return PyJsUint32Array(val, Uint32ArrayPrototype)
 
         elif val.dtype == numpy.float32:
             return PyJsFloat32Array(val, Float32ArrayPrototype)
