@@ -10,7 +10,7 @@ import hashlib
 import codecs
 
 __all__ = [
-    'EvalJs', 'translate_js', 'import_js', 'eval_js', 'translate_file',
+    'EvalJs', 'translate_js', 'import_js', 'eval_js', 'translate_file', 'translate_file6',
     'eval_js6', 'translate_js6', 'run_file', 'disable_pyimport',
     'get_file_contents', 'write_file_contents'
 ]
@@ -79,6 +79,30 @@ def translate_file(input_path, output_path):
     tail = '\n\n# Add lib to the module scope\n%s = var.to_python()' % lib_name
     out = head + py_code + tail
     write_file_contents(output_path, out)
+
+
+def translate_file6(input_path, output_path):
+    '''
+    Translates input JS file to python and saves the it to the output path just like translate_file. 
+    Other than translate_file, this function adds the experimental ES6 support.
+
+    For example we have a file 'example.js' with:   var a = function(x) {return x}
+    translate_file('example.js', 'example.py')
+
+    Now example.py can be easily importend and used:
+    >>> from example import example
+    >>> example.a(30)
+    30
+    '''
+    js = get_file_contents(input_path)
+
+    py_code = translate_js(js6_to_js5(js))
+    lib_name = os.path.basename(output_path).split('.')[0]
+    head = '__all__ = [%s]\n\n# Don\'t look below, you will not understand this Python code :) I don\'t.\n\n' % repr(
+        lib_name)
+    tail = '\n\n# Add lib to the module scope\n%s = var.to_python()' % lib_name
+    out = head + py_code + tail
+    write_file_contents(output_path, out)    
 
 
 def run_file(path_or_file, context=None):
