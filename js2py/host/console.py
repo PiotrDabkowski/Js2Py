@@ -1,4 +1,19 @@
 from ..base import *
+class Console:
+    def log(self, *args, **kwargs):
+        print(*args, **kwargs)
+
+    def debug(self, *args, **kwargs):
+        print(*args, **kwargs)
+
+    def info(self, *args, **kwargs):
+        print(*args, **kwargs)
+
+    def warn(self, *args, **kwargs):
+        print(*args, **kwargs)
+
+    def error(self, *args, **kwargs):
+        print(*args, **kwargs)
 
 @Js
 def console():
