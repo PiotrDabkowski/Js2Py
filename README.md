@@ -55,6 +55,17 @@ Translating a JavaScript file:
     >>> example.someFunction()
     ...
 ```
+
+Translating multiple JavaScript files:
+
+```python
+import js2py
+import pathlib
+for js_path in pathlib.Path(".").rglob("*.js"):
+    py_path = js_path.with_suffix(".py")
+    print(f"translating {js_path}")
+    js2py.translate_file(js_path, py_path)
+```
    
 Every feature of ECMA 5.1 is implemented (except of 'with' statement):
 
