@@ -3,6 +3,8 @@
 #### Pure Python JavaScript Translator/Interpreter
 
 Everything is done in 100% pure Python so it's extremely easy to install and use. Supports Python 2 & 3. Full support for ECMAScript 5.1, ECMA 6 support is still experimental.
+
+For full JavaScript and WebAssembly support, consider using [PythonMonkey](https://github.com/Distributive-Network/PythonMonkey) instead, a Python library which provides high-level bindings to Mozilla's SpiderMonkey JavaScript engine. PythonMonkey can be installed with `pip install pythonmonkey` and only requires `npm` to be installed on the system.
 <hr>
 
 Simple Example:
