@@ -34,7 +34,7 @@ def MakeError(name, message):
     return JsToPyException(ERRORS[name](Js(message)))
 
 
-def to_python(val):
+def to_python(val, force=False):
     if not isinstance(val, PyJs):
         return val
     if isinstance(val, PyJsUndefined) or isinstance(val, PyJsNull):
@@ -54,6 +54,16 @@ def to_python(val):
     elif isinstance(val, PyJsArray) and val.CONVERT_TO_PY_PRIMITIVES:
         return to_list(val)
     elif isinstance(val, PyJsObject) and val.CONVERT_TO_PY_PRIMITIVES:
+        return to_dict(val)
+    elif force:
+        if val.is_primitive() or val.is_callable():
+            return val
+        # TODO: Maybe support numpy in the future 
+        if val.Class in ('Array', 'Int8Array', 'Uint8Array',
+                                'Uint8ClampedArray', 'Int16Array',
+                                'Uint16Array', 'Int32Array', 'Uint32Array',
+                                'Float32Array', 'Float64Array', 'Arguments'):
+            return to_list(val)
         return to_dict(val)
     else:
         return JsObjectWrapper(val)
@@ -120,7 +130,7 @@ def HJs(val):
 
         @Js
         def PyWrapper(this, arguments, var=None):
-            args = tuple(to_python(e) for e in arguments.to_list())
+            args = tuple(to_python(e, True) for e in arguments.to_list())
             try:
                 py_res = val.__call__(*args)
             except Exception as e:
@@ -1299,7 +1309,7 @@ class PyObjectWrapper(PyJs):
         return val
 
     def __call__(self, *args):
-        py_args = tuple(to_python(e) for e in args)
+        py_args = tuple(to_python(e, True) for e in args)
         try:
             py_res = self.obj.__call__(*py_args)
         except Exception as e:
@@ -1312,7 +1322,7 @@ class PyObjectWrapper(PyJs):
         return py_wrap(py_res)
 
     def callprop(self, prop, *args):
-        py_args = tuple(to_python(e) for e in args)
+        py_args = tuple(to_python(e, True) for e in args)
         if not isinstance(prop, basestring):
             prop = prop.to_string().value
         return self.get(prop)(*py_args)
