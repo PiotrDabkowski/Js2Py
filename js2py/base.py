@@ -973,6 +973,14 @@ class PyJs(object):
             return '{%s}' % ', '.join(res)
         elif self.Class == 'String':
             return str_repr(self.value)
+        elif self.Class == 'Number':
+            return self.to_string().value
+        elif self.Class == 'Boolean':
+            return self.to_string().value
+        elif self.Class == 'Null':
+            return 'null'
+        elif self.Class == 'Undefined':
+            return 'undefined'
         elif self.Class in [
                 'Array', 'Int8Array', 'Uint8Array', 'Uint8ClampedArray',
                 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array',
