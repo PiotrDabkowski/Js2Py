@@ -154,7 +154,10 @@ class MathFunctions:
         return random.random()
         
     def sign(x):
-        return math.copysign(1, x)
+        a = x.to_number().value
+        if a != a:  # it must be a nan
+            return NaN
+        return math.copysign(1, a)
 
 
 fill_prototype(Math, MathFunctions, default_attrs)
