@@ -152,6 +152,9 @@ class MathFunctions:
 
     def random():
         return random.random()
+        
+    def sign(x):
+        return math.copysign(1, x)
 
 
 fill_prototype(Math, MathFunctions, default_attrs)
