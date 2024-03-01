@@ -49,7 +49,7 @@ class ObjectMethods:
             raise MakeError(
                 'TypeError',
                 'Object.getOwnPropertyDescriptor called on non-object')
-        return obj.own.keys()
+        return list(obj.own.keys())
 
     def create(obj):
         if not (obj.is_object() or obj.is_null()):
